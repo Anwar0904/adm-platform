@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ADM Platform
 
-## Getting Started
+ADM Platform is a modern web application built with Next.js, TypeScript, and MongoDB to support content-rich digital experiences and administrative operations. It provides a strong foundation for building a polished brand website, service portal, or content-driven product with room for future expansion.
 
-First, run the development server:
+## Why this project matters
+
+This platform is designed to balance performance, maintainability, and flexibility. Its structure supports:
+
+- public-facing pages for marketing, services, portfolio, and storytelling
+- content management through clearly defined models and schemas
+- scalable backend logic with MongoDB and Mongoose
+- a clean TypeScript-based development workflow
+- future growth into authentication, dashboards, media workflows, and deployment automation
+
+## Core features
+
+- Modern Next.js App Router architecture
+- TypeScript-first development experience
+- MongoDB-backed data models for blogs, portfolios, services, media, and testimonials
+- Reusable utilities, schemas, interfaces, and services
+- Environment-based configuration for database connectivity
+- Organized documentation and project structure for easier onboarding
+
+## Tech stack
+
+- Framework: Next.js 16
+- UI Library: React 19
+- Language: TypeScript
+- Styling: Tailwind CSS
+- Database: MongoDB with Mongoose
+- Tooling: ESLint, PostCSS
+
+## Project structure
+
+```text
+src/
+  app/            # Pages, layouts, and API routes
+  components/     # Reusable UI components
+  config/         # Environment and app configuration
+  constants/      # Shared constants and enums
+  interfaces/     # TypeScript interfaces
+  lib/            # Database and shared helpers
+  models/         # Mongoose models and schemas
+  repositories/   # Data access layer
+  schemas/        # Structured schema definitions
+  services/       # Business logic
+  types/          # Shared type definitions
+  validators/     # Input validation logic
+```
+
+## Getting started
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+Create a local environment file with your MongoDB connection string:
+
+```bash
+MONGODB_URL=your_mongodb_connection_string
+NODE_ENV=development
+```
+
+### 3. Run the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev      # Start the development server
+npm run build    # Create a production build
+npm run start    # Run the production build locally
+npm run lint     # Run ESLint checks
+```
 
-## Learn More
+## Documentation
 
-To learn more about Next.js, take a look at the following resources:
+Project documentation is being maintained under the docs folder and covers database design, schema planning, and related implementation notes.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Roadmap
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Potential next steps for the platform include:
 
-## Deploy on Vercel
+- authentication and role-based access control
+- an admin dashboard experience
+- media upload and management workflows
+- SEO and analytics integrations
+- deployment and CI/CD setup for production environments
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contributions are welcome. When extending the project, aim to keep the architecture modular, document new features clearly, and preserve consistency across the existing codebase.
