@@ -26,7 +26,7 @@ export async function connectDB(): Promise<typeof mongoose> {
   }
 
   if (!globalCache.promise) {
-    globalCache.promise = mongoose.connect(env.MONGODB_URL, {
+    globalCache.promise = mongoose.connect(env.MONGODB_URI, {
       dbName: "adm-wehsite",
     });
   }
