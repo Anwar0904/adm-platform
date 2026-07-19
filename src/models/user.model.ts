@@ -119,3 +119,10 @@ UserSchema.index({
 UserSchema.index({
   status: 1,
 });
+
+export const User =
+  (models.User as UserModel) ||
+  model<IUser, UserModel>(
+    "User",
+    UserSchema
+  );
