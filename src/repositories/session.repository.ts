@@ -1,9 +1,7 @@
-import { Types } from "mongoose";
-
-
+import { Session } from "@/models";
 import { BaseRepository } from "./base.repository";
 
-import { Session } from "@/models";
+
 import { ISession } from "@/types/session.types";
 
 class SessionRepository extends BaseRepository<ISession> {
@@ -11,29 +9,26 @@ class SessionRepository extends BaseRepository<ISession> {
     super(Session);
   }
 
-  async findActiveSession(
-    refreshToken: string
-  ) {
-    return this.findOne({
-      refreshToken,
-      isRevoked: false,
-    });
+  async revokeSession(refreshToken: string) {
+    return this.model.findOneAndUpdate(
+      {
+        refreshToken,
+        isRevoked: false,
+      },
+      {
+        isRevoked: true,
+      },
+      {
+        new: true,
+      }
+    );
   }
 
-  async revoke(
-    sessionId: Types.ObjectId
-  ) {
-    return this.updateById(sessionId, {
-      isRevoked: true,
-    });
-  }
-
-  async revokeAll(
-    userId: Types.ObjectId
-  ) {
-    return Session.updateMany(
+  async revokeAllUserSessions(userId: string) {
+    return this.model.updateMany(
       {
         user: userId,
+        isRevoked: false,
       },
       {
         isRevoked: true,
@@ -41,13 +36,17 @@ class SessionRepository extends BaseRepository<ISession> {
     );
   }
 
-  async findUserSessions(
-    userId: Types.ObjectId
-  ) {
-    return this.findMany({
-      user: userId,
+  async findValidSession(refreshToken: string) {
+    return this.model.findOne({
+      refreshToken,
       isRevoked: false,
+      expiresAt: {
+        $gt: new Date(),
+      },
     });
+  }
+  async find(filter = {}) {
+    return this.model.find(filter);
   }
 }
 

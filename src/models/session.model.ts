@@ -59,7 +59,7 @@ const SessionSchema =
     }
   );
 
-  SessionSchema.index({
+SessionSchema.index({
   user: 1,
   isRevoked: 1,
 });

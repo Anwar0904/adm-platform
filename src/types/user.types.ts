@@ -6,6 +6,7 @@ import {
 
 import { UserStatus } from "@/enums";
 import { IImage } from "./image.types";
+import { RoleDocument } from "./role.types";
 
 export interface IUser {
   name: string;
@@ -16,7 +17,7 @@ export interface IUser {
 
   avatar?: IImage | null;
 
-  role: Types.ObjectId;
+  role: Types.ObjectId | RoleDocument;
 
   status: UserStatus;
 

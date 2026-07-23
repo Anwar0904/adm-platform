@@ -32,6 +32,7 @@ const UserSchema = new Schema<IUser, UserModel>(
       trim: true,
       lowercase: true,
       maxlength: 255,
+      index:true,
     },
 
     password: {
@@ -103,18 +104,6 @@ const UserSchema = new Schema<IUser, UserModel>(
   }
 );
 
-UserSchema.index(
-  {
-    email: 1,
-  },
-  {
-    unique: true,
-  }
-);
-
-UserSchema.index({
-  role: 1,
-});
 
 UserSchema.index({
   status: 1,
