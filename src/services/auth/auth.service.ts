@@ -126,11 +126,39 @@ class AuthService {
             );
         }
 
+        // Account deleted
+        if (user.isDeleted) {
+            throw new ApiError(
+                403,
+                "This account no longer exists."
+            );
+        }
+
+        // Account disabled
+        if (user.status !== "active") {
+            throw new ApiError(
+                403,
+                "Your account has been disabled."
+            );
+        }
+
+        // Email verification
+        if (!user.emailVerified) {
+            throw new ApiError(
+                403,
+                "Please verify your email first."
+            );
+        }
+
+        // Extract Role ID
         const roleId =
-            typeof user.role === "object" && user.role !== null && "_id" in user.role
+            typeof user.role === "object" &&
+                user.role !== null &&
+                "_id" in user.role
                 ? user.role._id.toString()
                 : String(user.role);
 
+        // JWT Payload
         const payload = {
             sub: user._id.toString(),
             userId: user._id.toString(),
@@ -138,12 +166,14 @@ class AuthService {
             role: roleId,
         };
 
+        // Generate Tokens
         const accessToken =
             JwtService.signAccessToken(payload);
 
         const refreshToken =
             JwtService.signRefreshToken(payload);
 
+        // Store Hashed Refresh Token
         const hashedRefreshToken =
             await PasswordService.hash(refreshToken);
 
@@ -156,20 +186,23 @@ class AuthService {
             refreshToken: hashedRefreshToken,
             expiresAt,
             isRevoked: false,
-        });
-        user.lastLogin = new Date();
 
-        await user.save();
-        console.log("===== LOGIN RESULT =====");
-        console.log({
-            user,
-            accessToken,
-            refreshToken,
+            // We'll populate these later when we
+            // have access to request headers.
+            userAgent: "",
+            ipAddress: "",
         });
+
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
+
         return {
             user,
-            accessToken,
-            refreshToken,
+            tokens: {
+                accessToken,
+                refreshToken,
+            },
         };
     }
 
@@ -516,6 +549,45 @@ class AuthService {
         await user.save();
 
         return true;
+    }
+
+    async resendVerificationEmail(email: string) {
+        const user = await User.findOne({
+            email: email.toLowerCase(),
+        });
+
+        if (!user) {
+            throw new ApiError(
+                404,
+                "User not found."
+            );
+        }
+
+        if (user.emailVerified) {
+            throw new ApiError(
+                400,
+                "Email already verified."
+            );
+        }
+
+        const verificationToken =
+            ResetTokenService.generate();
+
+        user.emailVerificationToken =
+            ResetTokenService.hash(
+                verificationToken
+            );
+
+        user.emailVerificationExpires =
+            ResetTokenService.expiry();
+
+        await user.save();
+
+        return {
+            verificationToken,
+            expiresAt:
+                user.emailVerificationExpires,
+        };
     }
 
 }

@@ -128,6 +128,34 @@ UserSchema.index({
   status: 1,
 });
 
+UserSchema.set("toJSON", {
+  virtuals: true,
+  transform: (_, ret: any) => {
+    delete ret.password;
+    delete ret.passwordResetToken;
+    delete ret.passwordResetExpires;
+    delete ret.emailVerificationToken;
+    delete ret.emailVerificationExpires;
+    delete ret.__v;
+
+    return ret;
+  },
+});
+
+UserSchema.set("toObject", {
+  virtuals: true,
+  transform: (_, ret: any) => {
+    delete ret.password;
+    delete ret.passwordResetToken;
+    delete ret.passwordResetExpires;
+    delete ret.emailVerificationToken;
+    delete ret.emailVerificationExpires;
+    delete ret.__v;
+
+    return ret;
+  },
+});
+
 export const User =
   (models.User as UserModel) ||
   model<IUser, UserModel>(
