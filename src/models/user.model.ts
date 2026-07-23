@@ -1,5 +1,3 @@
-import bcrypt from "bcrypt";
-
 import {
   Schema,
   model,
@@ -32,7 +30,7 @@ const UserSchema = new Schema<IUser, UserModel>(
       trim: true,
       lowercase: true,
       maxlength: 255,
-      index:true,
+      index: true,
     },
 
     password: {
@@ -42,6 +40,19 @@ const UserSchema = new Schema<IUser, UserModel>(
       select: false,
     },
 
+    passwordResetToken: {
+      type: String,
+      default: null,
+    },
+
+    passwordResetExpires: {
+      type: Date,
+      default: null,
+    },
+    emailVerificationToken: {
+      type: String,
+      default: null,
+    },
     avatar: {
       type: ImageSchema,
       default: null,

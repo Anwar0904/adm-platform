@@ -1,13 +1,8 @@
 import { z } from "zod";
 
-export const ResetPasswordSchema =
-  z.object({
-    token: z.string(),
+export const ForgotPasswordSchema = z.object({
+  email: z.email("Invalid email address.").trim().toLowerCase(),
+});
 
-    password: z
-      .string()
-      .min(8),
-  });
-
-export type ResetPasswordInput =
-  z.infer<typeof ResetPasswordSchema>;
+export type ForgotPasswordInput =
+  z.infer<typeof ForgotPasswordSchema>;

@@ -21,6 +21,12 @@ export interface IUser {
 
   status: UserStatus;
 
+  passwordResetToken?: string | null;
+
+  passwordResetExpires?: Date | null;
+
+  emailVerificationToken?: string | null;
+
   lastLogin?: Date | null;
 
   createdBy?: Types.ObjectId | null;

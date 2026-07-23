@@ -8,6 +8,7 @@ import { User } from "@/models/user.model";
 import { Role } from "@/models/role.model";
 import mongoose from "mongoose";
 import { JwtService } from "@/lib/auth/jwt";
+import { ResetTokenService } from "@/lib/auth/reset-token";
 class AuthService {
     async register(data: RegisterInput) {
         const { name, email, password } = data;
@@ -238,6 +239,71 @@ class AuthService {
         };
     }
 
+    async logout(
+        refreshToken: string
+    ) {
+        const sessions =
+            await SessionRepository.find({
+                isRevoked: false,
+            });
+
+        let matchedSession = null;
+
+        for (const session of sessions) {
+            const matched =
+                await PasswordService.compare(
+                    refreshToken,
+                    session.refreshToken
+                );
+
+            if (matched) {
+                matchedSession = session;
+                break;
+            }
+        }
+
+        if (!matchedSession) {
+            throw new ApiError(
+                401,
+                "Session not found."
+            );
+        }
+
+        matchedSession.isRevoked = true;
+
+        await matchedSession.save();
+
+        return true;
+    }
+
+    async forgotPassword(email: string) {
+        const user = await User.findOne({
+            email: email.toLowerCase(),
+        });
+
+        if (!user) {
+            throw new ApiError(
+                404,
+                "User not found."
+            );
+        }
+
+        const token =
+            ResetTokenService.generate();
+
+        user.passwordResetToken = token;
+
+        user.passwordResetExpires =
+            ResetTokenService.expiry();
+
+        await user.save();
+
+        return {
+            resetToken: token,
+            expiresAt:
+                user.passwordResetExpires,
+        };
+    }
 }
 
 export default new AuthService();
