@@ -11,6 +11,15 @@ import { JwtService } from "@/lib/auth/jwt";
 import { ResetTokenService } from "@/lib/auth/reset-token";
 import { ResetPasswordInput } from "@/validators/auth";
 import { ChangePasswordInput } from "@/validators/auth/change-password.validator";
+
+export function clearEmailVerificationFields(user: {
+    emailVerificationToken?: string | null;
+    emailVerificationExpires?: Date | null;
+}) {
+    user.emailVerificationToken = null;
+    user.emailVerificationExpires = null;
+}
+
 class AuthService {
     async register(data: RegisterInput) {
         const { name, email, password } = data;
@@ -47,7 +56,17 @@ class AuthService {
         }
 
         // Hash password
-        const hashedPassword = await PasswordService.hash(password);
+        const hashedPassword =
+            await PasswordService.hash(password);
+
+        // Generate verification token
+        const verificationToken =
+            ResetTokenService.generate();
+
+        const hashedVerificationToken =
+            ResetTokenService.hash(
+                verificationToken
+            );
 
         // Create user
         const user = await User.create({
@@ -55,9 +74,25 @@ class AuthService {
             email: email.toLowerCase(),
             password: hashedPassword,
             role: defaultRole._id,
+
+            emailVerified: false,
+            emailVerificationToken:
+                hashedVerificationToken,
+            emailVerificationExpires:
+                ResetTokenService.expiry(),
         });
 
-        return user;
+        const createdUser = await User.findById(user._id).select(
+            "email emailVerificationToken emailVerificationExpires emailVerified"
+        );
+
+        console.log(createdUser);
+
+        return {
+            user,
+            verificationToken,
+        };
+
     }
 
     async login(data: LoginInput) {
@@ -436,6 +471,52 @@ class AuthService {
         return true;
     }
 
+    async verifyEmail(token: string) {
+
+        console.log("Incoming Token:", token);
+        // Hash incoming token
+        const hashedToken =
+            ResetTokenService.hash(token);
+
+        console.log("Hashed Incoming:", hashedToken);
+
+        console.log("Current Time:", new Date());
+
+        const users = await User.find().select(
+            "email emailVerificationToken emailVerificationExpires"
+        );
+
+        console.log(users);
+        // Find matching user
+        const user = await User.findOne({
+            emailVerificationToken: hashedToken,
+        });
+
+        console.log("Matched User:", user);
+
+        if (!user) {
+            throw new ApiError(
+                400,
+                "Invalid or expired verification token."
+            );
+        }
+
+        if (user.emailVerified) {
+            throw new ApiError(
+                400,
+                "Email is already verified."
+            );
+        }
+
+        // Verify email
+        user.emailVerified = true;
+
+        clearEmailVerificationFields(user);
+
+        await user.save();
+
+        return true;
+    }
 
 }
 
