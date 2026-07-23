@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import { JwtService } from "@/lib/auth/jwt";
 import { ResetTokenService } from "@/lib/auth/reset-token";
 import { ResetPasswordInput } from "@/validators/auth";
+import { ChangePasswordInput } from "@/validators/auth/change-password.validator";
 class AuthService {
     async register(data: RegisterInput) {
         const { name, email, password } = data;
@@ -359,6 +360,83 @@ class AuthService {
 
         return true;
     }
+
+    async changePassword(
+        userId: string,
+        data: ChangePasswordInput
+    ) {
+        const {
+            currentPassword,
+            newPassword,
+        } = data;
+
+        // Find user
+        const user = await User.findById(userId)
+            .select("+password");
+
+        if (!user || !user.password) {
+            throw new ApiError(
+                404,
+                "User not found."
+            );
+        }
+
+        // Verify current password
+        const isCurrentPasswordValid =
+            await PasswordService.compare(
+                currentPassword,
+                user.password
+            );
+
+        if (!isCurrentPasswordValid) {
+            throw new ApiError(
+                400,
+                "Current password is incorrect."
+            );
+        }
+
+        // Prevent reusing the same password
+        const isSamePassword =
+            await PasswordService.compare(
+                newPassword,
+                user.password
+            );
+
+        if (isSamePassword) {
+            throw new ApiError(
+                400,
+                "New password must be different from the current password."
+            );
+        }
+
+        // Hash and save new password
+        user.password =
+            await PasswordService.hash(
+                newPassword
+            );
+
+        // Clear any outstanding reset tokens
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+
+        await user.save();
+
+        // Revoke every active session
+        await SessionRepository.updateMany(
+            {
+                user: user._id,
+                isRevoked: false,
+            },
+            {
+                isRevoked: true,
+                lastUsedAt: new Date(),
+            }
+        );
+
+        return true;
+    }
+
+
 }
 
 export default new AuthService();

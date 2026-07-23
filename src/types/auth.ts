@@ -24,3 +24,13 @@ export interface ResetPasswordInput {
   password: string;
   confirmPassword: string;
 }
+
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface VerifyEmailInput {
+  token: string;
+}

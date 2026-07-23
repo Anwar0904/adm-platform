@@ -25,7 +25,11 @@ export interface IUser {
 
   passwordResetExpires?: Date | null;
 
+  emailVerified: boolean;
+
   emailVerificationToken?: string | null;
+
+  emailVerificationExpires?: Date | null;
 
   lastLogin?: Date | null;
 
