@@ -18,3 +18,9 @@ export interface RegisterInput {
 
   password: string;
 }
+
+export interface ResetPasswordInput {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}

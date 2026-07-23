@@ -3,12 +3,13 @@ import { ApiError } from "@/lib/api/api-error";
 import SessionRepository from "@/repositories/session.repository";
 import { env } from "@/config/env";
 import { RegisterInput, LoginInput } from "@/types/auth";
-
+import crypto from "crypto"
 import { User } from "@/models/user.model";
 import { Role } from "@/models/role.model";
 import mongoose from "mongoose";
 import { JwtService } from "@/lib/auth/jwt";
 import { ResetTokenService } from "@/lib/auth/reset-token";
+import { ResetPasswordInput } from "@/validators/auth";
 class AuthService {
     async register(data: RegisterInput) {
         const { name, email, password } = data;
@@ -288,10 +289,15 @@ class AuthService {
             );
         }
 
-        const token =
-            ResetTokenService.generate();
+        // Plain token sent to the user
+        const resetToken = ResetTokenService.generate();
 
-        user.passwordResetToken = token;
+        // Hashed token stored in DB
+        const hashedToken = crypto.createHash("sha256")
+            .update(resetToken)
+            .digest("hex");
+
+        user.passwordResetToken = hashedToken;
 
         user.passwordResetExpires =
             ResetTokenService.expiry();
@@ -299,10 +305,59 @@ class AuthService {
         await user.save();
 
         return {
-            resetToken: token,
-            expiresAt:
-                user.passwordResetExpires,
+            resetToken,
+            expiresAt: user.passwordResetExpires,
         };
+    }
+
+    async resetPassword(data: ResetPasswordInput) {
+        const { token, password } = data;
+
+        // Hash incoming token
+        const hashedToken = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        // Find user with matching token
+        const user = await User.findOne({
+            passwordResetToken: hashedToken,
+            passwordResetExpires: {
+                $gt: new Date(),
+            },
+        });
+
+        if (!user) {
+            throw new ApiError(
+                400,
+                "Invalid or expired reset token."
+            );
+        }
+
+        // Hash new password
+        user.password =
+            await PasswordService.hash(password);
+
+        // Remove reset token
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+
+        // Save user
+        await user.save();
+
+        // Revoke every active session
+        await SessionRepository.updateMany(
+            {
+                user: user._id,
+                isRevoked: false,
+            },
+            {
+                isRevoked: true,
+                lastUsedAt: new Date(),
+            }
+        );
+
+        return true;
     }
 }
 

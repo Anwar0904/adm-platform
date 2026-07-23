@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { env } from "@/config/env";
+import { ApiError } from "@/lib/api/api-error";
 
 type MongooseCache = {
   conn: typeof mongoose | null;
@@ -20,24 +21,55 @@ if (!global.mongooseCache) {
   global.mongooseCache = globalCache;
 }
 
+export function getMongoUriCandidates(configuredUri: string, fallbackUri: string) {
+  const candidates = [configuredUri, fallbackUri].filter(Boolean);
+
+  return candidates.filter((uri, index) => candidates.indexOf(uri) === index);
+}
+
 export async function connectDB(): Promise<typeof mongoose> {
   if (globalCache.conn) {
     return globalCache.conn;
   }
 
   if (!globalCache.promise) {
-    globalCache.promise = mongoose.connect(env.MONGODB_URI, {
-      dbName: env.MONGODB_DB,
-    });
+    const candidates = getMongoUriCandidates(
+      env.MONGODB_URI,
+      "mongodb://127.0.0.1:27017/adm-platform"
+    );
+
+    globalCache.promise = (async () => {
+      let lastError: unknown;
+
+      for (const uri of candidates) {
+        try {
+          const connection = await mongoose.connect(uri, {
+            dbName: env.MONGODB_DB,
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000,
+          });
+
+          console.log(`MongoDB connected using ${uri}`);
+          return connection;
+        } catch (error) {
+          lastError = error;
+          console.warn(`MongoDB connection failed for ${uri}`, error);
+        }
+      }
+
+      throw new ApiError(
+        503,
+        "Database unavailable. Please check the MongoDB connection and try again."
+      );
+    })();
   }
 
   try {
     globalCache.conn = await globalCache.promise;
-    console.log("MongoDB connected");
     return globalCache.conn;
   } catch (error) {
     globalCache.promise = null;
     console.error("MongoDB connection failed");
-    throw error
+    throw error;
   }
 }

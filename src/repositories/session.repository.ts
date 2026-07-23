@@ -48,6 +48,12 @@ class SessionRepository extends BaseRepository<ISession> {
   async find(filter = {}) {
     return this.model.find(filter);
   }
+  async updateMany(filter: object, update: object) {
+    return this.model.updateMany(
+      filter,
+      update
+    );
+  }
 }
 
 export default new SessionRepository();
