@@ -56,3 +56,10 @@ export type UserDocument =
 export type UserModel =
   Model<IUser, {}, UserMethods> &
   UserStatics;
+
+
+
+export interface UpdateUserInput {
+  name?: string;
+  avatar?: IImage | null;
+}

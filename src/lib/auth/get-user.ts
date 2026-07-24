@@ -33,10 +33,14 @@ export async function getUserFromToken(
     try {
         payload =
             JwtService.verifyAccessToken(token);
-    } catch {
+    } catch (error) {
+        const message = error instanceof Error && error.name === "TokenExpiredError"
+            ? "Access token has expired. Please log in again."
+            : "Invalid or expired access token.";
+
         throw new ApiError(
             401,
-            "Invalid or expired access token."
+            message
         );
     }
 

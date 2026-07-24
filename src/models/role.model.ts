@@ -16,7 +16,7 @@ const RoleSchema = new Schema<IRole, RoleModel>(
       minlength: 2,
 
       maxlength: 50,
-      lowercase:true
+      lowercase: true
     },
 
     description: {
@@ -31,8 +31,8 @@ const RoleSchema = new Schema<IRole, RoleModel>(
       type: [
         {
           type: String,
-          enum:PermissionValues,
-          trim:true
+          enum: PermissionValues,
+          trim: true
         },
       ],
 
@@ -102,9 +102,17 @@ RoleSchema.static(
   }
 );
 
+RoleSchema.methods.hasPermission = function (
+  permission: string
+) {
+  return this.permissions.includes(permission);
+};
+
 export const Role =
   (models.Role as RoleModel) ||
   model<IRole, RoleModel>(
     "Role",
     RoleSchema
   );
+
+

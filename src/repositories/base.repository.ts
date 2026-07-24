@@ -1,7 +1,7 @@
 import { Model, Types, UpdateQuery } from "mongoose";
 
 export abstract class BaseRepository<T> {
-  constructor(protected readonly model: Model<T>) {}
+  constructor(protected readonly model: Model<T>) { }
 
   async create(data: Partial<T>) {
     return this.model.create(data);

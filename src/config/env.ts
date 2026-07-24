@@ -37,7 +37,7 @@ export const env = {
     "dev-refresh-secret-change-me"
   ),
 
-  JWT_ACCESS_EXPIRES: getEnvValue("JWT_ACCESS_EXPIRES", "15m"),
+  JWT_ACCESS_EXPIRES: getEnvValue("JWT_ACCESS_EXPIRES", "24h"),
 
   JWT_REFRESH_EXPIRES: getEnvValue("JWT_REFRESH_EXPIRES", "7d"),
 
