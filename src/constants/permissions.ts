@@ -24,6 +24,11 @@ export const PERMISSIONS = {
   MEDIA_UPDATE: "media.update",
   MEDIA_DELETE: "media.delete",
 
+  CATEGORY_READ: "category.read",
+  CATEGORY_WRITE: "category.write",
+  CATEGORY_UPDATE: "category.update",
+  CATEGORY_DELETE: "category.delete",
+
   SETTINGS_MANAGE: "settings.manage",
 } as const;
 

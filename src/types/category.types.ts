@@ -34,7 +34,7 @@ export interface ICategory {
   deletedAt?: Date | null;
 }
 
-export interface CategoryMethods {}
+export interface CategoryMethods { }
 
 export interface CategoryStatics {
   findBySlug(slug: string): Promise<CategoryDocument | null>;
