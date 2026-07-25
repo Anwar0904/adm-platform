@@ -26,7 +26,7 @@ export async function PATCH(
 
         await requirePermission(
             request,
-            PERMISSIONS.BLOG_WRITE
+            PERMISSIONS.CATEGORY_CREATE
         );
 
         const { id } =

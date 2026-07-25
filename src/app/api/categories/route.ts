@@ -27,7 +27,7 @@ export async function GET(
 
         await requirePermission(
             request,
-            PERMISSIONS.BLOG_READ
+            PERMISSIONS.CATEGORY_READ
         );
 
         const query =
@@ -60,7 +60,7 @@ export async function POST(
         const currentUser =
             await requirePermission(
                 request,
-                PERMISSIONS.BLOG_WRITE
+                PERMISSIONS.CATEGORY_CREATE
             );
 
         const body =

@@ -11,7 +11,7 @@ import { requirePermission } from "@/middleware/auth.middleware";
 
 import { PERMISSIONS } from "@/constants/permissions";
 
-import { CONTENT_STATUS, ContentStatus } from "@/enums";
+import { ContentStatus } from "@/enums";
 
 type Context = {
     params: Promise<{
@@ -28,7 +28,7 @@ export async function PATCH(
 
         await requirePermission(
             request,
-            PERMISSIONS.BLOG_WRITE
+            PERMISSIONS.CATEGORY_CREATE
         );
 
         const { id } =

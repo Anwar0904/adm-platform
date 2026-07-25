@@ -1,16 +1,16 @@
 export const PERMISSIONS = {
   BLOG_READ: "blog.read",
-  BLOG_WRITE: "blog.write",
+  BLOG_CREATE: "blog.write",
   BLOG_UPDATE: "blog.update",
   BLOG_DELETE: "blog.delete",
 
   USER_READ: "user.read",
-  USER_WRITE: "user.write",
+  USER_CREATE: "user.write",
   USER_UPDATE: 'user.update',
   USER_DELETE: "user.delete",
 
   ROLE_READ: "role.read",
-  ROLE_WRITE: "role.write",
+  ROLE_CREATE: "role.write",
   ROLE_UPDATE: "role.update",
   ROLE_DELETE: "role.delete",
 
@@ -25,7 +25,7 @@ export const PERMISSIONS = {
   MEDIA_DELETE: "media.delete",
 
   CATEGORY_READ: "category.read",
-  CATEGORY_WRITE: "category.write",
+  CATEGORY_CREATE: "category.create",
   CATEGORY_UPDATE: "category.update",
   CATEGORY_DELETE: "category.delete",
 

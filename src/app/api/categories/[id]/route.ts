@@ -28,7 +28,7 @@ export async function GET(
 
         await requirePermission(
             request,
-            PERMISSIONS.BLOG_READ
+            PERMISSIONS.CATEGORY_READ
         );
 
         const { id } =
@@ -58,7 +58,7 @@ export async function PATCH(
         const currentUser =
             await requirePermission(
                 request,
-                PERMISSIONS.BLOG_WRITE
+                PERMISSIONS.CATEGORY_CREATE
             );
 
         const { id } =
@@ -97,7 +97,7 @@ export async function DELETE(
 
         await requirePermission(
             request,
-            PERMISSIONS.BLOG_DELETE
+            PERMISSIONS.CATEGORY_DELETE
         );
 
         const { id } =
