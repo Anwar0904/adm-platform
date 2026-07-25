@@ -45,7 +45,7 @@ export interface IMedia {
   deletedAt?: Date | null;
 }
 
-export interface MediaMethods {}
+export interface MediaMethods { }
 
 export interface MediaStatics {
   findImages(): Promise<MediaDocument[]>;

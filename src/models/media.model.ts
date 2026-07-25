@@ -127,11 +127,7 @@ const MediaSchema =
   );
 
 
-  MediaSchema.index(
-  { publicId: 1 },
-  { unique: true }
-);
-
+MediaSchema.index({ url: 1 });
 MediaSchema.index({ mediaType: 1 });
 
 MediaSchema.index({ uploadedBy: 1 });

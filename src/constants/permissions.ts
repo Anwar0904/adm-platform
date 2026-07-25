@@ -19,6 +19,11 @@ export const PERMISSIONS = {
   SERVICE_UPDATE: "service.update",
   SERVICE_DELETE: "service.delete",
 
+  MEDIA_READ: "media.read",
+  MEDIA_CREATE: "media.create",
+  MEDIA_UPDATE: "media.update",
+  MEDIA_DELETE: "media.delete",
+
   SETTINGS_MANAGE: "settings.manage",
 } as const;
 
