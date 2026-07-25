@@ -13,151 +13,156 @@ import {
   CONTENT_STATUS,
 } from "@/enums";
 
+import "@/models/media.model";
+import "@/models/category.model";
+import "@/models/tag.model";
+import "@/models/user.model";
+
 import { SeoSchema } from "@/schemas/seo.schema";
 import { FAQSchema } from "@/schemas/faq.schema";
 
 import { generateSlug } from "@/utils/slugify";
 
 const BlogSchema =
-new Schema<IBlog, BlogModel>(
+  new Schema<IBlog, BlogModel>(
 
-{
+    {
 
-title:{
-type:String,
-required:true,
-trim:true,
-minlength:5,
-maxlength:200,
-},
+      title: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 5,
+        maxlength: 200,
+      },
 
-slug:{
-type:String,
-unique:true,
-trim:true,
-lowercase:true,
-},
+      slug: {
+        type: String,
+        unique: true,
+        trim: true,
+        lowercase: true,
+      },
 
-excerpt:{
-type:String,
-default:"",
-maxlength:500,
-},
+      excerpt: {
+        type: String,
+        default: "",
+        maxlength: 500,
+      },
 
-content:{
-type:String,
-required:true,
-},
+      content: {
+        type: String,
+        required: true,
+      },
 
-featuredImage:{
-type:Schema.Types.ObjectId,
-ref:"Media",
-default:null,
-},
+      featuredImage: {
+        type: Schema.Types.ObjectId,
+        ref: "Media",
+        default: null,
+      },
 
-gallery:[
-{
-type:Schema.Types.ObjectId,
-ref:"Media",
-}
-],
+      gallery: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Media",
+        }
+      ],
 
-category:{
-type:Schema.Types.ObjectId,
-ref:"Category",
-required:true,
-},
+      category: {
+        type: Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
+      },
 
-tags:[
-{
-type:Schema.Types.ObjectId,
-ref:"Tag",
-}
-],
+      tags: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Tag",
+        }
+      ],
 
-author:{
-type:Schema.Types.ObjectId,
-ref:"User",
-required:true,
-},
+      author: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
 
-seo:{
-type:SeoSchema,
-required:true,
-},
+      seo: {
+        type: SeoSchema,
+        required: true,
+      },
 
-faqs:{
-type:[FAQSchema],
-default:[],
-},
+      faqs: {
+        type: [FAQSchema],
+        default: [],
+      },
 
-status:{
-type:String,
-enum:Object.values(CONTENT_STATUS),
-default:CONTENT_STATUS.DRAFT,
-},
+      status: {
+        type: String,
+        enum: Object.values(CONTENT_STATUS),
+        default: CONTENT_STATUS.DRAFT,
+      },
 
-featured:{
-type:Boolean,
-default:false,
-},
+      featured: {
+        type: Boolean,
+        default: false,
+      },
 
-views:{
-type:Number,
-default:0,
-min:0,
-},
+      views: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
 
-readingTime:{
-type:Number,
-default:1,
-min:1,
-},
+      readingTime: {
+        type: Number,
+        default: 1,
+        min: 1,
+      },
 
-publishedAt:{
-type:Date,
-default:null,
-},
+      publishedAt: {
+        type: Date,
+        default: null,
+      },
 
-createdBy:{
-type:Schema.Types.ObjectId,
-ref:"User",
-default:null,
-},
+      createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
 
-updatedBy:{
-type:Schema.Types.ObjectId,
-ref:"User",
-default:null,
-},
+      updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
 
-isDeleted:{
-type:Boolean,
-default:false,
-},
+      isDeleted: {
+        type: Boolean,
+        default: false,
+      },
 
-deletedAt:{
-type:Date,
-default:null,
-}
+      deletedAt: {
+        type: Date,
+        default: null,
+      }
 
-},
+    },
 
-{
+    {
 
-timestamps:true,
+      timestamps: true,
 
-versionKey:false,
+      versionKey: false,
 
-collection:"blogs",
+      collection: "blogs",
 
-toJSON:{virtuals:true},
+      toJSON: { virtuals: true },
 
-toObject:{virtuals:true}
+      toObject: { virtuals: true }
 
-}
+    }
 
-);
+  );
 
 BlogSchema.index(
   { slug: 1 },

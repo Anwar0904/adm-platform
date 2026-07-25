@@ -1,6 +1,6 @@
 export const PERMISSIONS = {
   BLOG_READ: "blog.read",
-  BLOG_CREATE: "blog.write",
+  BLOG_CREATE: "blog.create",
   BLOG_UPDATE: "blog.update",
   BLOG_DELETE: "blog.delete",
 

@@ -5,6 +5,7 @@ import { Tag } from "@/models/tag.model";
 import { ApiError } from "@/lib/api/api-error";
 
 import TagRepository from "@/repositories/tag.repository";
+import { generateSlug } from "@/utils/slugify";
 
 import {
     CONTENT_STATUS,
@@ -110,18 +111,17 @@ class TagService {
         data: CreateTagInput,
         userId: string
     ) {
-        if (data.slug) {
-            const exists =
-                await TagRepository.slugExists(
-                    data.slug
-                );
+        const slug = data.slug
+            ? generateSlug(data.slug)
+            : generateSlug(data.name);
 
-            if (exists) {
-                throw new ApiError(
-                    409,
-                    "Slug already exists."
-                );
-            }
+        const exists = await TagRepository.slugExists(slug);
+
+        if (exists) {
+            throw new ApiError(
+                409,
+                "Tag already exists."
+            );
         }
 
         return TagRepository.create({
