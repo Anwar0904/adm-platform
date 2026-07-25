@@ -28,7 +28,6 @@ const TagSchema =
 
       slug: {
         type: String,
-        unique: true,
         trim: true,
         lowercase: true,
       },
@@ -94,7 +93,7 @@ const TagSchema =
     }
   );
 
-  TagSchema.index(
+TagSchema.index(
   {
     slug: 1,
   },
@@ -113,6 +112,12 @@ TagSchema.index({
 TagSchema.index({
   name: "text",
   description: "text",
+});
+
+TagSchema.pre("validate", function () {
+  if (this.isModified("name") || !this.slug) {
+    this.slug = generateSlug(this.name);
+  }
 });
 
 TagSchema.static(

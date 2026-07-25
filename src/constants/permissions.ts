@@ -29,6 +29,11 @@ export const PERMISSIONS = {
   CATEGORY_UPDATE: "category.update",
   CATEGORY_DELETE: "category.delete",
 
+  TAG_READ: "tag.read",
+  TAG_CREATE: "tag.create",
+  TAG_UPDATE: "tag.update",
+  TAG_DELETE: "tag.delete",
+
   SETTINGS_MANAGE: "settings.manage",
 } as const;
 
