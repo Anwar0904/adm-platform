@@ -9,8 +9,6 @@ import IndustryRepository from "@/repositories/industry.repository";
 
 import { ApiError } from "@/lib/api/api-error";
 
-import { generateSlug } from "@/utils/slugify";
-
 import {
     CONTENT_STATUS,
     ContentStatus,
@@ -21,6 +19,7 @@ import {
     UpdateIndustryInput,
     IndustryQuery,
 } from "@/types/industry-management";
+import { generateSlug } from "@/utils/slugify";
 
 class IndustryService {
     async getIndustries(
@@ -161,82 +160,63 @@ class IndustryService {
         data: CreateIndustryInput,
         userId: string
     ) {
-
         const slug = generateSlug(data.title);
 
-        if (slug) {
-            const exists =
-                await IndustryRepository.slugExists(
-                    slug
-                );
+        const exists =
+            await IndustryRepository.slugExists(
+                slug
+            );
 
-            if (exists) {
-                throw new ApiError(
-                    409,
-                    "Slug already exists."
-                );
-            }
+        if (exists) {
+            throw new ApiError(
+                409,
+                "Slug already exists."
+            );
         }
 
-        return IndustryRepository.create(
-            {
-                ...data,
+        return IndustryRepository.create({
+            ...data,
 
-                author:
-                    new Types.ObjectId(
-                        userId
-                    ),
+            slug,
 
-                featuredImage:
-                    data.featuredImage
-                        ? new Types.ObjectId(
-                            data.featuredImage
-                        )
-                        : null,
+            author: new Types.ObjectId(userId),
 
-                gallery:
-                    data.gallery?.map(
-                        (id) =>
-                            new Types.ObjectId(
-                                id
-                            )
-                    ) ?? [],
+            featuredImage: data.featuredImage
+                ? new Types.ObjectId(data.featuredImage)
+                : null,
 
-                services:
-                    data.services?.map(
-                        (id) =>
-                            new Types.ObjectId(
-                                id
-                            )
-                    ) ?? [],
+            gallery:
+                data.gallery?.map(
+                    (id) => new Types.ObjectId(id)
+                ) ?? [],
 
-                status:
-                    (data.status ??
-                        CONTENT_STATUS.DRAFT) as ContentStatus,
+            services:
+                data.services?.map(
+                    (id) => new Types.ObjectId(id)
+                ) ?? [],
 
-                featured:
-                    data.featured ??
-                    false,
+            status:
+                data.status ??
+                CONTENT_STATUS.DRAFT,
 
-                sortOrder:
-                    data.sortOrder ??
-                    0,
+            featured:
+                data.featured ??
+                false,
 
-                createdBy:
-                    new Types.ObjectId(
-                        userId
-                    ),
+            sortOrder:
+                data.sortOrder ??
+                0,
 
-                updatedBy:
-                    new Types.ObjectId(
-                        userId
-                    ),
+            createdBy:
+                new Types.ObjectId(userId),
 
-                isDeleted: false,
+            updatedBy:
+                new Types.ObjectId(userId),
 
-                deletedAt: null,
-            }
-        );
+            isDeleted: false,
+
+            deletedAt: null,
+        });
     }
 
     async updateIndustry(
@@ -245,9 +225,7 @@ class IndustryService {
         userId: string
     ) {
         const industry =
-            await Industry.findById(
-                id
-            );
+            await Industry.findById(id);
 
         if (
             !industry ||
@@ -260,7 +238,8 @@ class IndustryService {
         }
 
         if (data.title) {
-            const slug = generateSlug(data.title);
+            const slug =
+                generateSlug(data.title);
 
             if (slug !== industry.slug) {
                 const exists =
@@ -276,6 +255,8 @@ class IndustryService {
                     );
                 }
             }
+
+            industry.slug = slug;
         }
 
         Object.assign(
@@ -284,8 +265,7 @@ class IndustryService {
         );
 
         if (
-            data.featuredImage !==
-            undefined
+            data.featuredImage !== undefined
         ) {
             industry.featuredImage =
                 data.featuredImage
@@ -299,9 +279,7 @@ class IndustryService {
             industry.gallery =
                 data.gallery.map(
                     (id) =>
-                        new Types.ObjectId(
-                            id
-                        )
+                        new Types.ObjectId(id)
                 );
         }
 
@@ -309,16 +287,12 @@ class IndustryService {
             industry.services =
                 data.services.map(
                     (id) =>
-                        new Types.ObjectId(
-                            id
-                        )
+                        new Types.ObjectId(id)
                 );
         }
 
         industry.updatedBy =
-            new Types.ObjectId(
-                userId
-            );
+            new Types.ObjectId(userId);
 
         await industry.save();
 
