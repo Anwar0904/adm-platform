@@ -34,6 +34,11 @@ export const PERMISSIONS = {
   TAG_UPDATE: "tag.update",
   TAG_DELETE: "tag.delete",
 
+  INDUSTRY_READ: "industry.read",
+  INDUSTRY_CREATE: "industry.create",
+  INDUSTRY_UPDATE: "industry.update",
+  INDUSTRY_DELETE: "industry.delete",
+
   SETTINGS_MANAGE: "settings.manage",
 } as const;
 
