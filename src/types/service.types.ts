@@ -51,7 +51,7 @@ export interface IService {
   deletedAt?: Date | null;
 }
 
-export interface ServiceMethods {}
+export interface ServiceMethods { }
 
 export interface ServiceStatics {
   findBySlug(

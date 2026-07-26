@@ -1,3 +1,4 @@
+import { CONTENT_STATUS } from "@/enums";
 import { z } from "zod";
 
 export const PasswordSchema = z
@@ -10,3 +11,11 @@ export const PasswordSchema = z
         /[^A-Za-z0-9]/,
         "One special character is required."
     );
+
+export const StatusSchema = z.object({
+    status: z.enum(CONTENT_STATUS),
+});
+
+export const FeaturedSchema = z.object({
+    featured: z.boolean(),
+});

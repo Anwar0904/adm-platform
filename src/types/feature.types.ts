@@ -3,5 +3,5 @@ import { IImage } from "./image.types";
 export interface IFeature {
   title: string;
   description: string;
-  icon?: IImage;
+  icon?: IImage | null;
 }

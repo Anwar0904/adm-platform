@@ -1,4 +1,5 @@
 import { Schema } from "mongoose";
+
 import { ISeo } from "@/types/seo.types";
 import { ImageSchema } from "./image.schema";
 
@@ -16,20 +17,33 @@ export const SeoSchema = new Schema<ISeo>(
       trim: true,
     },
 
-    keywords: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+    keywords: {
+      type: [String],
+      default: [],
+    },
 
-    canonicalUrl: String,
+    canonicalUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
 
-    ogTitle: String,
+    ogTitle: {
+      type: String,
+      default: "",
+      trim: true,
+    },
 
-    ogDescription: String,
+    ogDescription: {
+      type: String,
+      default: "",
+      trim: true,
+    },
 
-    ogImage: ImageSchema,
+    ogImage: {
+      type: ImageSchema,
+      default: null,
+    },
 
     robots: {
       type: String,
@@ -38,6 +52,7 @@ export const SeoSchema = new Schema<ISeo>(
 
     schemaMarkup: {
       type: Schema.Types.Mixed,
+      default: {},
     },
   },
   {

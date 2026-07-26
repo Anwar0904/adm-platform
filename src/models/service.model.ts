@@ -1,3 +1,5 @@
+import "@/models/media.model";
+import "@/models/user.model";
 import {
   Schema,
   model,
@@ -13,12 +15,13 @@ import {
   CONTENT_STATUS,
 } from "@/enums";
 
-import { SeoSchema } from "@/schemas/seo.schema";
 import { FAQSchema } from "@/schemas/faq.schema";
 import { FeatureSchema } from "@/schemas/feature.schema";
 import { ImageSchema } from "@/schemas/image.schema";
 
 import { generateSlug } from "@/utils/slugify";
+import { SeoSchema } from "@/schemas/seo.schema";
+
 
 const ServiceSchema =
   new Schema<IService, ServiceModel>(
@@ -33,7 +36,6 @@ const ServiceSchema =
 
       slug: {
         type: String,
-        unique: true,
         trim: true,
         lowercase: true,
       },
@@ -142,7 +144,14 @@ const ServiceSchema =
   );
 
 
-  ServiceSchema.index(
+ServiceSchema.pre("validate", function () {
+  if (this.isModified("title") || !this.slug) {
+    this.slug = generateSlug(this.title);
+  }
+});
+
+
+ServiceSchema.index(
   { slug: 1 },
   {
     unique: true,
