@@ -1,3 +1,9 @@
+import "@/models/media.model";
+import "@/models/service.model";
+import "@/models/industry.model";
+import "@/models/portfolio.model";
+import "@/models/user.model";
+
 import {
   Schema,
   model,
@@ -14,123 +20,123 @@ import {
 } from "@/enums";
 
 const TestimonialSchema =
-new Schema<ITestimonial, TestimonialModel>(
-{
-  clientName: {
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: 100,
-  },
-  
+  new Schema<ITestimonial, TestimonialModel>(
+    {
+      clientName: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 100,
+      },
 
-  company: {
-    type: String,
-    default: "",
-    trim: true,
-  },
 
-  designation: {
-    type: String,
-    default: "",
-    trim: true,
-  },
+      company: {
+        type: String,
+        default: "",
+        trim: true,
+      },
 
-  avatar: {
-    type: Schema.Types.ObjectId,
-    ref: "Media",
-    default: null,
-  },
+      designation: {
+        type: String,
+        default: "",
+        trim: true,
+      },
 
-  message: {
-    type: String,
-    required: true,
-    trim: true,
-    maxlength: 2000,
-  },
+      avatar: {
+        type: Schema.Types.ObjectId,
+        ref: "Media",
+        default: null,
+      },
 
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5,
-  },
+      message: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 2000,
+      },
 
-  service: {
-    type: Schema.Types.ObjectId,
-    ref: "Service",
-    default: null,
-  },
+      rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5,
+      },
 
-  portfolio: {
-    type: Schema.Types.ObjectId,
-    ref: "Portfolio",
-    default: null,
-  },
+      service: {
+        type: Schema.Types.ObjectId,
+        ref: "Service",
+        default: null,
+      },
 
-  industry: {
-    type: Schema.Types.ObjectId,
-    ref: "Industry",
-    default: null,
-  },
+      portfolio: {
+        type: Schema.Types.ObjectId,
+        ref: "Portfolio",
+        default: null,
+      },
 
-  featured: {
-    type: Boolean,
-    default: false,
-  },
+      industry: {
+        type: Schema.Types.ObjectId,
+        ref: "Industry",
+        default: null,
+      },
 
-  status: {
-    type: String,
-    enum: Object.values(CONTENT_STATUS),
-    default: CONTENT_STATUS.PUBLISHED,
-  },
+      featured: {
+        type: Boolean,
+        default: false,
+      },
 
-  sortOrder: {
-    type: Number,
-    default: 0,
-    min: 0,
-  },
+      status: {
+        type: String,
+        enum: Object.values(CONTENT_STATUS),
+        default: CONTENT_STATUS.PUBLISHED,
+      },
 
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
+      sortOrder: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
 
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default: null,
-  },
+      author: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
 
-  updatedBy: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default: null,
-  },
+      createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
 
-  isDeleted: {
-    type: Boolean,
-    default: false,
-  },
+      updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
 
-  deletedAt: {
-    type: Date,
-    default: null,
-  },
-},
-{
-  timestamps: true,
-  versionKey: false,
-  collection: "testimonials",
-  toJSON: {
-    virtuals: true,
-  },
-  toObject: {
-    virtuals: true,
-  },
-}
-);
+      isDeleted: {
+        type: Boolean,
+        default: false,
+      },
+
+      deletedAt: {
+        type: Date,
+        default: null,
+      },
+    },
+    {
+      timestamps: true,
+      versionKey: false,
+      collection: "testimonials",
+      toJSON: {
+        virtuals: true,
+      },
+      toObject: {
+        virtuals: true,
+      },
+    }
+  );
 
 TestimonialSchema.index({ featured: 1 });
 
