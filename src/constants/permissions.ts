@@ -39,6 +39,11 @@ export const PERMISSIONS = {
   INDUSTRY_UPDATE: "industry.update",
   INDUSTRY_DELETE: "industry.delete",
 
+  PAGE_READ: "page.read",
+  PAGE_CREATE: "page.create",
+  PAGE_UPDATE: "page.update",
+  PAGE_DELETE: "page.delete",
+
   SETTINGS_MANAGE: "settings.manage",
 } as const;
 
