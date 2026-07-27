@@ -144,3 +144,10 @@ const LeadSchema =
       },
     }
   );
+
+export const Lead =
+  (models.Lead as LeadModel) ||
+  model<ILead, LeadModel>(
+    "Lead",
+    LeadSchema
+  );

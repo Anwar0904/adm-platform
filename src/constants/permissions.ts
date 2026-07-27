@@ -49,6 +49,16 @@ export const PERMISSIONS = {
   TESTIMONIAL_UPDATE: "testimonial.update",
   TESTIMONIAL_DELETE: "testimonial.delete",
 
+  TEAM_MEMBER_READ: "team_member.read",
+  TEAM_MEMBER_CREATE: "team_member.create",
+  TEAM_MEMBER_UPDATE: "team_member.update",
+  TEAM_MEMBER_DELETE: "team_member.delete",
+
+  LEAD_READ: "lead.read",
+  LEAD_CREATE: "lead.create",
+  LEAD_UPDATE: "lead.update",
+  LEAD_DELETE: "lead.delete",
+
   SETTINGS_MANAGE: "settings.manage",
 } as const;
 

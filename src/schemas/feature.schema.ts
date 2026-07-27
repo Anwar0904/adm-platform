@@ -1,27 +1,22 @@
 import { Schema } from "mongoose";
 
-import { IFeature } from "@/types/feature.types";
+import { IFAQ } from "@/types/faq.types";
 
-import { ImageSchema } from "./image.schema";
-
-export const FeatureSchema =
-  new Schema<IFeature>(
+export const FAQSchema =
+  new Schema<IFAQ>(
     {
-      title: {
+      question: {
         type: String,
         required: true,
         trim: true,
+        minlength: 5,
+        maxlength: 300,
       },
 
-      description: {
+      answer: {
         type: String,
         required: true,
         trim: true,
-      },
-
-      icon: {
-        type: ImageSchema,
-        default: null,
       },
     },
     {

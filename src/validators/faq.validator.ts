@@ -1,7 +1,13 @@
 import { z } from "zod";
 
-export const FAQSchema = z.object({
-    question: z.string().min(1),
+export const FAQSchema =
+    z.object({
+        question: z
+            .string()
+            .min(5)
+            .max(300),
 
-    answer: z.string().min(1),
-});
+        answer: z
+            .string()
+            .min(5),
+    });

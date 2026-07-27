@@ -28,9 +28,10 @@ export interface ILead {
   updatedBy?: Types.ObjectId | null;
   isDeleted: boolean;
   deletedAt?: Date | null;
+  createdAt?: Date;
 }
 
-export interface LeadMethods {}
+export interface LeadMethods { }
 
 export interface LeadStatics {
   findByEmail(
