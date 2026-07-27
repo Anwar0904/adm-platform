@@ -44,6 +44,11 @@ export const PERMISSIONS = {
   PAGE_UPDATE: "page.update",
   PAGE_DELETE: "page.delete",
 
+  TESTIMONIAL_READ: "testimonial.read",
+  TESTIMONIAL_CREATE: "testimonial.create",
+  TESTIMONIAL_UPDATE: "testimonial.update",
+  TESTIMONIAL_DELETE: "testimonial.delete",
+
   SETTINGS_MANAGE: "settings.manage",
 } as const;
 
