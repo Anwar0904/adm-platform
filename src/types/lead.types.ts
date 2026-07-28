@@ -28,7 +28,8 @@ export interface ILead {
   updatedBy?: Types.ObjectId | null;
   isDeleted: boolean;
   deletedAt?: Date | null;
-  createdAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface LeadMethods { }

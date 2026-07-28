@@ -48,9 +48,13 @@ export interface IBlog {
   isDeleted: boolean;
 
   deletedAt?: Date | null;
+
+  createdAt: Date;
+
+  updatedAt: Date;
 }
 
-export interface BlogMethods {}
+export interface BlogMethods { }
 
 export interface BlogStatics {
   findBySlug(slug: string): Promise<BlogDocument | null>;
