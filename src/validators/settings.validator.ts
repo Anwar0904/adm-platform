@@ -94,4 +94,28 @@ export const CreateSettingsSchema =
     });
 
 export const UpdateSettingsSchema =
-    CreateSettingsSchema.partial();
+    z.object({
+        branding:
+            BrandingSchema.partial()
+                .optional(),
+
+        contact:
+            ContactSchema.partial()
+                .optional(),
+
+        social:
+            SocialLinksSchema.partial()
+                .optional(),
+
+        seo:
+            SeoSchema.partial()
+                .optional(),
+
+        features:
+            FeaturesSchema.partial()
+                .optional(),
+
+        analyticsId: z
+            .string()
+            .optional(),
+    });

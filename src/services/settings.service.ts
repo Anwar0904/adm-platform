@@ -109,7 +109,13 @@ class SettingsService {
 
         if (data.branding) {
             updateData.branding = {
-                ...data.branding,
+                siteName:
+                    data.branding.siteName ??
+                    existing.branding.siteName,
+
+                siteDescription:
+                    data.branding.siteDescription ??
+                    existing.branding.siteDescription,
 
                 logo:
                     data.branding.logo ===
@@ -140,23 +146,103 @@ class SettingsService {
         }
 
         if (data.contact) {
-            updateData.contact =
-                data.contact;
+            updateData.contact = {
+                email:
+                    data.contact.email ??
+                    existing.contact.email,
+
+                phone:
+                    data.contact.phone ??
+                    existing.contact.phone,
+
+                address:
+                    data.contact.address ??
+                    existing.contact.address,
+            };
         }
 
         if (data.social) {
-            updateData.social =
-                data.social;
+            updateData.social = {
+                facebook:
+                    data.social.facebook ??
+                    existing.social.facebook,
+
+                instagram:
+                    data.social.instagram ??
+                    existing.social.instagram,
+
+                linkedin:
+                    data.social.linkedin ??
+                    existing.social.linkedin,
+
+                x:
+                    data.social.x ??
+                    existing.social.x,
+
+                youtube:
+                    data.social.youtube ??
+                    existing.social.youtube,
+
+                github:
+                    data.social.github ??
+                    existing.social.github,
+            };
         }
 
         if (data.seo) {
-            updateData.seo =
-                data.seo;
+            updateData.seo = {
+                metaTitle:
+                    data.seo.metaTitle ??
+                    existing.seo.metaTitle,
+
+                metaDescription:
+                    data.seo.metaDescription ??
+                    existing.seo.metaDescription,
+
+                keywords:
+                    data.seo.keywords ??
+                    existing.seo.keywords,
+
+                canonicalUrl:
+                    data.seo.canonicalUrl ??
+                    existing.seo.canonicalUrl,
+
+                ogTitle:
+                    data.seo.ogTitle ??
+                    existing.seo.ogTitle,
+
+                ogDescription:
+                    data.seo.ogDescription ??
+                    existing.seo.ogDescription,
+
+                ogImage:
+                    data.seo.ogImage ??
+                    existing.seo.ogImage,
+
+                robots:
+                    data.seo.robots ??
+                    existing.seo.robots,
+
+                schemaMarkup:
+                    data.seo.schemaMarkup ??
+                    existing.seo.schemaMarkup,
+            };
         }
 
         if (data.features) {
-            updateData.features =
-                data.features;
+            updateData.features = {
+                maintenanceMode:
+                    data.features.maintenanceMode ??
+                    existing.features.maintenanceMode,
+
+                consultationEnabled:
+                    data.features.consultationEnabled ??
+                    existing.features.consultationEnabled,
+
+                careersEnabled:
+                    data.features.careersEnabled ??
+                    existing.features.careersEnabled,
+            };
         }
 
         if (

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { ImageSchema } from "./image.validator";
+
 export const SeoSchema = z.object({
     metaTitle: z.string().min(1).max(70),
 
@@ -9,7 +11,16 @@ export const SeoSchema = z.object({
 
     canonicalUrl: z.string().url().optional(),
 
-    noIndex: z.boolean().optional(),
+    ogTitle: z.string().optional(),
 
-    noFollow: z.boolean().optional(),
+    ogDescription: z.string().optional(),
+
+    ogImage: ImageSchema.optional(),
+
+    robots: z.string().optional(),
+
+    schemaMarkup: z.record(
+        z.string(),
+        z.unknown()
+    ).optional(),
 });
