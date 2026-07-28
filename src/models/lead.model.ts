@@ -4,6 +4,9 @@ import {
   models,
 } from "mongoose";
 
+import "@/models/service.model";
+import "@/models/user.model";
+
 import {
   ILead,
   LeadModel,
@@ -144,6 +147,13 @@ const LeadSchema =
       },
     }
   );
+
+LeadSchema.static("findByEmail", function (email: string) {
+  return this.findOne({
+    email: email.toLowerCase(),
+    isDeleted: false,
+  });
+});
 
 export const Lead =
   (models.Lead as LeadModel) ||
