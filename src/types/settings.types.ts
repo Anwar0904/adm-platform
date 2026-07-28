@@ -52,7 +52,7 @@ export interface ISettings {
   updatedAt: Date;
 }
 
-export interface SettingsMethods {}
+export interface SettingsMethods { }
 
 export interface SettingsStatics {
   getSettings(): Promise<SettingsDocument | null>;
