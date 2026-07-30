@@ -1,9 +1,16 @@
 import { z } from "zod";
 
-import { FAQSchema } from "@/validators/faq.validator";
+import {
+    CreateFAQSchema,
+    FAQQuerySchema,
+    UpdateFAQSchema,
+} from "@/validators/faq.validator";
 
 export type CreateFAQInput =
-    z.infer<typeof FAQSchema>;
+    z.infer<typeof CreateFAQSchema>;
 
 export type UpdateFAQInput =
-    Partial<CreateFAQInput>;
+    z.infer<typeof UpdateFAQSchema>;
+
+export type FAQQuery =
+    z.infer<typeof FAQQuerySchema>;

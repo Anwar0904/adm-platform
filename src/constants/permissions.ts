@@ -49,6 +49,11 @@ export const PERMISSIONS = {
   TESTIMONIAL_UPDATE: "testimonial.update",
   TESTIMONIAL_DELETE: "testimonial.delete",
 
+  FAQ_READ: "faq.read",
+  FAQ_CREATE: "faq.create",
+  FAQ_UPDATE: "faq.update",
+  FAQ_DELETE: "faq.delete",
+
   TEAM_MEMBER_READ: "team_member.read",
   TEAM_MEMBER_CREATE: "team_member.create",
   TEAM_MEMBER_UPDATE: "team_member.update",
