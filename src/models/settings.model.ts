@@ -9,8 +9,12 @@ import {
   SettingsModel,
 } from "@/types/settings.types";
 
+
+
 import { SeoSchema } from "@/schemas/seo.schema";
 import { SocialLinksSchema } from "@/schemas/social.schema";
+import "@/models/media.model";
+import "@/models/user.model";
 
 const SettingsSchema =
   new Schema<ISettings, SettingsModel>(

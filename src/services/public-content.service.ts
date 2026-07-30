@@ -183,9 +183,117 @@ class PublicContentService {
     }
 
     async getHomePage() {
-        const page = await Page.findOne({ isHomePage: true, status: CONTENT_STATUS.PUBLISHED, isDeleted: false }).select(publicFields).populate("featuredImage");
-        if (!page) throw new ApiError(404, "Homepage not found.");
-        return page;
+        const [
+            page,
+            services,
+            portfolio,
+            industries,
+            testimonials,
+            teamMembers,
+            blogs,
+            settings,
+        ] = await Promise.all([
+            Page.findOne({
+                isHomePage: true,
+                status: CONTENT_STATUS.PUBLISHED,
+                isDeleted: false,
+            })
+                .select(publicFields)
+                .populate("featuredImage"),
+
+            Service.find({
+                featured: true,
+                status: CONTENT_STATUS.PUBLISHED,
+                isDeleted: false,
+            })
+                .select(publicFields)
+                .populate("featuredImage")
+                .sort({
+                    sortOrder: 1,
+                })
+                .limit(6),
+
+            Portfolio.find({
+                featured: true,
+                status: CONTENT_STATUS.PUBLISHED,
+                isDeleted: false,
+            })
+                .select(publicFields)
+                .populate("featuredImage")
+                .sort({
+                    sortOrder: 1,
+                })
+                .limit(6),
+
+            Industry.find({
+                featured: true,
+                status: CONTENT_STATUS.PUBLISHED,
+                isDeleted: false,
+            })
+                .select(publicFields)
+                .populate("featuredImage")
+                .sort({
+                    sortOrder: 1,
+                })
+                .limit(6),
+
+            Testimonial.find({
+                featured: true,
+                status: CONTENT_STATUS.PUBLISHED,
+                isDeleted: false,
+            })
+                .select(publicFields)
+                .populate("avatar")
+                .sort({
+                    sortOrder: 1,
+                })
+                .limit(6),
+
+            TeamMember.find({
+                featured: true,
+                status: CONTENT_STATUS.PUBLISHED,
+                isDeleted: false,
+            })
+                .select(publicFields)
+                .populate("avatar")
+                .sort({
+                    sortOrder: 1,
+                })
+                .limit(8),
+
+            Blog.find({
+                status: CONTENT_STATUS.PUBLISHED,
+                isDeleted: false,
+            })
+                .select(publicFields)
+                .populate("featuredImage")
+                .sort({
+                    publishedAt: -1,
+                    createdAt: -1,
+                })
+                .limit(3),
+
+            Settings.findOne({
+                isDeleted: false,
+            })
+                .select(
+                    "branding contact social seo features"
+                )
+                .populate(
+                    "branding.logo branding.favicon"
+                ),
+        ]);
+
+        return {
+            page,
+            services,
+            portfolio,
+            industries,
+            testimonials,
+            teamMembers,
+            blogs,
+            settings,
+        };
     }
 
     async getSettings() {
