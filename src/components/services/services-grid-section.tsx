@@ -1,0 +1,137 @@
+
+"use client";
+
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+
+const services = [
+  {
+    title: "AI Solutions",
+    description:
+      "Custom AI systems, chatbots, automation, LLM integrations and intelligent business workflows.",
+    image:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=900&q=80",
+    href: "/services/ai-solutions",
+  },
+  {
+    title: "Web Development",
+    description:
+      "Modern websites and enterprise web applications using Next.js, React and scalable architecture.",
+    image:
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
+    href: "/services/web-development",
+  },
+  {
+    title: "Mobile Applications",
+    description:
+      "Cross-platform mobile apps with beautiful UI, excellent performance and native experience.",
+    image:
+      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=900&q=80",
+    href: "/services/mobile-development",
+  },
+  {
+    title: "UI / UX Design",
+    description:
+      "Research-driven interfaces focused on usability, accessibility and premium user experience.",
+    image:
+      "https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=900&q=80",
+    href: "/services/ui-ux-design",
+  },
+  {
+    title: "Cloud & DevOps",
+    description:
+      "CI/CD, Docker, Kubernetes, AWS deployment, monitoring and infrastructure automation.",
+    image:
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=900&q=80",
+    href: "/services/cloud-devops",
+  },
+  {
+    title: "Blockchain",
+    description:
+      "Smart contracts, Web3 applications, token systems and enterprise blockchain development.",
+    image:
+      "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=900&q=80",
+    href: "/services/blockchain",
+  },
+];
+
+export default function ServicesGridSection() {
+  return (
+    <section className="bg-white py-24">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto mb-16 max-w-3xl text-center"
+        >
+          <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
+            What We Do
+          </span>
+
+          <h2 className="mt-6 text-4xl font-black text-slate-900 md:text-5xl">
+            Digital Services Built
+            <span className="block text-blue-600">
+              Around Your Business Goals
+            </span>
+          </h2>
+
+          <p className="mt-6 text-lg leading-8 text-slate-600">
+            Every service is carefully engineered to deliver measurable
+            business value with outstanding performance, scalability and
+            exceptional user experience.
+          </p>
+        </motion.div>
+
+        {/* Cards */}
+        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          {services.map((service, index) => (
+            <motion.div
+              key={service.title}
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{
+                duration: 0.6,
+                delay: index * 0.08,
+              }}
+              className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-blue-200 hover:shadow-2xl"
+            >
+              <div className="relative overflow-hidden">
+                <img
+                  src={service.image}
+                  alt={service.title}
+                  className="h-64 w-full object-cover transition duration-700 group-hover:scale-110"
+                />
+
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+              </div>
+
+              <div className="space-y-5 p-8">
+                <h3 className="text-2xl font-bold text-slate-900 transition-colors group-hover:text-blue-600">
+                  {service.title}
+                </h3>
+
+                <p className="leading-7 text-slate-600">
+                  {service.description}
+                </p>
+
+                <Link
+                  href={service.href}
+                  className="inline-flex items-center gap-2 font-semibold text-blue-600 transition-all group-hover:gap-4"
+                >
+                  Learn More
+
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -6,7 +6,7 @@ export default function HeroIllustration() {
 
       <div className="absolute inset-0 rounded-[40px] bg-blue-500/20 blur-3xl" />
 
-      <div className="relative aspect-square overflow-hidden rounded-[40px] border bg-white shadow-2xl">
+      <div className="relative h-140 w-190 overflow-hidden rounded-[40px] border bg-[#C5DEDA] shadow-2xl">
 
         <Image
           src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy5vblLpCKcR3_xl62UyN0Bjc4bIFFzHOkdpBvzcyPFw&s=10"
@@ -15,6 +15,7 @@ export default function HeroIllustration() {
           sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover transition duration-700 hover:scale-105"
           priority
+    
         />
 
       </div>
