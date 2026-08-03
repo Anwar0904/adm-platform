@@ -16,6 +16,7 @@ export const navigation = [
     {
         title: "Services",
         mega: true,
+        href:"/services",
 
         items: [
             {

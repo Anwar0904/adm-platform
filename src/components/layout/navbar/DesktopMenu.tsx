@@ -19,8 +19,10 @@ export default function DesktopMenu() {
                         <>
 
                             <button className="flex items-center gap-1 font-medium">
-
+                                <Link href={item.href!} className="font-medium transition hover:text-blue-600">
+                                
                                 {item.title}
+                                </Link>
 
                                 <ChevronDown
                                     size={16}
