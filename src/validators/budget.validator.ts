@@ -3,12 +3,8 @@ import { z } from "zod";
 
 
 
-export const BudgetSchema =
-    z.object({
-        amount: z
-            .number()
-            .min(0),
-
-        currency: z
-            .enum(Currency),
-    });
+export const BudgetSchema = z.object({
+    amount: z.number(),
+    currency: z.enum(Currency),
+    type: z.enum(["fixed", "range"]),
+});

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import QueryClientProviderWrapper from "@/components/QueryClientProviderWrapper";
 
 export const metadata: Metadata = {
     title: {
@@ -25,7 +26,11 @@ export default function RootLayout({
             lang="en"
             suppressHydrationWarning
         >
-            <body>{children}</body>
+            <body>
+                <QueryClientProviderWrapper>
+                    {children}
+                </QueryClientProviderWrapper>
+            </body>
         </html>
     );
 }

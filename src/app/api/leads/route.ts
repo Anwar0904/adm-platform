@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 
+import { connectDB } from "@/lib/db";
 
 import {
     CreateLeadSchema,
@@ -52,10 +53,7 @@ export async function POST(
     request: NextRequest
 ) {
     try {
-        const user =
-            await requireAuth(
-                request
-            );
+        await connectDB();
 
         const body =
             await request.json();
@@ -66,10 +64,7 @@ export async function POST(
             );
 
         const lead =
-            await leadService.createLead(
-                data,
-                user?._id?.toString()
-            );
+            await leadService.createLead(data);
 
         return ApiResponse.created(
             lead,
