@@ -45,8 +45,8 @@ const company = [
         href: "/team",
     },
     {
-        name: "Blog",
-        href: "/blog",
+        name: "Blogs",
+        href: "/blogs",
     },
 ];
 
@@ -169,7 +169,7 @@ export default function Footer() {
 
                             <div className="mt-10 flex gap-4">
 
-                                {socials.map((social,index) => {
+                                {socials.map((social, index) => {
 
                                     const Icon = social.icon;
 

@@ -16,7 +16,7 @@ export const navigation = [
     {
         title: "Services",
         mega: true,
-        href:"/services",
+        href: "/services",
 
         items: [
             {
@@ -72,8 +72,8 @@ export const navigation = [
     },
 
     {
-        title: "Blog",
-        href: "/blog",
+        title: "Blogs",
+        href: "/blogs",
         icon: Newspaper,
     },
 

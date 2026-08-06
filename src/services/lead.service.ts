@@ -193,6 +193,21 @@ class LeadService {
             company: data.company,
 
             website: data.website,
+            projectTitle:
+                data.projectTitle ?? "",
+
+            projectType:
+                data.projectType ?? "",
+
+            timeline:
+                data.timeline ?? "",
+
+            preferredContact:
+                data.preferredContact ??
+                "email",
+
+            attachments:
+                data.attachments ?? [],
 
             message: data.message,
 

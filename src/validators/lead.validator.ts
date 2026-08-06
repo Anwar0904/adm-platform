@@ -31,6 +31,27 @@ export const CreateLeadSchema =
             .string()
             .optional(),
 
+
+        projectTitle: z
+            .string()
+            .optional(),
+
+        projectType: z
+            .string()
+            .optional(),
+
+        timeline: z
+            .string()
+            .optional(),
+
+        preferredContact: z
+            .enum(["email", "phone", "video-call"])
+            .optional(),
+
+        attachments: z
+            .array(z.string())
+            .default([]),
+
         interestedServices: z
             .array(z.string())
             .default([]),

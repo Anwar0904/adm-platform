@@ -57,6 +57,39 @@ const LeadSchema =
         trim: true,
       },
 
+      projectTitle: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      projectType: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      timeline: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+
+      preferredContact: {
+        type: String,
+        enum: [
+          "email",
+          "phone",
+          "video-call",
+        ],
+        default: "email",
+      },
+
+      attachments: {
+        type: [String],
+        default: [],
+      },
+
       interestedServices: [
         {
           type: Schema.Types.ObjectId,

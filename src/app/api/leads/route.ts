@@ -55,13 +55,84 @@ export async function POST(
     try {
         await connectDB();
 
-        const body =
-            await request.json();
+        const contentType =
+            request.headers.get(
+                "content-type"
+            ) ?? "";
 
-        const data =
-            CreateLeadSchema.parse(
+        let data;
+
+        if (
+            contentType.includes(
+                "multipart/form-data"
+            )
+        ) {
+            const formData =
+                await request.formData();
+
+            const parsedBody: Record<
+                string,
+                unknown
+            > = {
+                attachments: [] as string[],
+            };
+
+            formData.forEach(
+                (value, key) => {
+                    if (key === "attachments") {
+                        const attachments =
+                            Array.isArray(
+                                parsedBody.attachments
+                            )
+                                ? (parsedBody.attachments as string[])
+                                : [];
+
+                        parsedBody.attachments = [
+                            ...attachments,
+                            value instanceof File
+                                ? value.name
+                                : String(value),
+                        ];
+                    } else {
+                        parsedBody[key] =
+                            value instanceof File
+                                ? value.name
+                                : String(value);
+                    }
+                }
+            );
+
+            const budgetValue =
+                parsedBody.budget;
+
+            if (
+                typeof budgetValue === "string" &&
+                budgetValue.trim() !== ""
+            ) {
+                parsedBody.budget = {
+                    amount: 0,
+                    currency: "USD",
+                    type: "fixed",
+                };
+            } else if (
+                budgetValue === undefined ||
+                budgetValue === null ||
+                budgetValue === ""
+            ) {
+                parsedBody.budget = null;
+            }
+
+            data = CreateLeadSchema.parse(
+                parsedBody
+            );
+        } else {
+            const body =
+                await request.json();
+
+            data = CreateLeadSchema.parse(
                 body
             );
+        }
 
         const lead =
             await leadService.createLead(data);

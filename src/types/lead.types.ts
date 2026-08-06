@@ -22,6 +22,16 @@ export interface ILead {
   status: LeadStatus;
   assignedTo?: Types.ObjectId | null;
   notes: INote[];
+  projectTitle?: string;
+
+  projectType?: string;
+
+  timeline?: string;
+
+  preferredContact?: "email" | "phone" | "video-call";
+
+  attachments?: string[];
+
   contactedAt?: Date | null;
   convertedAt?: Date | null;
   createdBy?: Types.ObjectId | null;
