@@ -47,6 +47,7 @@ export interface BlogPost {
     content: string;
 
     featuredImage: string;
+    coverImage: string;
 
     featured: boolean;
 
@@ -189,6 +190,8 @@ export const blogPosts: BlogPost[] = [
 
         featuredImage:
             "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&q=80",
+        coverImage:
+            "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1600&q=80",
 
         featured: true,
 
@@ -277,6 +280,8 @@ export const blogPosts: BlogPost[] = [
 
         featuredImage:
             "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1600&q=80",
+        coverImage:
+            "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1600&q=80",
 
         featured: false,
 
@@ -354,6 +359,8 @@ export const blogPosts: BlogPost[] = [
         content: demoContent,
 
         featuredImage:
+            "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80",
+        coverImage:
             "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1600&q=80",
 
         featured: false,
@@ -433,6 +440,8 @@ export const blogPosts: BlogPost[] = [
 
         featuredImage:
             "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=80",
+        coverImage:
+            "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&q=80",
 
         featured: false,
 
@@ -509,6 +518,8 @@ export const blogPosts: BlogPost[] = [
         content: demoContent,
 
         featuredImage:
+            "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&q=80",
+        coverImage:
             "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1600&q=80",
 
         featured: false,
@@ -587,6 +598,8 @@ export const blogPosts: BlogPost[] = [
         content: demoContent,
 
         featuredImage:
+            "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1600&q=80",
+        coverImage:
             "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1600&q=80",
 
         featured: false,

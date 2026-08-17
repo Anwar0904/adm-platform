@@ -52,7 +52,7 @@ export default function FeaturedArticlesSection() {
                     </div>
 
                     <Link
-                        href="/blog"
+                        href="/blogs"
                         className="group inline-flex items-center font-semibold text-blue-600"
                     >
                         View all articles
@@ -151,7 +151,7 @@ export default function FeaturedArticlesSection() {
                                         </div>
 
                                         <Link
-                                            href={`/blog/${article.slug}`}
+                                            href={`/blogs/${article.slug}`}
                                             className="group inline-flex items-center rounded-2xl bg-blue-600 px-7 py-3 font-semibold text-white transition hover:bg-blue-700"
                                         >
                                             Read Article
@@ -204,7 +204,7 @@ export default function FeaturedArticlesSection() {
                                         <span>{article.readingTime} min</span>
 
                                         <Link
-                                            href={`/blog/${article.slug}`}
+                                            href={`/blogs/${article.slug}`}
                                             className="font-semibold text-blue-600"
                                         >
                                             Read →

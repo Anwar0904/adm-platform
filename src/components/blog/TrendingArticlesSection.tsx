@@ -46,7 +46,7 @@ export default function TrendingArticlesSection() {
                     </div>
 
                     <Link
-                        href="/blog"
+                        href="/blogs"
                         className="group inline-flex items-center font-semibold text-blue-600"
                     >
                         Explore All
@@ -158,7 +158,7 @@ export default function TrendingArticlesSection() {
                                 </div>
 
                                 <Link
-                                    href={`/blog/${article.slug}`}
+                                    href={`/blogs/${article.slug}`}
                                     className="group/link inline-flex items-center font-semibold text-blue-600"
                                 >
                                     Read Article
@@ -202,7 +202,7 @@ export default function TrendingArticlesSection() {
                         </div>
 
                         <Link
-                            href="/blog"
+                            href="/blogs"
                             className="rounded-2xl bg-blue-600 px-8 py-4 font-semibold text-white transition hover:bg-blue-700"
                         >
                             Browse Library

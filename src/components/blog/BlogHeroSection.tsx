@@ -201,7 +201,7 @@ export default function BlogHeroSection() {
                                     </div>
 
                                     <Link
-                                        href={`/blog/${featured.slug}`}
+                                        href={`/blogs/${featured.slug}`}
                                         className="group inline-flex items-center font-semibold text-blue-600"
                                     >
                                         Read Story

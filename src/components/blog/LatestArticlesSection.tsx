@@ -64,7 +64,7 @@ export default function LatestArticlesSection() {
                     </div>
 
                     <Link
-                        href="/blog"
+                        href="/blogs"
                         className="group inline-flex items-center font-semibold text-blue-600"
                     >
                         Browse Archive
@@ -188,7 +188,7 @@ export default function LatestArticlesSection() {
                                     </div>
 
                                     <Link
-                                        href={`/blog/${article.slug}`}
+                                        href={`/blogs/${article.slug}`}
                                         className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition hover:bg-blue-600 hover:text-white"
                                     >
                                         <ChevronRight size={20} />

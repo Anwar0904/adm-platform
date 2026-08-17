@@ -128,7 +128,7 @@ export default function BlogFinalCTASection() {
                         </Link>
 
                         <Link
-                            href="/blog"
+                            href="/blogs"
                             className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-10 py-5 text-lg font-semibold text-white backdrop-blur transition hover:bg-white/20"
                         >
                             Explore More Articles

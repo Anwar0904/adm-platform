@@ -140,7 +140,7 @@ export default function ReadingTopicsSection() {
                                 }}
                             >
                                 <Link
-                                    href={`/blog?topic=${topic.title}`}
+                                    href={`/blogs?topic=${topic.title}`}
                                     className="group relative flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white p-8 shadow-sm transition-all duration-500 hover:border-blue-200 hover:shadow-2xl"
                                 >
                                     {/* Glow */}
@@ -211,7 +211,7 @@ export default function ReadingTopicsSection() {
                         </div>
 
                         <Link
-                            href="/blog"
+                            href="/blogs"
                             className="rounded-2xl bg-blue-600 px-8 py-4 font-semibold text-white transition hover:bg-blue-700"
                         >
                             Browse All Topics
