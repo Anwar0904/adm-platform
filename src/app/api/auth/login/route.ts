@@ -9,27 +9,54 @@ import AuthService from "@/services/auth/auth.service";
 
 import { LoginSchema } from "@/validators/auth/login.validator";
 
-export async function POST(request: NextRequest) {
+import { setAuthCookies } from "@/lib/auth/auth-cookies";
+
+export async function POST(
+  request: NextRequest
+) {
   try {
-    // Connect Database
     await connectDB();
 
-    // Get Request Body
-    const body = await request.json();
+    const body =
+      await request.json();
 
-    // Validate Request
-    const data = LoginSchema.parse(body);
+    const data =
+      LoginSchema.parse(body);
 
-    // Login User
-    const result = await AuthService.login(data);
-    console.log("===== ROUTE RESULT =====");
-    console.log(result);
-    // Return Success Response
+    const result =
+      await AuthService.login(
+        data
+      );
+
+    const accessToken =
+      result.tokens?.accessToken;
+
+    const refreshToken =
+      result.tokens?.refreshToken;
+
+    if (
+      !accessToken ||
+      !refreshToken
+    ) {
+      throw new Error(
+        "Authentication tokens were not generated."
+      );
+    }
+
+    await setAuthCookies(
+      accessToken,
+      refreshToken
+    );
+
     return ApiResponse.success(
-      result,
+      {
+        user: result.user,
+      },
       "Login successful."
     );
   } catch (error) {
-    return ApiErrorHandler.handle(error);
+    return ApiErrorHandler.handle(
+      error
+    );
   }
 }

@@ -27,8 +27,6 @@ export async function POST(
                 data.email
             );
 
-        console.log(result)
-
         return ApiResponse.success(
             result,
             "Password reset token generated."

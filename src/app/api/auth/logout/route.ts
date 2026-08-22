@@ -1,39 +1,14 @@
-import { NextRequest } from "next/server";
-
-import { connectDB } from "@/lib/db";
-
-import { ApiResponse } from "@/lib/api/api-response";
-import { ApiErrorHandler } from "@/lib/api/api-error";
-
-import AuthService from "@/services/auth/auth.service";
+import { NextResponse } from "next/server";
 
 import {
-    LogoutSchema,
-} from "@/validators/auth/logout.validator";
+    clearAuthCookies,
+} from "@/lib/auth/auth-cookies";
 
-export async function POST(
-    request: NextRequest
-) {
-    try {
-        await connectDB();
+export async function POST() {
+    await clearAuthCookies();
 
-        const body =
-            await request.json();
-
-        const data =
-            LogoutSchema.parse(body);
-
-        await AuthService.logout(
-            data.refreshToken
-        );
-
-        return ApiResponse.success(
-            null,
-            "Logout successful."
-        );
-    } catch (error) {
-        return ApiErrorHandler.handle(
-            error
-        );
-    }
+    return NextResponse.json({
+        success: true,
+        message: "Logged out successfully.",
+    });
 }
