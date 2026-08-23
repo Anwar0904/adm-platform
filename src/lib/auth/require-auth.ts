@@ -28,7 +28,16 @@ export async function requireAuth(
     const authorization =
         request.headers.get(
             "authorization"
-        );
+        ) ?? (() => {
+            const accessToken =
+                request.cookies.get(
+                    "adm_access_token"
+                )?.value;
+
+            return accessToken
+                ? `Bearer ${accessToken}`
+                : null;
+        })();
 
     if (!authorization) {
         throw new ApiError(

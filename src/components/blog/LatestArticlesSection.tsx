@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
     ArrowRight,
@@ -12,12 +12,17 @@ import {
     ChevronRight,
 } from "lucide-react";
 
-import { blogPosts } from "@/lib/dummy/blog";
+import { fetchPublicBlogs } from "@/lib/api/blog";
 
 const PAGE_SIZE = 6;
 
 export default function LatestArticlesSection() {
+    const [blogPosts, setBlogPosts] = useState<Awaited<ReturnType<typeof fetchPublicBlogs>>>([]);
     const [visible, setVisible] = useState(PAGE_SIZE);
+
+    useEffect(() => {
+        fetchPublicBlogs("limit=100").then(setBlogPosts).catch(() => setBlogPosts([]));
+    }, []);
 
     const articles = useMemo(
         () =>
@@ -26,7 +31,7 @@ export default function LatestArticlesSection() {
                     new Date(b.publishedAt).getTime() -
                     new Date(a.publishedAt).getTime()
             ),
-        []
+        [blogPosts]
     );
 
     const displayed = articles.slice(0, visible);

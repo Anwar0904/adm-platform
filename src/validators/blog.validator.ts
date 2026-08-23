@@ -4,6 +4,40 @@ import {
     CONTENT_STATUS,
 } from "@/enums";
 
+const SeoSchema = z.object({
+    metaTitle: z
+        .string()
+        .min(1)
+        .max(200),
+
+    metaDescription: z
+        .string()
+        .min(1)
+        .max(500),
+
+    keywords: z
+        .array(z.string())
+        .default([]),
+
+    canonicalUrl: z
+        .string()
+        .optional(),
+
+    robots: z
+        .string()
+        .optional(),
+});
+
+const BlogFaqSchema = z.object({
+    question: z
+        .string()
+        .min(1),
+
+    answer: z
+        .string()
+        .min(1),
+});
+
 export const CreateBlogSchema =
     z.object({
         title: z
@@ -13,12 +47,17 @@ export const CreateBlogSchema =
 
         slug: z
             .string()
-            .optional(),
+            .min(3)
+            .max(220)
+            .regex(
+                /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+                "Invalid blog slug."
+            ),
 
         excerpt: z
             .string()
-            .max(500)
-            .optional(),
+            .min(10)
+            .max(500),
 
         content: z
             .string()
@@ -26,63 +65,49 @@ export const CreateBlogSchema =
 
         featuredImage: z
             .string()
-            .optional(),
+            .optional()
+            .nullable(),
 
         gallery: z
             .array(z.string())
-            .optional()
             .default([]),
 
-        category: z.string(),
+        category: z
+            .string()
+            .min(1),
 
         tags: z
             .array(z.string())
             .default([]),
 
-        author: z.string(),
-
-        seo: z.object({
-            metaTitle: z.string(),
-            metaDescription: z.string(),
-            keywords: z
-                .array(z.string())
-                .default([]),
-
-            canonicalUrl: z
-                .string()
-                .optional(),
-
-            robots: z
-                .string()
-                .optional(),
-        }),
+        seo: SeoSchema,
 
         faqs: z
-            .array(
-                z.object({
-                    question: z.string(),
-
-                    answer: z.string(),
-                })
-            )
+            .array(BlogFaqSchema)
             .default([]),
 
         featured: z
             .boolean()
-            .optional(),
+            .default(false),
 
         status: z
             .enum(
                 Object.values(
                     CONTENT_STATUS
-                ) as [string, ...string[]]
+                ) as [
+                    string,
+                    ...string[]
+                ]
             )
-            .optional(),
+            .default(
+                CONTENT_STATUS.DRAFT
+            ),
 
         publishedAt: z
             .string()
             .datetime()
-            .optional(),
+            .optional()
+            .nullable(),
     });
 
 export const UpdateBlogSchema =
@@ -125,7 +150,10 @@ export const BlogQuerySchema =
             .enum(
                 Object.values(
                     CONTENT_STATUS
-                ) as [string, ...string[]]
+                ) as [
+                    string,
+                    ...string[]
+                ]
             )
             .optional(),
 

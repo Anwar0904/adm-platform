@@ -17,7 +17,13 @@ export async function GET(
             await requireAuth(request);
 
         return ApiResponse.success(
-            user,
+            {
+                _id: user._id.toString(),
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar?.url ?? null,
+                jobTitle: null,
+            },
             "Current user fetched successfully."
         );
     } catch (error) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
     Edit3,
@@ -10,7 +10,7 @@ import {
     Search,
     Star,
     Trash2,
-    TrendingUp,
+    // TrendingUp,
 } from "lucide-react";
 
 type BlogStatus = "Published" | "Draft";
@@ -25,7 +25,7 @@ type Blog = {
     coverImage: string;
     status: BlogStatus;
     featured: boolean;
-    trending: boolean;
+    // trending: boolean;
     views: number;
     readingTime: number;
     publishedAt: string;
@@ -44,7 +44,7 @@ const initialBlogs: Blog[] = [
             "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=900&q=80",
         status: "Published",
         featured: true,
-        trending: true,
+        // trending: false,
         views: 8250,
         readingTime: 8,
         publishedAt: "2026-07-25",
@@ -61,7 +61,7 @@ const initialBlogs: Blog[] = [
             "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900&q=80",
         status: "Published",
         featured: false,
-        trending: true,
+        // trending: true,
         views: 6400,
         readingTime: 6,
         publishedAt: "2026-07-20",
@@ -78,7 +78,7 @@ const initialBlogs: Blog[] = [
             "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=80",
         status: "Published",
         featured: false,
-        trending: false,
+        // trending: false,
         views: 4100,
         readingTime: 7,
         publishedAt: "2026-07-15",
@@ -95,38 +95,78 @@ const initialBlogs: Blog[] = [
             "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=900&q=80",
         status: "Draft",
         featured: false,
-        trending: false,
+        // trending: false,
         views: 0,
         readingTime: 9,
         publishedAt: "2026-07-10",
     },
 ];
 
-const categories = [
-    "All Categories",
-    "Artificial Intelligence",
-    "Web Development",
-    "Next.js",
-    "UI / UX",
-    "Cloud",
-    "DevOps",
-    "Blockchain",
-    "Digital Marketing",
-    "Case Studies",
-    "Company News",
-];
-
 export default function BlogsManagement() {
     const router = useRouter();
 
     const [blogs, setBlogs] =
-        useState<Blog[]>(initialBlogs);
+        useState<Blog[]>([]);
+
+    const [loading, setLoading] = useState(true);
+
+    async function loadBlogs() {
+        try {
+            const response = await fetch("/api/blogs?limit=100", { cache: "no-store" });
+            if (!response.ok) throw new Error("Unable to load blogs.");
+
+            const body = await response.json() as {
+                data?: {
+                    blogs?: Array<{
+                        _id: string;
+                        title: string;
+                        slug: string;
+                        excerpt?: string;
+                        category?: { name?: string };
+                        author?: { name?: string };
+                        featuredImage?: { url?: string; path?: string } | null;
+                        status: "published" | "draft";
+                        featured: boolean;
+                        views: number;
+                        readingTime: number;
+                        publishedAt?: string | null;
+                    }>
+                };
+            };
+
+            setBlogs((body.data?.blogs ?? []).map((blog) => ({
+                id: blog._id,
+                title: blog.title,
+                slug: blog.slug,
+                excerpt: blog.excerpt ?? "",
+                category: blog.category?.name ?? "Uncategorized",
+                author: blog.author?.name ?? "ADM Team",
+                coverImage: blog.featuredImage?.url ?? blog.featuredImage?.path ?? "https://images.unsplash.com/photo-1499756823156-0c0c9d8c2c5a?w=900&q=80",
+                status: blog.status === "published" ? "Published" : "Draft",
+                featured: blog.featured,
+                views: blog.views,
+                readingTime: blog.readingTime,
+                publishedAt: blog.publishedAt ?? "",
+            })));
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadBlogs().catch(() => setBlogs([]));
+    }, []);
 
     const [search, setSearch] =
         useState("");
 
     const [category, setCategory] =
         useState("All Categories");
+
+    const categories = useMemo(() => [
+        "All Categories",
+        ...Array.from(new Set(blogs.map((blog) => blog.category).filter(Boolean))),
+    ], [blogs]);
 
     const [status, setStatus] =
         useState<"All" | BlogStatus>("All");
@@ -201,66 +241,39 @@ export default function BlogsManagement() {
             0
         );
 
-    function toggleStatus(id: string) {
-        setBlogs((current) =>
-            current.map((blog) =>
-                blog.id === id
-                    ? {
-                        ...blog,
-                        status:
-                            blog.status ===
-                                "Published"
-                                ? "Draft"
-                                : "Published",
-                    }
-                    : blog
-            )
-        );
+    async function toggleStatus(id: string) {
+        const blog = blogs.find((item) => item.id === id);
+        if (!blog) return;
+
+        await fetch(`/api/blogs/${id}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: blog.status === "Published" ? "draft" : "published" }),
+        });
+        await loadBlogs();
     }
 
-    function toggleFeatured(id: string) {
-        setBlogs((current) =>
-            current.map((blog) =>
-                blog.id === id
-                    ? {
-                        ...blog,
-                        featured:
-                            !blog.featured,
-                    }
-                    : blog
-            )
-        );
+    async function toggleFeatured(id: string) {
+        await fetch(`/api/blogs/${id}/featured`, { method: "PATCH" });
+        await loadBlogs();
     }
 
-    function toggleTrending(id: string) {
-        setBlogs((current) =>
-            current.map((blog) =>
-                blog.id === id
-                    ? {
-                        ...blog,
-                        trending:
-                            !blog.trending,
-                    }
-                    : blog
-            )
-        );
-    }
-
-    function deleteBlog() {
+    async function deleteBlog() {
         if (!deleteId) return;
 
-        setBlogs((current) =>
-            current.filter(
-                (blog) =>
-                    blog.id !== deleteId
-            )
-        );
-
+        await fetch(`/api/blogs/${deleteId}`, { method: "DELETE" });
         setDeleteId(null);
+        await loadBlogs();
     }
 
     return (
         <div className="mx-auto max-w-7xl space-y-6">
+            {loading && (
+                <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
+                    Loading blogs...
+                </p>
+            )}
+
             {/* Header */}
 
             <section className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -491,11 +504,6 @@ export default function BlogsManagement() {
                                                 blog.id
                                             )
                                         }
-                                        onTrending={() =>
-                                            toggleTrending(
-                                                blog.id
-                                            )
-                                        }
                                     />
                                 )
                             )}
@@ -573,12 +581,6 @@ export default function BlogsManagement() {
                                         />
                                     )}
 
-                                    {blog.trending && (
-                                        <TrendingUp
-                                            size={14}
-                                            className="text-orange-500"
-                                        />
-                                    )}
                                 </div>
 
                                 <div className="flex gap-1">
@@ -686,7 +688,6 @@ function BlogRow({
     onDelete,
     onStatus,
     onFeatured,
-    onTrending,
 }: {
     blog: Blog;
     menuId: string | null;
@@ -697,7 +698,6 @@ function BlogRow({
     onDelete: () => void;
     onStatus: () => void;
     onFeatured: () => void;
-    onTrending: () => void;
 }) {
     return (
         <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
@@ -719,12 +719,6 @@ function BlogRow({
                                 />
                             )}
 
-                            {blog.trending && (
-                                <TrendingUp
-                                    size={14}
-                                    className="shrink-0 text-orange-500"
-                                />
-                            )}
                         </div>
 
                         <p className="mt-1 truncate text-sm font-black text-slate-900">
@@ -810,13 +804,6 @@ function BlogRow({
                             className="w-full rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
                         >
                             Toggle Featured
-                        </button>
-
-                        <button
-                            onClick={onTrending}
-                            className="w-full rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                        >
-                            Toggle Trending
                         </button>
 
                         <button

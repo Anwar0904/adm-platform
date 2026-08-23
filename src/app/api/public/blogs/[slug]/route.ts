@@ -1,11 +1,13 @@
 import { NextRequest } from "next/server";
 
+import { connectDB } from "@/lib/db";
+
 import PublicContentService from "@/services/public-content.service";
 
 import { PublicSlugSchema } from "@/validators/public.validator";
 
 import { ApiResponse } from "@/lib/api/api-response";
-import { handleApiError } from "@/lib/api/error-handler";
+import { ApiErrorHandler } from "@/lib/api/api-error";
 
 type Params = {
     params: Promise<{
@@ -18,6 +20,8 @@ export async function GET(
     { params }: Params
 ) {
     try {
+        await connectDB();
+
         const { slug } =
             PublicSlugSchema.parse(
                 await params
@@ -32,6 +36,6 @@ export async function GET(
             blog
         );
     } catch (error) {
-        return handleApiError(error);
+        return ApiErrorHandler.handle(error);
     }
 }

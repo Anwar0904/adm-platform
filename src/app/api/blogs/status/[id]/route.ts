@@ -2,16 +2,29 @@ import { NextRequest } from "next/server";
 
 import { connectDB } from "@/lib/db";
 
-import { ApiResponse } from "@/lib/api/api-response";
-import { ApiErrorHandler } from "@/lib/api/api-error";
+import {
+    ApiResponse,
+} from "@/lib/api/api-response";
+
+import {
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
 
 import blogService from "@/services/blog.service";
 
-import { requirePermission } from "@/middleware/auth.middleware";
+import {
+    ChangeBlogStatusSchema,
+} from "@/validators/blog.validator";
 
-import { PERMISSIONS } from "@/constants/permissions";
+import {
+    requirePermission,
+} from "@/middleware/auth.middleware";
 
-import { CONTENT_STATUS } from "@/enums";
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
+
+import { ContentStatus } from "@/enums";
 
 interface Params {
     params: Promise<{
@@ -31,14 +44,23 @@ export async function PATCH(
             PERMISSIONS.BLOG_UPDATE
         );
 
-        const body = await request.json();
+        const { id } =
+            await params;
 
-        const { id } = await params;
+        const body =
+            await request.json();
+
+        const {
+            status,
+        } =
+            ChangeBlogStatusSchema.parse(
+                body
+            );
 
         const blog =
             await blogService.changeStatus(
                 id,
-                body.status as (typeof CONTENT_STATUS)[keyof typeof CONTENT_STATUS]
+                status as ContentStatus
             );
 
         return ApiResponse.success(
@@ -46,6 +68,8 @@ export async function PATCH(
             "Blog status updated successfully."
         );
     } catch (error) {
-        return ApiErrorHandler.handle(error);
+        return ApiErrorHandler.handle(
+            error
+        );
     }
 }

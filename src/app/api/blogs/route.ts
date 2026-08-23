@@ -16,7 +16,9 @@ import {
     requirePermission,
 } from "@/middleware/auth.middleware";
 
-import { PERMISSIONS } from "@/constants/permissions";
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
 
 export async function GET(
     request: NextRequest
@@ -32,7 +34,9 @@ export async function GET(
         const query =
             BlogQuerySchema.parse(
                 Object.fromEntries(
-                    request.nextUrl.searchParams
+                    request.nextUrl
+                        .searchParams
+                        .entries()
                 )
             );
 

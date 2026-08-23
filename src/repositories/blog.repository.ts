@@ -7,14 +7,8 @@ import { Blog } from "@/models/blog.model";
 import { IBlog } from "@/types/blog.types";
 
 class BlogRepository {
-    async create(
-        data: Partial<IBlog>
-    ) {
-        return Blog.create(data);
-    }
-
-    async findById(id: string) {
-        return Blog.findById(id)
+    private populateQuery(query: any) {
+        return query
             .populate(
                 "category",
                 "name slug"
@@ -43,35 +37,66 @@ class BlogRepository {
             );
     }
 
+    async create(
+        data: Partial<IBlog>
+    ) {
+        const blog =
+            await Blog.create(data);
+
+        return this.findById(
+            blog._id.toString()
+        );
+    }
+
+    async findById(
+        id: string
+    ) {
+        return this.populateQuery(
+            Blog.findById(id)
+        );
+    }
+
     async findBySlug(
         slug: string
     ) {
-        return Blog.findOne({
-            slug,
-            isDeleted: false,
-        });
+        return this.populateQuery(
+            Blog.findOne({
+                slug,
+                isDeleted: false,
+                status: "published",
+            })
+        );
+    }
+
+    async findAdminBySlug(
+        slug: string
+    ) {
+        return this.populateQuery(
+            Blog.findOne({
+                slug,
+                isDeleted: false,
+            })
+        );
     }
 
     async slugExists(
         slug: string,
         excludeId?: string
     ) {
-        const filter: {
-            slug: string;
-            isDeleted: boolean;
-            _id?: {
-                $ne: Types.ObjectId;
-            };
-        } = {
+        const filter: Record<
+            string,
+            unknown
+        > = {
             slug,
             isDeleted: false,
         };
 
         if (excludeId) {
             filter._id = {
-                $ne: new Types.ObjectId(
-                    excludeId
-                ),
+                $ne:
+                    new Types.ObjectId(
+                        excludeId
+                    ),
             };
         }
 
@@ -90,23 +115,15 @@ class BlogRepository {
             SortOrder
         >
     ) {
-        return Blog.find(filter)
-            .populate(
-                "category",
-                "name slug"
-            )
-            .populate(
-                "author",
-                "name"
-            )
-            .populate(
-                "featuredImage"
-            )
-            .sort(sort)
-            .skip(
-                (page - 1) * limit
-            )
-            .limit(limit);
+        return this.populateQuery(
+            Blog.find(filter)
+                .sort(sort)
+                .skip(
+                    (page - 1) *
+                    limit
+                )
+                .limit(limit)
+        );
     }
 
     async countBlogs(
@@ -124,27 +141,37 @@ class BlogRepository {
         id: string,
         data: Partial<IBlog>
     ) {
-        return Blog.findByIdAndUpdate(
+        return this.findByIdAndUpdate(
             id,
-            data,
-            {
-                new: true,
-                runValidators: true,
-            }
+            data
+        );
+    }
+
+    async findByIdAndUpdate(
+        id: string,
+        data: Partial<IBlog>
+    ) {
+        return this.populateQuery(
+            Blog.findByIdAndUpdate(
+                id,
+                data,
+                {
+                    new: true,
+                    runValidators: true,
+                }
+            )
         );
     }
 
     async delete(
         id: string
     ) {
-        return Blog.findByIdAndUpdate(
+        return this.findByIdAndUpdate(
             id,
             {
                 isDeleted: true,
-                deletedAt: new Date(),
-            },
-            {
-                new: true,
+                deletedAt:
+                    new Date(),
             }
         );
     }
@@ -152,14 +179,11 @@ class BlogRepository {
     async restore(
         id: string
     ) {
-        return Blog.findByIdAndUpdate(
+        return this.findByIdAndUpdate(
             id,
             {
                 isDeleted: false,
                 deletedAt: null,
-            },
-            {
-                new: true,
             }
         );
     }
@@ -168,13 +192,10 @@ class BlogRepository {
         id: string,
         status: string
     ) {
-        return Blog.findByIdAndUpdate(
+        return this.findByIdAndUpdate(
             id,
             {
-                status,
-            },
-            {
-                new: true,
+                status: status as IBlog["status"],
             }
         );
     }
@@ -183,13 +204,10 @@ class BlogRepository {
         id: string,
         featured: boolean
     ) {
-        return Blog.findByIdAndUpdate(
+        return this.findByIdAndUpdate(
             id,
             {
                 featured,
-            },
-            {
-                new: true,
             }
         );
     }

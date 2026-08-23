@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -11,12 +12,18 @@ import {
     Sparkles,
 } from "lucide-react";
 
-import { blogPosts } from "@/lib/dummy/blog";
-
-const featured = blogPosts.filter((p) => p.featured);
-const secondary = blogPosts.filter((p) => !p.featured).slice(0, 3);
+import { fetchPublicBlogs } from "@/lib/api/blog";
 
 export default function FeaturedArticlesSection() {
+    const [blogPosts, setBlogPosts] = useState<Awaited<ReturnType<typeof fetchPublicBlogs>>>([]);
+
+    useEffect(() => {
+        fetchPublicBlogs("limit=100").then(setBlogPosts).catch(() => setBlogPosts([]));
+    }, []);
+
+    const featured = blogPosts.filter((post) => post.featured);
+    const secondary = blogPosts.filter((post) => !post.featured).slice(0, 3);
+
     return (
         <section
             id="featured"
@@ -34,7 +41,7 @@ export default function FeaturedArticlesSection() {
                     <div className="max-w-3xl">
                         <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
                             <Sparkles size={15} />
-                            Editor's Choice
+                            Editor&apos;s Choice
                         </span>
 
                         <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">

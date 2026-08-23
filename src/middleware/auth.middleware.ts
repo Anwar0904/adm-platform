@@ -23,7 +23,17 @@ export async function requireAuth(
     request: NextRequest
 ) {
     const authorization =
-        request.headers.get("authorization");
+        request.headers.get("authorization") ??
+        (() => {
+            const accessToken =
+                request.cookies.get(
+                    "adm_access_token"
+                )?.value;
+
+            return accessToken
+                ? `Bearer ${accessToken}`
+                : null;
+        })();
 
     return getUserFromToken(
         authorization

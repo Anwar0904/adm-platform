@@ -91,7 +91,7 @@ export default function BlogFiltersSection() {
                             <option>Latest</option>
                             <option>Trending</option>
                             <option>Most Viewed</option>
-                            <option>Editor's Pick</option>
+                            <option>Editor&apos;s Pick</option>
                         </select>
 
                         <button className="flex h-14 items-center justify-center rounded-2xl bg-blue-600 px-7 font-semibold text-white transition hover:bg-blue-700">
@@ -126,8 +126,8 @@ export default function BlogFiltersSection() {
                                         setSelectedCategory(category)
                                     }
                                     className={`whitespace-nowrap rounded-full px-5 py-2 text-sm font-semibold transition ${selectedCategory === category
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                                         }`}
                                 >
                                     {category}

@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import {
-    getBlogBySlug,
-    getRelatedBlogs,
-} from "@/lib/dummy/blog";
+import { connectDB } from "@/lib/db";
+import PublicContentService from "@/services/public-content.service";
+import { normalizeBlog, type ApiBlog } from "@/lib/api/blog";
 
 import BlogHero from "@/components/blog-detail/blog-hero";
 import ArticleLayout from "@/components/blog-detail/article-layout";
@@ -26,8 +25,9 @@ export async function generateMetadata({
 }: Props): Promise<Metadata> {
     const { slug } = await params;
 
-    const blog =
-        getBlogBySlug(slug);
+    await connectDB();
+    const record = await PublicContentService.getBlogBySlug(slug);
+    const blog = normalizeBlog(record.toJSON() as unknown as ApiBlog);
 
     if (!blog) {
         return {
@@ -60,15 +60,23 @@ export default async function BlogDetailsPage({
     const { slug } =
         await params;
 
-    const blog =
-        getBlogBySlug(slug);
-
-    if (!blog) {
+    await connectDB();
+    let record;
+    try {
+        record = await PublicContentService.getBlogBySlug(slug);
+    } catch {
         notFound();
     }
 
-    const related =
-        getRelatedBlogs(slug);
+    const blog = normalizeBlog(record.toJSON() as unknown as ApiBlog);
+
+    const relatedResult = await PublicContentService.getBlogs({
+        page: 1,
+        limit: 4,
+    });
+    const related = relatedResult.blogs
+        .map((item) => normalizeBlog(item.toJSON() as unknown as ApiBlog))
+        .filter((item) => item.slug !== slug);
 
     return (
         <>

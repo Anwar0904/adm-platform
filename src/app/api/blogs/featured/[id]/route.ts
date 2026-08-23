@@ -2,14 +2,23 @@ import { NextRequest } from "next/server";
 
 import { connectDB } from "@/lib/db";
 
-import { ApiResponse } from "@/lib/api/api-response";
-import { ApiErrorHandler } from "@/lib/api/api-error";
+import {
+    ApiResponse,
+} from "@/lib/api/api-response";
+
+import {
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
 
 import blogService from "@/services/blog.service";
 
-import { requirePermission } from "@/middleware/auth.middleware";
+import {
+    requirePermission,
+} from "@/middleware/auth.middleware";
 
-import { PERMISSIONS } from "@/constants/permissions";
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
 
 interface Params {
     params: Promise<{
@@ -29,16 +38,21 @@ export async function PATCH(
             PERMISSIONS.BLOG_UPDATE
         );
 
-        const { id } = await params;
+        const { id } =
+            await params;
 
         const blog =
-            await blogService.toggleFeatured(id);
+            await blogService.toggleFeatured(
+                id
+            );
 
         return ApiResponse.success(
             blog,
             "Blog featured status updated successfully."
         );
     } catch (error) {
-        return ApiErrorHandler.handle(error);
+        return ApiErrorHandler.handle(
+            error
+        );
     }
 }

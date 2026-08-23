@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -11,13 +12,17 @@ import {
     Flame,
 } from "lucide-react";
 
-import { blogPosts } from "@/lib/dummy/blog";
-
-const trendingPosts = blogPosts
-    .filter((post) => post.trending)
-    .sort((a, b) => b.views - a.views);
+import { fetchPublicBlogs } from "@/lib/api/blog";
 
 export default function TrendingArticlesSection() {
+    const [blogPosts, setBlogPosts] = useState<Awaited<ReturnType<typeof fetchPublicBlogs>>>([]);
+
+    useEffect(() => {
+        fetchPublicBlogs("limit=100").then(setBlogPosts).catch(() => setBlogPosts([]));
+    }, []);
+
+    const trendingPosts = [...blogPosts].sort((a, b) => b.views - a.views).slice(0, 3);
+
     return (
         <section className="relative overflow-hidden py-24 lg:py-32">
             <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-500/5 blur-[140px]" />

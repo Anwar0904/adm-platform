@@ -95,6 +95,7 @@ class PublicContentService {
         if (!blog) throw new ApiError(404, "Blog not found.");
 
         await Blog.updateOne({ _id: blog._id }, { $inc: { views: 1 } });
+        blog.views += 1;
         return blog;
     }
 

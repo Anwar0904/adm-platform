@@ -162,7 +162,7 @@ export default function BlogFAQSection() {
                         </h3>
 
                         <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-600">
-                            Contact the ADM team and we'll be happy to answer
+                            Contact the ADM team and we&apos;ll be happy to answer
                             your questions about our articles, technologies or
                             services.
                         </p>

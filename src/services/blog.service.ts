@@ -1,8 +1,11 @@
-import { SortOrder, Types } from "mongoose";
+import {
+    SortOrder,
+    Types,
+} from "mongoose";
 
-import { Blog } from "@/models/blog.model";
-
-import { ApiError } from "@/lib/api/api-error";
+import {
+    ApiError,
+} from "@/lib/api/api-error";
 
 import BlogRepository from "@/repositories/blog.repository";
 
@@ -17,22 +20,49 @@ import {
     BlogQuery,
 } from "@/types/blog.management";
 
-import { generateSlug } from "@/utils/slugify";
+import {
+    IBlog,
+} from "@/types/blog.types";
+
+import {
+    generateSlug,
+} from "@/utils/slugify";
 
 class BlogService {
+    private ensureObjectId(
+        id: string,
+        message = "Invalid blog ID."
+    ) {
+        if (
+            !Types.ObjectId.isValid(id)
+        ) {
+            throw new ApiError(
+                400,
+                message
+            );
+        }
+    }
 
-    async getBlogs(query: BlogQuery) {
-        const page = Number(query.page ?? 1);
+    async getBlogs(
+        query: BlogQuery
+    ) {
+        const page =
+            Number(query.page ?? 1);
 
-        const limit = Number(query.limit ?? 10);
+        const limit =
+            Number(query.limit ?? 10);
 
-        const filter: Record<string, unknown> = {
+        const filter: Record<
+            string,
+            unknown
+        > = {
             isDeleted: false,
         };
 
         if (query.search) {
             filter.$text = {
-                $search: query.search,
+                $search:
+                    query.search,
             };
         }
 
@@ -61,11 +91,13 @@ class BlogService {
         }
 
         if (query.status) {
-            filter.status = query.status;
+            filter.status =
+                query.status;
         }
 
         if (
-            query.featured !== undefined
+            query.featured !==
+            undefined
         ) {
             filter.featured =
                 query.featured;
@@ -81,39 +113,37 @@ class BlogService {
         if (query.sort) {
             const field =
                 query.sort.replace(
-                    "-",
+                    /^-/,
                     ""
                 );
 
-            const direction =
-                query.sort.startsWith(
-                    "-"
-                )
-                    ? -1
-                    : 1;
-
             sort = {
-                [field]: direction,
+                [field]:
+                    query.sort.startsWith(
+                        "-"
+                    )
+                        ? -1
+                        : 1,
             };
         }
 
-        const [blogs, total] =
-            await Promise.all([
-                BlogRepository.getBlogs(
-                    filter,
-                    page,
-                    limit,
-                    sort
-                ),
-
-                BlogRepository.countBlogs(
-                    filter
-                ),
-            ]);
+        const [
+            blogs,
+            total,
+        ] = await Promise.all([
+            BlogRepository.getBlogs(
+                filter,
+                page,
+                limit,
+                sort
+            ),
+            BlogRepository.countBlogs(
+                filter
+            ),
+        ]);
 
         return {
             blogs,
-
             pagination: {
                 page,
                 limit,
@@ -126,7 +156,11 @@ class BlogService {
         };
     }
 
-    async getBlogById(id: string) {
+    async getBlogById(
+        id: string
+    ) {
+        this.ensureObjectId(id);
+
         const blog =
             await BlogRepository.findById(
                 id
@@ -145,18 +179,38 @@ class BlogService {
         return blog;
     }
 
+    async getBlogBySlug(
+        slug: string
+    ) {
+        const blog =
+            await BlogRepository.findBySlug(
+                slug
+            );
+
+        if (!blog) {
+            throw new ApiError(
+                404,
+                "Blog not found."
+            );
+        }
+
+        await BlogRepository.incrementViews(
+            blog._id.toString()
+        );
+
+        blog.views += 1;
+
+        return blog;
+    }
+
     async createBlog(
         data: CreateBlogInput,
         userId: string
     ) {
         const slug =
             data.slug
-                ? generateSlug(
-                    data.slug
-                )
-                : generateSlug(
-                    data.title
-                );
+                ? generateSlug(data.slug)
+                : generateSlug(data.title);
 
         const exists =
             await BlogRepository.slugExists(
@@ -170,20 +224,36 @@ class BlogService {
             );
         }
 
+        const isPublished =
+            data.status ===
+            CONTENT_STATUS.PUBLISHED;
+
         return BlogRepository.create({
-            ...data,
+            title: data.title,
 
             slug,
+
+            excerpt: data.excerpt,
+
+            content: data.content,
 
             category:
                 new Types.ObjectId(
                     data.category
                 ),
 
+            tags:
+                data.tags?.map(
+                    (id) =>
+                        new Types.ObjectId(id)
+                ) ?? [],
+
+            /*
+             * IMPORTANT:
+             * Author is ALWAYS the authenticated user.
+             */
             author:
-                new Types.ObjectId(
-                    data.author
-                ),
+                new Types.ObjectId(userId),
 
             featuredImage:
                 data.featuredImage
@@ -195,52 +265,45 @@ class BlogService {
             gallery:
                 data.gallery?.map(
                     (id) =>
-                        new Types.ObjectId(
-                            id
-                        )
+                        new Types.ObjectId(id)
                 ) ?? [],
 
-            tags:
-                data.tags.map(
-                    (id) =>
-                        new Types.ObjectId(
-                            id
-                        )
-                ),
+            seo: data.seo,
+
+            faqs: data.faqs ?? [],
 
             createdBy:
-                new Types.ObjectId(
-                    userId
-                ),
+                new Types.ObjectId(userId),
 
             updatedBy:
-                new Types.ObjectId(
-                    userId
-                ),
+                new Types.ObjectId(userId),
 
             status:
                 (data.status ??
                     CONTENT_STATUS.DRAFT) as ContentStatus,
 
             featured:
-                data.featured ??
-                false,
+                data.featured ?? false,
 
             views: 0,
 
             readingTime: Math.max(
                 1,
                 Math.ceil(
-                    data.content.split(
-                        /\s+/
-                    ).length / 200
+                    data.content
+                        .split(/\s+/)
+                        .filter(Boolean)
+                        .length / 200
                 )
             ),
 
             publishedAt:
-                data.status ===
-                    CONTENT_STATUS.PUBLISHED
-                    ? new Date()
+                isPublished
+                    ? data.publishedAt
+                        ? new Date(
+                            data.publishedAt
+                        )
+                        : new Date()
                     : null,
 
             isDeleted: false,
@@ -254,8 +317,16 @@ class BlogService {
         data: UpdateBlogInput,
         userId: string
     ) {
+        this.ensureObjectId(id);
+        this.ensureObjectId(
+            userId,
+            "Invalid user ID."
+        );
+
         const blog =
-            await Blog.findById(id);
+            await BlogRepository.findById(
+                id
+            );
 
         if (
             !blog ||
@@ -267,85 +338,84 @@ class BlogService {
             );
         }
 
-        const slug =
-            data.slug
-                ? generateSlug(
-                    data.slug
-                )
-                : data.title
-                    ? generateSlug(
-                        data.title
-                    )
-                    : blog.slug;
+        let slug =
+            blog.slug;
 
-        const exists =
-            await BlogRepository.slugExists(
-                slug,
-                id
-            );
+        if (
+            data.slug ||
+            data.title
+        ) {
+            slug =
+                generateSlug(
+                    data.slug ??
+                    data.title ??
+                    blog.slug
+                );
 
-        if (exists) {
-            throw new ApiError(
-                409,
-                "Slug already exists."
-            );
+            const exists =
+                await BlogRepository.slugExists(
+                    slug,
+                    id
+                );
+
+            if (exists) {
+                throw new ApiError(
+                    409,
+                    "Slug already exists."
+                );
+            }
         }
 
-        if (data.title)
-            blog.title =
-                data.title;
+        const update: Partial<IBlog> =
+            {};
 
-        blog.slug = slug;
+        if (
+            data.title !==
+            undefined
+        ) {
+            update.title =
+                data.title;
+        }
+
+        update.slug = slug;
 
         if (
             data.excerpt !==
             undefined
-        )
-            blog.excerpt =
+        ) {
+            update.excerpt =
                 data.excerpt;
+        }
 
         if (
             data.content !==
             undefined
         ) {
-            blog.content =
+            update.content =
                 data.content;
 
-            blog.readingTime =
-                Math.max(
-                    1,
-                    Math.ceil(
-                        data.content.split(
-                            /\s+/
-                        ).length /
-                        200
-                    )
+            update.readingTime =
+                this.calculateReadingTime(
+                    data.content
                 );
         }
 
         if (
-            data.category
+            data.category !==
+            undefined
         ) {
-            blog.category =
+            update.category =
                 new Types.ObjectId(
                     data.category
                 );
         }
 
-        if (
-            data.author
-        ) {
-            blog.author =
-                new Types.ObjectId(
-                    data.author
-                );
-        }
 
         if (
             data.featuredImage !==
             undefined
         ) {
-            blog.featuredImage =
+            update.featuredImage =
                 data.featuredImage
                     ? new Types.ObjectId(
                         data.featuredImage
@@ -353,8 +423,11 @@ class BlogService {
                     : null;
         }
 
-        if (data.gallery) {
-            blog.gallery =
+        if (
+            data.gallery !==
+            undefined
+        ) {
+            update.gallery =
                 data.gallery.map(
                     (id) =>
                         new Types.ObjectId(
@@ -363,8 +436,11 @@ class BlogService {
                 );
         }
 
-        if (data.tags) {
-            blog.tags =
+        if (
+            data.tags !==
+            undefined
+        ) {
+            update.tags =
                 data.tags.map(
                     (id) =>
                         new Types.ObjectId(
@@ -376,53 +452,86 @@ class BlogService {
         if (
             data.seo !==
             undefined
-        )
-            blog.seo = data.seo;
+        ) {
+            update.seo =
+                data.seo;
+        }
 
         if (
             data.faqs !==
             undefined
-        )
-            blog.faqs =
+        ) {
+            update.faqs =
                 data.faqs;
+        }
 
         if (
             data.featured !==
             undefined
-        )
-            blog.featured =
+        ) {
+            update.featured =
                 data.featured;
+        }
 
         if (
             data.status !==
             undefined
         ) {
-            blog.status =
+            update.status =
                 data.status as ContentStatus;
 
             if (
                 data.status ===
-                CONTENT_STATUS.PUBLISHED &&
-                !blog.publishedAt
+                CONTENT_STATUS.PUBLISHED
             ) {
-                blog.publishedAt =
-                    new Date();
+                update.publishedAt =
+                    data.publishedAt
+                        ? new Date(
+                            data.publishedAt
+                        )
+                        : blog.publishedAt ??
+                        new Date();
             }
+
+            if (
+                data.status !==
+                CONTENT_STATUS.PUBLISHED
+            ) {
+                update.publishedAt =
+                    null;
+            }
+        } else if (
+            data.publishedAt !==
+            undefined
+        ) {
+            update.publishedAt =
+                data.publishedAt
+                    ? new Date(
+                        data.publishedAt
+                    )
+                    : null;
         }
 
-        blog.updatedBy =
+        update.updatedBy =
             new Types.ObjectId(
                 userId
             );
 
-        await blog.save();
-
-        return blog;
+        return BlogRepository.update(
+            id,
+            update
+        );
     }
 
-    async deleteBlog(id: string) {
+    async deleteBlog(
+        id: string
+    ) {
+        this.ensureObjectId(id);
+
         const blog =
-            await Blog.findById(id);
+            await BlogRepository.findById(
+                id
+            );
 
         if (
             !blog ||
@@ -434,18 +543,20 @@ class BlogService {
             );
         }
 
-        blog.isDeleted = true;
-        blog.deletedAt =
-            new Date();
-
-        await blog.save();
-
-        return true;
+        return BlogRepository.delete(
+            id
+        );
     }
 
-    async restoreBlog(id: string) {
+    async restoreBlog(
+        id: string
+    ) {
+        this.ensureObjectId(id);
+
         const blog =
-            await Blog.findById(id);
+            await BlogRepository.findById(
+                id
+            );
 
         if (!blog) {
             throw new ApiError(
@@ -454,70 +565,109 @@ class BlogService {
             );
         }
 
-        blog.isDeleted = false;
-        blog.deletedAt = null;
+        if (!blog.isDeleted) {
+            throw new ApiError(
+                400,
+                "Blog is not deleted."
+            );
+        }
 
-        await blog.save();
-
-        return blog;
+        return BlogRepository.restore(
+            id
+        );
     }
 
     async changeStatus(
         id: string,
         status: ContentStatus
     ) {
-        const blog =
-            await Blog.findById(id);
+        this.ensureObjectId(id);
 
-        if (!blog) {
+        const blog =
+            await BlogRepository.findById(
+                id
+            );
+
+        if (
+            !blog ||
+            blog.isDeleted
+        ) {
             throw new ApiError(
                 404,
                 "Blog not found."
             );
         }
 
-        blog.status = status;
-
         if (
             status ===
-            CONTENT_STATUS.PUBLISHED &&
-            !blog.publishedAt
+            CONTENT_STATUS.PUBLISHED
         ) {
-            blog.publishedAt =
-                new Date();
+            return BlogRepository.changeStatus(
+                id,
+                status
+            );
         }
 
-        await blog.save();
-
-        return blog;
+        return BlogRepository.update(
+            id,
+            {
+                status,
+                publishedAt: null,
+            }
+        );
     }
 
     async toggleFeatured(
         id: string
     ) {
-        const blog =
-            await Blog.findById(id);
+        this.ensureObjectId(id);
 
-        if (!blog) {
+        const blog =
+            await BlogRepository.findById(
+                id
+            );
+
+        if (
+            !blog ||
+            blog.isDeleted
+        ) {
             throw new ApiError(
                 404,
                 "Blog not found."
             );
         }
 
-        blog.featured =
-            !blog.featured;
-
-        await blog.save();
-
-        return blog;
+        return BlogRepository.toggleFeatured(
+            id,
+            !blog.featured
+        );
     }
 
     async incrementViews(
         id: string
     ) {
+        this.ensureObjectId(id);
+
         await BlogRepository.incrementViews(
             id
+        );
+    }
+
+    private calculateReadingTime(
+        content: string
+    ) {
+        const words =
+            content
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean)
+                .length;
+
+        return Math.max(
+            1,
+            Math.ceil(
+                words / 200
+            )
         );
     }
 }

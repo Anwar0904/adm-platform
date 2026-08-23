@@ -108,7 +108,7 @@ export default function ReadingTopicsSection() {
 
                     <p className="mt-6 text-lg leading-9 text-slate-600">
                         Discover articles grouped by technologies and
-                        industries you're interested in.
+                        industries you&apos;re interested in.
                     </p>
                 </div>
 
