@@ -16,6 +16,7 @@ import {
 
 import { NoteSchema } from "@/schemas/note.schema";
 
+import "@/models/lead.model"
 const ConsultationSchema =
   new Schema<IConsultation, ConsultationModel>(
     {

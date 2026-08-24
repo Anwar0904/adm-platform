@@ -164,6 +164,12 @@ export default function AdminShell({
         setSidebarOpen(false);
     }, [pathname]);
 
+    // The login page shares the /admin route segment, but it must not inherit
+    // the authenticated admin chrome.
+    if (pathname === "/admin/login") {
+        return <>{children}</>;
+    }
+
     async function logout() {
         try {
             await fetch(
