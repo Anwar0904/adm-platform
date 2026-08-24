@@ -308,6 +308,7 @@ class PublicContentService {
     async submitContact(data: PublicContactInput) {
         return LeadService.createLead({
             ...data,
+            attachments: [],
             source: LEAD_SOURCE.WEBSITE,
             notes: [],
         });

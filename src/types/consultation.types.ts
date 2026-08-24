@@ -45,13 +45,13 @@ export interface IConsultation {
   updatedAt: Date;
 }
 
-export interface ConsultationMethods {}
+export interface ConsultationMethods {
+  isUpcoming: boolean;
+}
 
 export interface ConsultationStatics {
   upcoming(): Promise<ConsultationDocument[]>;
-
   completed(): Promise<ConsultationDocument[]>;
-
   byLead(
     lead: Types.ObjectId
   ): Promise<ConsultationDocument[]>;
@@ -66,7 +66,7 @@ export type ConsultationDocument =
 export type ConsultationModel =
   Model<
     IConsultation,
-    {},
+    object,
     ConsultationMethods
   > &
   ConsultationStatics;

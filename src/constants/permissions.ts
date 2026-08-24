@@ -29,6 +29,11 @@ export const PERMISSIONS = {
   CATEGORY_UPDATE: "category.update",
   CATEGORY_DELETE: "category.delete",
 
+  CONSULTATION_READ: "consultation.read",
+  CONSULTATION_CREATE: "consultation.create",
+  CONSULTATION_UPDATE: "consultation.update",
+  CONSULTATION_DELETE: "consultation.delete",
+
   TAG_READ: "tag.read",
   TAG_CREATE: "tag.create",
   TAG_UPDATE: "tag.update",

@@ -1,6 +1,6 @@
 import {
-    model,
-    models,
+  model,
+  models,
   Schema,
 } from "mongoose";
 
@@ -17,104 +17,104 @@ import {
 import { NoteSchema } from "@/schemas/note.schema";
 
 const ConsultationSchema =
-new Schema<IConsultation, ConsultationModel>(
-{
-  lead: {
-    type: Schema.Types.ObjectId,
-    ref: "Lead",
-    required: true,
-  },
+  new Schema<IConsultation, ConsultationModel>(
+    {
+      lead: {
+        type: Schema.Types.ObjectId,
+        ref: "Lead",
+        required: true,
+      },
 
-  assignedTo: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default: null,
-  },
+      assignedTo: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
 
-  scheduledAt: {
-    type: Date,
-    required: true,
-  },
+      scheduledAt: {
+        type: Date,
+        required: true,
+      },
 
-  duration: {
-    type: Number,
-    default: 30,
-    min: 15,
-  },
+      duration: {
+        type: Number,
+        default: 30,
+        min: 15,
+      },
 
-  meetingType: {
-    type: String,
-    enum: Object.values(MEETING_TYPE),
-    required: true,
-  },
+      meetingType: {
+        type: String,
+        enum: Object.values(MEETING_TYPE),
+        required: true,
+      },
 
-  meetingLink: {
-    type: String,
-    default: "",
-    trim: true,
-  },
+      meetingLink: {
+        type: String,
+        default: "",
+        trim: true,
+      },
 
-  location: {
-    type: String,
-    default: "",
-    trim: true,
-  },
+      location: {
+        type: String,
+        default: "",
+        trim: true,
+      },
 
-  agenda: {
-    type: String,
-    default: "",
-    trim: true,
-  },
+      agenda: {
+        type: String,
+        default: "",
+        trim: true,
+      },
 
-  notes: {
-    type: [NoteSchema],
-    default: [],
-  },
+      notes: {
+        type: [NoteSchema],
+        default: [],
+      },
 
-  status: {
-    type: String,
-    enum: Object.values(CONSULTATION_STATUS),
-    default: CONSULTATION_STATUS.SCHEDULED,
-  },
+      status: {
+        type: String,
+        enum: Object.values(CONSULTATION_STATUS),
+        default: CONSULTATION_STATUS.SCHEDULED,
+      },
 
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default: null,
-  },
+      createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
 
-  updatedBy: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default: null,
-  },
+      updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
 
-  isDeleted: {
-    type: Boolean,
-    default: false,
-  },
+      isDeleted: {
+        type: Boolean,
+        default: false,
+      },
 
-  deletedAt: {
-    type: Date,
-    default: null,
-  },
-},
-{
-  timestamps: true,
+      deletedAt: {
+        type: Date,
+        default: null,
+      },
+    },
+    {
+      timestamps: true,
 
-  versionKey: false,
+      versionKey: false,
 
-  collection: "consultations",
+      collection: "consultations",
 
-  toJSON: {
-    virtuals: true,
-  },
+      toJSON: {
+        virtuals: true,
+      },
 
-  toObject: {
-    virtuals: true,
-  },
-}
-);
+      toObject: {
+        virtuals: true,
+      },
+    }
+  );
 
 ConsultationSchema.index({
   lead: 1,
@@ -168,14 +168,21 @@ ConsultationSchema.pre("save", function () {
   }
 });
 
-ConsultationSchema.static("upcoming", function () {
-  return this.find({
-    scheduledAt: {
-      $gte: new Date(),
-    },
-    isDeleted: false,
-  });
-});
+ConsultationSchema.static(
+  "upcoming",
+  function () {
+    return this.find({
+      scheduledAt: {
+        $gte: new Date(),
+      },
+      status:
+        CONSULTATION_STATUS.SCHEDULED,
+      isDeleted: false,
+    }).sort({
+      scheduledAt: 1,
+    });
+  }
+);
 
 ConsultationSchema.static("completed", function () {
   return this.find({
@@ -197,3 +204,15 @@ export const Consultation =
     "Consultation",
     ConsultationSchema
   );
+
+ConsultationSchema.method(
+  "isUpcoming",
+  function () {
+    return (
+      !this.isDeleted &&
+      this.scheduledAt > new Date() &&
+      this.status ===
+      CONSULTATION_STATUS.SCHEDULED
+    );
+  }
+);
