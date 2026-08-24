@@ -1,43 +1,78 @@
-import { roleController } from "@/controllers/role.controller";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
-export async function GET() {
+import { connectDB } from "@/lib/db";
+
+import {
+    ApiResponse,
+} from "@/lib/api/api-response";
+
+import {
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
+
+import {
+    requirePermission,
+} from "@/middleware/auth.middleware";
+
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
+
+import {
+    roleController,
+} from "@/controllers/role.controller";
+
+export async function GET(
+    request: NextRequest
+) {
     try {
-        const roles = await roleController.findAll();
+        await connectDB();
 
-        return NextResponse.json({
-            success: true,
-            data: roles,
-        });
+        await requirePermission(
+            request,
+            PERMISSIONS.ROLE_READ
+        );
+
+        const result =
+            await roleController.findAll(
+                request
+            );
+
+        return ApiResponse.success(
+            result,
+            "Roles fetched successfully."
+        );
     } catch (error) {
-        return NextResponse.json(
-            {
-                success: false,
-                message: (error as Error).message,
-            },
-            { status: 500 }
+        return ApiErrorHandler.handle(
+            error
         );
     }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(
+    request: NextRequest
+) {
     try {
-        const role = await roleController.create(req);
+        await connectDB();
 
-        return NextResponse.json(
-            {
-                success: true,
-                data: role,
-            },
-            { status: 201 }
+        await requirePermission(
+            request,
+            PERMISSIONS.ROLE_CREATE
+        );
+
+        const role =
+            await roleController.create(
+                request
+            );
+
+        return ApiResponse.success(
+            role,
+            "Role created successfully.",
+            201
         );
     } catch (error) {
-        return NextResponse.json(
-            {
-                success: false,
-                message: (error as Error).message,
-            },
-            { status: 400 }
+        return ApiErrorHandler.handle(
+            error
         );
     }
 }

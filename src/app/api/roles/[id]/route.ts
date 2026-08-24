@@ -1,74 +1,122 @@
-import { roleController } from "@/controllers/role.controller";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+
+import { connectDB } from "@/lib/db";
+
+import {
+    ApiResponse,
+} from "@/lib/api/api-response";
+
+import {
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
+
+import {
+    requirePermission,
+} from "@/middleware/auth.middleware";
+
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
+
+import {
+    roleController,
+} from "@/controllers/role.controller";
+
+interface Params {
+    params: Promise<{
+        id: string;
+    }>;
+}
 
 export async function GET(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: Params
 ) {
     try {
-        const { id } = await params;
+        await connectDB();
 
-        const role = await roleController.findById(id);
+        await requirePermission(
+            request,
+            PERMISSIONS.ROLE_READ
+        );
 
-        return NextResponse.json({
-            success: true,
-            data: role,
-        });
+        const { id } =
+            await params;
+
+        const role =
+            await roleController.findById(
+                id
+            );
+
+        return ApiResponse.success(
+            role,
+            "Role fetched successfully."
+        );
     } catch (error) {
-        return NextResponse.json(
-            {
-                success: false,
-                message: (error as Error).message,
-            },
-            { status: 404 }
+        return ApiErrorHandler.handle(
+            error
         );
     }
 }
 
 export async function PATCH(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: Params
 ) {
     try {
-        const { id } = await params;
+        await connectDB();
 
-        const role = await roleController.update(req, id);
+        await requirePermission(
+            request,
+            PERMISSIONS.ROLE_UPDATE
+        );
 
-        return NextResponse.json({
-            success: true,
-            data: role,
-        });
+        const { id } =
+            await params;
+
+        const role =
+            await roleController.update(
+                request,
+                id
+            );
+
+        return ApiResponse.success(
+            role,
+            "Role updated successfully."
+        );
     } catch (error) {
-        return NextResponse.json(
-            {
-                success: false,
-                message: (error as Error).message,
-            },
-            { status: 400 }
+        return ApiErrorHandler.handle(
+            error
         );
     }
 }
 
 export async function DELETE(
-    req: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    request: NextRequest,
+    { params }: Params
 ) {
     try {
-        const { id } = await params;
+        await connectDB();
 
-        await roleController.delete(id);
+        await requirePermission(
+            request,
+            PERMISSIONS.ROLE_DELETE
+        );
 
-        return NextResponse.json({
-            success: true,
-            message: "Role deleted successfully.",
-        });
+        const { id } =
+            await params;
+
+        await roleController.delete(
+            id
+        );
+
+        return ApiResponse.success(
+            null,
+            "Role deleted successfully."
+        );
     } catch (error) {
-        return NextResponse.json(
-            {
-                success: false,
-                message: (error as Error).message,
-            },
-            { status: 400 }
+        return ApiErrorHandler.handle(
+            error
         );
     }
 }

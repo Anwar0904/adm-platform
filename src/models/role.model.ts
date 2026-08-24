@@ -8,60 +8,42 @@ const RoleSchema = new Schema<IRole, RoleModel>(
   {
     name: {
       type: String,
-
       required: [true, "Role name is required"],
-
       trim: true,
-
       minlength: 2,
-
       maxlength: 50,
-      lowercase: true
+      lowercase: true,
+      unique: true,
     },
 
     description: {
       type: String,
-
       trim: true,
-
+      maxlength: 500,
       default: "",
     },
 
     permissions: {
-      type: [
-        {
-          type: String,
-          enum: PermissionValues,
-          trim: true
-        },
-      ],
-
+      type: [String],
+      enum: PermissionValues,
       default: [],
-
-      required: true,
     },
 
     isDefault: {
       type: Boolean,
-
       default: false,
     },
 
     status: {
       type: String,
-
       enum: Object.values(USER_STATUS),
-
       default: USER_STATUS.ACTIVE,
-
       index: true,
     },
   },
   {
     timestamps: true,
-
     versionKey: false,
-
     collection: "roles",
 
     toJSON: {
@@ -71,35 +53,12 @@ const RoleSchema = new Schema<IRole, RoleModel>(
     toObject: {
       virtuals: true,
     },
-  },
+  }
 );
 
 RoleSchema.index(
-  {
-    name: 1,
-  },
-  {
-    unique: true,
-  },
-);
-
-
-RoleSchema.method(
-  "hasPermission",
-
-  function (permission: string) {
-    return this.permissions.includes(permission);
-  }
-);
-
-RoleSchema.static(
-  "findByName",
-
-  function (name: string) {
-    return this.findOne({
-      name,
-    });
-  }
+  { name: 1 },
+  { unique: true }
 );
 
 RoleSchema.methods.hasPermission = function (
@@ -108,11 +67,17 @@ RoleSchema.methods.hasPermission = function (
   return this.permissions.includes(permission);
 };
 
+RoleSchema.statics.findByName = function (
+  name: string
+) {
+  return this.findOne({
+    name: name.trim().toLowerCase(),
+  });
+};
+
 export const Role =
   (models.Role as RoleModel) ||
   model<IRole, RoleModel>(
     "Role",
     RoleSchema
   );
-
-
