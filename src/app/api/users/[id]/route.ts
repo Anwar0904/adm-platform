@@ -66,7 +66,7 @@ export async function PATCH(
 
         await requirePermission(
             request,
-            PERMISSIONS.USER_WRITE
+            PERMISSIONS.USER_UPDATE
         );
 
         const body =

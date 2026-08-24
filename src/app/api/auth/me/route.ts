@@ -16,12 +16,17 @@ export async function GET(
         const user =
             await requireAuth(request);
 
+        const avatar =
+            typeof user.avatar === "string"
+                ? user.avatar
+                : user.avatar?.url ?? null;
+
         return ApiResponse.success(
             {
                 _id: user._id.toString(),
                 name: user.name,
                 email: user.email,
-                avatar: user.avatar?.url ?? null,
+                avatar,
                 jobTitle: null,
             },
             "Current user fetched successfully."

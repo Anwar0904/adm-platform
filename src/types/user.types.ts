@@ -9,13 +9,18 @@ import { IImage } from "./image.types";
 import { RoleDocument } from "./role.types";
 
 export interface IUser {
-  name: string;
+  /** Legacy authentication field retained for existing accounts. */
+  name?: string;
+
+  firstName?: string;
+
+  lastName?: string;
 
   email: string;
 
   password: string;
 
-  avatar?: IImage | null;
+  avatar?: IImage | string | null;
 
   role: Types.ObjectId | RoleDocument;
 
@@ -25,13 +30,22 @@ export interface IUser {
 
   passwordResetExpires?: Date | null;
 
-  emailVerified: boolean;
+  /** Legacy verification field retained for existing accounts. */
+  emailVerified?: boolean;
+
+  isEmailVerified?: boolean;
 
   emailVerificationToken?: string | null;
 
   emailVerificationExpires?: Date | null;
 
   lastLogin?: Date | null;
+
+  passwordChangedAt?: Date | null;
+
+  phone?: string | null;
+
+  jobTitle?: string | null;
 
   createdBy?: Types.ObjectId | null;
 
@@ -54,12 +68,19 @@ export type UserDocument =
   HydratedDocument<IUser, UserMethods>;
 
 export type UserModel =
-  Model<IUser, {}, UserMethods> &
+  Model<IUser, object, UserMethods> &
   UserStatics;
 
 
 
 export interface UpdateUserInput {
-  name?: string;
-  avatar?: IImage | null;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  role?: string;
+  status?: UserStatus;
+  phone?: string | null;
+  jobTitle?: string | null;
+  avatar?: IImage | string | null;
+  isEmailVerified?: boolean;
 }

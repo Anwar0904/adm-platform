@@ -1,72 +1,123 @@
-import mongoose from "mongoose";
-
-import { ApiError } from "@/lib/api/api-error";
-
-import UserRepository from "@/repositories/user.repository";
+import {
+    SortOrder,
+    Types,
+} from "mongoose";
 
 import { PasswordService } from "@/lib/auth/bcrypt";
+import { ApiError } from "@/lib/api/api-error";
+
+import { User } from "@/models/user.model";
+import { Role } from "@/models/role.model";
+
+import UserRepository from "@/repositories/user.repository";
 
 import {
     CreateUserInput,
     UpdateUserInput,
     UserQuery,
 } from "@/types/user-management";
-import { User } from "@/models/user.model";
-import { USER_STATUS } from "@/enums";
+
+import {
+    USER_STATUS,
+} from "@/enums";
+
+import {
+    isSuperAdmin,
+} from "@/lib/auth/super-admin";
 
 class UserService {
 
-    async getUsers(query: UserQuery) {
+    async getUsers(
+        query: UserQuery
+    ) {
+        const page =
+            Number(query.page ?? 1);
 
-        const page = Number(query.page ?? 1);
+        const limit =
+            Number(query.limit ?? 20);
 
-        const limit = Number(query.limit ?? 10);
+        const filter: Record<
+            string,
+            unknown
+        > = {};
 
-        const filter: Record<string, unknown> = {
-            isDeleted: false,
-        };
+        if (!query.includeDeleted) {
+            filter.isDeleted = false;
+        }
 
         if (query.search) {
+            const search =
+                query.search.trim();
+
             filter.$or = [
                 {
-                    name: {
-                        $regex: query.search,
+                    firstName: {
+                        $regex: search,
+                        $options: "i",
+                    },
+                },
+                {
+                    lastName: {
+                        $regex: search,
                         $options: "i",
                     },
                 },
                 {
                     email: {
-                        $regex: query.search,
+                        $regex: search,
+                        $options: "i",
+                    },
+                },
+                {
+                    jobTitle: {
+                        $regex: search,
                         $options: "i",
                     },
                 },
             ];
         }
 
-        if (query.status) {
-            filter.status = query.status;
-        }
-
         if (query.role) {
-            filter.role =
-                new mongoose.Types.ObjectId(
+            if (
+                Types.ObjectId.isValid(
                     query.role
-                );
+                )
+            ) {
+                filter.role =
+                    new Types.ObjectId(
+                        query.role
+                    );
+            }
         }
 
-        let sort: Record<
-            string,
-            1 | -1
-        > = {
+        if (query.status) {
+            filter.status =
+                query.status;
+        }
+
+        if (
+            query.verified !== undefined
+        ) {
+            filter.isEmailVerified =
+                query.verified;
+        }
+
+        let sort:
+            Record<string, SortOrder> = {
             createdAt: -1,
         };
 
         if (query.sort) {
             const field =
-                query.sort.replace("-", "");
+                query.sort.replace(
+                    /^-/,
+                    ""
+                );
 
             const direction =
-                query.sort.startsWith("-")
+                query.sort.startsWith(
+                    "-"
+                )
                     ? -1
                     : 1;
 
@@ -77,40 +128,47 @@ class UserService {
 
         const [users, total] =
             await Promise.all([
-                UserRepository.getUsers(
+                UserRepository.findMany(
                     filter,
                     page,
                     limit,
                     sort
                 ),
-                UserRepository.countUsers(
+                UserRepository.count(
                     filter
                 ),
             ]);
 
         return {
             users,
-
             pagination: {
                 page,
-
                 limit,
-
                 total,
-
-                totalPages: Math.ceil(
-                    total / limit
-                ),
+                totalPages:
+                    Math.ceil(
+                        total / limit
+                    ),
             },
         };
     }
 
-    async getUserById(id: string) {
-        const user = await User.findById(id)
-            .select(
-                "-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires"
-            )
-            .populate("role");
+    async getUserById(
+        id: string
+    ) {
+        if (
+            !Types.ObjectId.isValid(id)
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid user ID."
+            );
+        }
+
+        const user =
+            await UserRepository.findById(
+                id
+            );
 
         if (!user) {
             throw new ApiError(
@@ -122,11 +180,17 @@ class UserService {
         return user;
     }
 
-    async createUser(data: CreateUserInput) {
+    async createUser(
+        data: CreateUserInput,
+        currentUserId: string
+    ) {
+        const email =
+            data.email.toLowerCase();
 
-        const exists = await UserRepository.emailExists(
-            data.email
-        );
+        const exists =
+            await UserRepository.emailExists(
+                email
+            );
 
         if (exists) {
             throw new ApiError(
@@ -135,30 +199,107 @@ class UserService {
             );
         }
 
-        const password =
+        const role =
+            await Role.findById(
+                data.role
+            );
+
+        if (!role) {
+            throw new ApiError(
+                404,
+                "Role not found."
+            );
+        }
+
+        if (
+            ["super_admin", "super admin"].includes(
+                role.name.toLowerCase()
+            ) &&
+            currentUserId
+        ) {
+            const currentUser =
+                await User.findById(
+                    currentUserId
+                ).populate("role");
+
+            if (
+                !isSuperAdmin(
+                    currentUser?.role as never
+                )
+            ) {
+                throw new ApiError(
+                    403,
+                    "Only a Super Admin can create a Super Admin."
+                );
+            }
+        }
+
+        const hashedPassword =
             await PasswordService.hash(
                 data.password
             );
 
-        const user = await User.create({
-            name: data.name,
-            email: data.email.toLowerCase(),
-            password,
-            role: data.role,
-            status: USER_STATUS.ACTIVE,
-            emailVerified: true,
-        });
+        return UserRepository.create({
+            firstName:
+                data.firstName.trim(),
 
-        return this.getUserById(
-            user._id.toString()
-        );
+            lastName:
+                data.lastName?.trim() ?? "",
+
+            email,
+
+            password:
+                hashedPassword,
+
+            role:
+                new Types.ObjectId(
+                    data.role
+                ),
+
+            status:
+                data.status ??
+                USER_STATUS.ACTIVE,
+
+            phone:
+                data.phone ?? null,
+
+            jobTitle:
+                data.jobTitle ?? null,
+
+            avatar:
+                data.avatar ?? null,
+
+            isEmailVerified:
+                data.isEmailVerified ??
+                false,
+
+            createdBy:
+                new Types.ObjectId(
+                    currentUserId
+                ),
+
+            updatedBy:
+                new Types.ObjectId(
+                    currentUserId
+                ),
+
+            isDeleted: false,
+
+            deletedAt: null,
+
+            passwordChangedAt:
+                new Date(),
+        });
     }
 
     async updateUser(
         id: string,
-        data: UpdateUserInput
+        data: UpdateUserInput,
+        currentUserId: string
     ) {
-        const user = await User.findById(id);
+        const user =
+            await User.findById(id)
+                .populate("role");
 
         if (!user) {
             throw new ApiError(
@@ -167,12 +308,71 @@ class UserService {
             );
         }
 
-        if (data.email !== undefined) {
+        const currentUser =
+            await User.findById(
+                currentUserId
+            ).populate("role");
+
+        const currentIsSuperAdmin =
+            isSuperAdmin(
+                currentUser?.role as never
+            );
+
+        const targetIsSuperAdmin =
+            isSuperAdmin(
+                user.role as never
+            );
+
+        if (
+            targetIsSuperAdmin &&
+            !currentIsSuperAdmin
+        ) {
+            throw new ApiError(
+                403,
+                "Super Admin accounts can only be modified by a Super Admin."
+            );
+        }
+
+        if (
+            data.role &&
+            data.role !==
+            user.role?._id.toString()
+        ) {
+            const newRole =
+                await Role.findById(
+                    data.role
+                );
+
+            if (!newRole) {
+                throw new ApiError(
+                    404,
+                    "Role not found."
+                );
+            }
+
+            if (
+                ["super_admin", "super admin"].includes(
+                    newRole.name.toLowerCase()
+                ) &&
+                !currentIsSuperAdmin
+            ) {
+                throw new ApiError(
+                    403,
+                    "Only a Super Admin can assign the Super Admin role."
+                );
+            }
+        }
+
+        if (
+            data.email &&
+            data.email.toLowerCase() !==
+            user.email
+        ) {
             const exists =
-                await User.findOne({
-                    email: data.email.toLowerCase(),
-                    _id: { $ne: id },
-                });
+                await UserRepository.emailExists(
+                    data.email,
+                    id
+                );
 
             if (exists) {
                 throw new ApiError(
@@ -185,68 +385,122 @@ class UserService {
                 data.email.toLowerCase();
         }
 
-        if (data.name !== undefined) {
-            user.name = data.name;
+        if (
+            data.firstName !==
+            undefined
+        )
+            user.firstName =
+                data.firstName.trim();
+
+        if (
+            data.lastName !==
+            undefined
+        )
+            user.lastName =
+                data.lastName.trim();
+
+        if (
+            data.role !==
+            undefined
+        ) {
+            user.role =
+                new Types.ObjectId(
+                    data.role
+                );
         }
 
-        if (data.role !== undefined) {
-            user.role = new mongoose.Types.ObjectId(
-                data.role
+        if (
+            data.status !==
+            undefined
+        )
+            user.status =
+                data.status;
+
+        if (
+            data.phone !==
+            undefined
+        )
+            user.phone =
+                data.phone;
+
+        if (
+            data.jobTitle !==
+            undefined
+        )
+            user.jobTitle =
+                data.jobTitle;
+
+        if (
+            data.avatar !==
+            undefined
+        )
+            user.avatar =
+                data.avatar;
+
+        if (
+            data.isEmailVerified !==
+            undefined
+        )
+            user.isEmailVerified =
+                data.isEmailVerified;
+
+        user.updatedBy =
+            new Types.ObjectId(
+                currentUserId
             );
-        }
-
-        if (data.status !== undefined) {
-            user.status = data.status as typeof user.status;
-        }
 
         await user.save();
 
-        const updatedUser = await User.findById(id)
-            .select(
-                "-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires"
-            )
-            .populate("role");
-
-        if (!updatedUser) {
-            throw new ApiError(
-                404,
-                "User not found."
-            );
-        }
-
-        return updatedUser;
+        return UserRepository.findById(
+            id
+        );
     }
 
+    async deleteUser(
+        id: string,
+        currentUserId: string
+    ) {
+        if (id === currentUserId) {
+            throw new ApiError(
+                400,
+                "You cannot delete your own account."
+            );
+        }
 
-    async deleteUser(id: string) {
-        const user = await User.findById(id);
+        const target =
+            await User.findById(id)
+                .populate("role");
 
-        if (!user) {
+        if (!target) {
             throw new ApiError(
                 404,
                 "User not found."
             );
         }
 
-        if (user.isDeleted) {
+        if (
+            isSuperAdmin(
+                target.role as never
+            )
+        ) {
             throw new ApiError(
-                400,
-                "User already deleted."
+                403,
+                "Super Admin accounts cannot be deleted."
             );
         }
 
-        user.isDeleted = true;
-        user.deletedAt = new Date();
-        user.status = USER_STATUS.INACTIVE;
-
-        await user.save();
+        await UserRepository.softDelete(
+            id
+        );
 
         return true;
     }
 
-    async restoreUser(id: string) {
-
-        const user = await User.findById(id);
+    async restoreUser(
+        id: string
+    ) {
+        const user =
+            await User.findById(id);
 
         if (!user) {
             throw new ApiError(
@@ -255,28 +509,26 @@ class UserService {
             );
         }
 
-        if (!user.isDeleted) {
-            throw new ApiError(
-                400,
-                "User is not deleted."
-            );
-        }
-
-        user.isDeleted = false;
-        user.deletedAt = null;
-        user.status = USER_STATUS.ACTIVE;
-
-        await user.save();
-
-        return user;
+        return UserRepository.restore(
+            id
+        );
     }
 
     async changeStatus(
         id: string,
-        status: string
+        status: string,
+        currentUserId: string
     ) {
+        if (id === currentUserId) {
+            throw new ApiError(
+                400,
+                "You cannot disable your own account."
+            );
+        }
 
-        const user = await User.findById(id);
+        const user =
+            await User.findById(id)
+                .populate("role");
 
         if (!user) {
             throw new ApiError(
@@ -285,11 +537,24 @@ class UserService {
             );
         }
 
-        user.status = status as typeof user.status;
+        if (
+            isSuperAdmin(
+                user.role as never
+            )
+        ) {
+            throw new ApiError(
+                403,
+                "Super Admin status cannot be changed here."
+            );
+        }
+
+        user.status = status as never;
 
         await user.save();
 
-        return user;
+        return UserRepository.findById(
+            id
+        );
     }
 }
 

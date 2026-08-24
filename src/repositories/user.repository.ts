@@ -1,59 +1,143 @@
-import { Types } from "mongoose";
+import {
+  SortOrder,
+  Types,
+} from "mongoose";
 
-import { IUser } from "@/types/user.types";
 import { User } from "@/models/user.model";
+import { IUser } from "@/types/user.types";
 
-import { BaseRepository } from "./base.repository";
-
-type UserFilter = Record<string, unknown>;
-
-class UserRepository extends BaseRepository<IUser> {
-  constructor() {
-    super(User);
-  }
-
-  async findByEmail(email: string) {
-    return this.findOne({
-      email: email.toLowerCase(),
-    });
-  }
-
-  async emailExists(email: string) {
-    return this.exists({
-      email: email.toLowerCase(),
-    });
-  }
-
-  async updateLastLogin(
-    userId: Types.ObjectId
-  ) {
-    return this.updateById(userId, {
-      lastLogin: new Date(),
-    });
-  }
-
-  async getById(id: string) {
+class UserRepository {
+  async findById(id: string) {
     return User.findById(id)
+      .select("-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires")
+      .populate(
+        "role",
+        "name description permissions status"
+      )
+      .populate(
+        "createdBy",
+        "name email"
+      )
+      .populate(
+        "updatedBy",
+        "name email"
+      );
+  }
+
+  async findByIdWithPassword(id: string) {
+    return User.findById(id)
+      .select("+password")
       .populate("role");
   }
 
-  async getUsers(
-    filter: UserFilter,
-    page: number,
-    limit: number,
-    sort: Record<string, 1 | -1>
-  ) {
-    return User.find(filter)
-      .populate("role")
-      .sort(sort)
-      .skip((page - 1) * limit)
-      .limit(limit);
+  async findByEmail(email: string) {
+    return User.findOne({
+      email: email.toLowerCase(),
+    });
   }
 
-  async countUsers(
-    filter: UserFilter
+  async emailExists(
+    email: string,
+    excludeId?: string
+  ) {
+    const filter: Record<
+      string,
+      unknown
+    > = {
+      email: email.toLowerCase(),
+      isDeleted: false,
+    };
+
+    if (excludeId) {
+      filter._id = {
+        $ne: new Types.ObjectId(
+          excludeId
+        ),
+      };
+    }
+
+    return User.exists(filter);
+  }
+
+  async create(
+    data: Partial<IUser>
+  ) {
+    return User.create(data);
+  }
+
+  async findMany(
+    filter: Record<string, unknown>,
+    page: number,
+    limit: number,
+    sort: Record<string, SortOrder>
+  ) {
+    return User.find(filter)
+      .select(
+        "-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires"
+      )
+      .populate(
+        "role",
+        "name description permissions status"
+      )
+      .sort(sort)
+      .skip(
+        (page - 1) * limit
+      )
+      .limit(limit)
+      .lean();
+  }
+
+  async count(
+    filter: Record<string, unknown>
   ) {
     return User.countDocuments(filter);
+  }
+
+  async update(
+    id: string,
+    data: Partial<IUser>
+  ) {
+    return User.findByIdAndUpdate(
+      id,
+      data,
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
+      .select(
+        "-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires"
+      )
+      .populate(
+        "role",
+        "name description permissions status"
+      );
+  }
+
+  async softDelete(id: string) {
+    return User.findByIdAndUpdate(
+      id,
+      {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+      {
+        new: true,
+      }
+    );
+  }
+
+  async restore(id: string) {
+    return User.findByIdAndUpdate(
+      id,
+      {
+        isDeleted: false,
+        deletedAt: null,
+      },
+      {
+        new: true,
+      }
+    );
   }
 }
 

@@ -1,6 +1,4 @@
 import { ApiError } from "@/lib/api/api-error";
-import { PERMISSIONS } from "@/constants/permissions";
-
 export class AuthorizationService {
     /**
      * Check if user has one of required roles
@@ -55,6 +53,9 @@ export class AuthorizationService {
      * Super Admin bypass
      */
     static isSuperAdmin(roleName: string) {
-        return roleName === "super_admin";
+        return roleName
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, "_") === "super_admin";
     }
 }
