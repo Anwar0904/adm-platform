@@ -1,63 +1,48 @@
+// src/types/media.types.ts
+
 import {
   HydratedDocument,
   Model,
   Types,
 } from "mongoose";
 
-import {
-  ContentStatus,
-  MediaType,
-} from "@/enums";
+export type MediaType =
+  | "image"
+  | "video"
+  | "document";
 
 export interface IMedia {
-  fileName: string;
+  name: string;
 
-  publicId: string;
+  originalName: string;
+
+  publicId?: string;
 
   url: string;
 
-  mimeType: string;
+  type: MediaType;
 
-  mediaType: MediaType;
+  mimeType: string;
 
   size: number;
 
-  width?: number | null;
-
-  height?: number | null;
-
   alt?: string;
-
-  caption?: string;
 
   folder?: string;
 
-  uploadedBy: Types.ObjectId;
-
-  status: ContentStatus;
-
-  createdBy?: Types.ObjectId | null;
-
-  updatedBy?: Types.ObjectId | null;
+  uploadedBy?: Types.ObjectId | null;
 
   isDeleted: boolean;
 
   deletedAt?: Date | null;
-}
 
-export interface MediaMethods { }
+  createdAt: Date;
 
-export interface MediaStatics {
-  findImages(): Promise<MediaDocument[]>;
-
-  findVideos(): Promise<MediaDocument[]>;
-
-  findDocuments(): Promise<MediaDocument[]>;
+  updatedAt: Date;
 }
 
 export type MediaDocument =
-  HydratedDocument<IMedia, MediaMethods>;
+  HydratedDocument<IMedia>;
 
 export type MediaModel =
-  Model<IMedia, {}, MediaMethods> &
-  MediaStatics;
+  Model<IMedia>;

@@ -1,3 +1,5 @@
+// src/models/media.model.ts
+
 import {
   Schema,
   model,
@@ -9,25 +11,30 @@ import {
   MediaModel,
 } from "@/types/media.types";
 
-import {
-  CONTENT_STATUS,
-  MEDIA_TYPE,
-} from "@/enums";
-
 const MediaSchema =
   new Schema<IMedia, MediaModel>(
     {
-      fileName: {
+      name: {
         type: String,
         required: true,
         trim: true,
-        maxlength: 255,
       },
 
-      publicId: {
+      originalName: {
         type: String,
         required: true,
+        trim: true,
+      },
+
+      /*
+       * Kept for compatibility with existing media collections. The sparse
+       * unique index allows records that do not use an external provider,
+       * while still protecting IDs when they are present.
+       */
+      publicId: {
+        type: String,
         unique: true,
+        sparse: true,
         trim: true,
       },
 
@@ -37,32 +44,24 @@ const MediaSchema =
         trim: true,
       },
 
-      mimeType: {
+      type: {
         type: String,
+        enum: [
+          "image",
+          "video",
+          "document",
+        ],
         required: true,
-        trim: true,
       },
 
-      mediaType: {
+      mimeType: {
         type: String,
-        enum: Object.values(MEDIA_TYPE),
         required: true,
       },
 
       size: {
         type: Number,
         required: true,
-        min: 0,
-      },
-
-      width: {
-        type: Number,
-        default: null,
-      },
-
-      height: {
-        type: Number,
-        default: null,
       },
 
       alt: {
@@ -71,37 +70,13 @@ const MediaSchema =
         trim: true,
       },
 
-      caption: {
-        type: String,
-        default: "",
-        trim: true,
-      },
-
       folder: {
         type: String,
-        default: "",
+        default: "general",
         trim: true,
       },
 
       uploadedBy: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-
-      status: {
-        type: String,
-        enum: Object.values(CONTENT_STATUS),
-        default: CONTENT_STATUS.PUBLISHED,
-      },
-
-      createdBy: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        default: null,
-      },
-
-      updatedBy: {
         type: Schema.Types.ObjectId,
         ref: "User",
         default: null,
@@ -110,6 +85,7 @@ const MediaSchema =
       isDeleted: {
         type: Boolean,
         default: false,
+        index: true,
       },
 
       deletedAt: {
@@ -121,51 +97,28 @@ const MediaSchema =
       timestamps: true,
       versionKey: false,
       collection: "media",
-      toJSON: { virtuals: true },
-      toObject: { virtuals: true },
+
+      toJSON: {
+        virtuals: true,
+      },
+
+      toObject: {
+        virtuals: true,
+      },
     }
   );
 
-
-MediaSchema.index({ url: 1 });
-MediaSchema.index({ mediaType: 1 });
-
-MediaSchema.index({ uploadedBy: 1 });
-
-MediaSchema.index({ status: 1 });
+MediaSchema.index({
+  createdAt: -1,
+});
 
 MediaSchema.index({
-  fileName: "text",
-  alt: "text",
-  caption: "text",
+  type: 1,
 });
 
-MediaSchema.static("findImages", function () {
-  return this.find({
-    mediaType: MEDIA_TYPE.IMAGE,
-    isDeleted: false,
-  });
+MediaSchema.index({
+  folder: 1,
 });
-
-MediaSchema.static("findVideos", function () {
-  return this.find({
-    mediaType: MEDIA_TYPE.VIDEO,
-    isDeleted: false,
-  });
-});
-
-MediaSchema.static("findDocuments", function () {
-  return this.find({
-    mediaType: {
-      $in: [
-        MEDIA_TYPE.DOCUMENT,
-        MEDIA_TYPE.PDF,
-      ],
-    },
-    isDeleted: false,
-  });
-});
-
 
 export const Media =
   (models.Media as MediaModel) ||

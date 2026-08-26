@@ -5,6 +5,7 @@ import {
     DragEvent,
     useRef,
     useState,
+    useEffect
 } from "react";
 
 import {
@@ -13,7 +14,6 @@ import {
     FileImage,
     FileText,
     Grid2X2,
-    ImageIcon,
     List,
     MoreHorizontal,
     Search,
@@ -32,49 +32,33 @@ type MediaItem = {
     uploadedAt: string;
 };
 
-const initialMedia: MediaItem[] = [
-    {
-        id: "1",
-        name: "adm-office.jpg",
-        url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&q=80",
-        type: "image",
-        size: "1.8 MB",
-        uploadedAt: "Today",
-    },
-    {
-        id: "2",
-        name: "ai-article-cover.jpg",
-        url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=900&q=80",
-        type: "image",
-        size: "2.4 MB",
-        uploadedAt: "Yesterday",
-    },
-    {
-        id: "3",
-        name: "digital-product.jpg",
-        url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&q=80",
-        type: "image",
-        size: "1.2 MB",
-        uploadedAt: "2 days ago",
-    },
-    {
-        id: "4",
-        name: "portfolio-cover.jpg",
-        url: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=80",
-        type: "image",
-        size: "2.1 MB",
-        uploadedAt: "3 days ago",
-    },
-];
+type MediaApiItem = {
+    _id: string;
+    name: string;
+    originalName?: string;
+    url: string;
+    type: MediaItem["type"];
+    size: number;
+    createdAt: string;
+};
+
+function normalizeMediaItem(item: MediaApiItem): MediaItem {
+    return {
+        id: item._id,
+        name: item.originalName || item.name,
+        url: item.url,
+        type: item.type,
+        size: `${(item.size / 1024 / 1024).toFixed(1)} MB`,
+        uploadedAt: new Date(item.createdAt).toLocaleDateString(),
+    };
+}
 
 export default function MediaManagement() {
     const inputRef =
         useRef<HTMLInputElement>(null);
 
     const [media, setMedia] =
-        useState<MediaItem[]>(
-            initialMedia
-        );
+        useState<MediaItem[]>([]);
 
     const [search, setSearch] =
         useState("");
@@ -94,7 +78,43 @@ export default function MediaManagement() {
         useState<MediaItem | null>(
             null
         );
+    async function loadMedia() {
+        try {
+            const response =
+                await fetch(
+                    "/api/media",
+                    {
+                        cache: "no-store",
+                    }
+                );
 
+            const result =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Failed to load media."
+                );
+            }
+
+            const normalized =
+                (result.data as MediaApiItem[]).map(
+                    normalizeMediaItem
+                );
+
+            setMedia(normalized);
+        } catch (error) {
+            console.error(
+                "Failed to load media:",
+                error
+            );
+        }
+    }
+
+    useEffect(() => {
+        void Promise.resolve().then(loadMedia);
+    }, []);
     const filteredMedia =
         media.filter((item) =>
             item.name
@@ -108,7 +128,7 @@ export default function MediaManagement() {
         inputRef.current?.click();
     }
 
-    function handleFiles(
+    async function handleFiles(
         files: FileList | File[]
     ) {
         const selectedFiles =
@@ -117,50 +137,66 @@ export default function MediaManagement() {
         if (!selectedFiles.length)
             return;
 
-        setUploading(true);
+        try {
+            setUploading(true);
 
-        setTimeout(() => {
-            const newItems: MediaItem[] =
-                selectedFiles.map(
-                    (file, index) => ({
-                        id: `${Date.now()}-${index}`,
-                        name: file.name,
-                        url:
-                            file.type.startsWith(
-                                "image/"
-                            )
-                                ? URL.createObjectURL(
-                                    file
-                                )
-                                : "",
-                        type:
-                            file.type.startsWith(
-                                "image/"
-                            )
-                                ? "image"
-                                : file.type.startsWith(
-                                    "video/"
-                                )
-                                    ? "video"
-                                    : "document",
-                        size:
-                            `${(
-                                file.size /
-                                1024 /
-                                1024
-                            ).toFixed(1)} MB`,
-                        uploadedAt:
-                            "Just now",
-                    })
+            const formData =
+                new FormData();
+
+            selectedFiles.forEach(
+                (file) => {
+                    formData.append(
+                        "files",
+                        file
+                    );
+                }
+            );
+
+            const response =
+                await fetch(
+                    "/api/media",
+                    {
+                        method: "POST",
+                        body: formData,
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Upload failed."
+                );
+            }
+
+            const uploaded =
+                result.data;
+
+            const normalized =
+                (uploaded as MediaApiItem[]).map(
+                    normalizeMediaItem
                 );
 
             setMedia((current) => [
-                ...newItems,
+                ...normalized,
                 ...current,
             ]);
+        } catch (error) {
+            console.error(
+                "Media upload error:",
+                error
+            );
 
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Upload failed."
+            );
+        } finally {
             setUploading(false);
-        }, 700);
+        }
     }
 
     function handleInput(
@@ -202,16 +238,52 @@ export default function MediaManagement() {
         }
     }
 
-    function deleteMedia(id: string) {
-        setMedia((current) =>
-            current.filter(
-                (item) =>
-                    item.id !== id
-            )
-        );
+    async function deleteMedia(
+        id: string
+    ) {
+        try {
+            const response =
+                await fetch(
+                    `/api/media/${id}`,
+                    {
+                        method: "DELETE",
+                    }
+                );
 
-        if (selected?.id === id) {
-            setSelected(null);
+            const result =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message ||
+                    "Failed to delete media."
+                );
+            }
+
+            setMedia(
+                (current) =>
+                    current.filter(
+                        (item) =>
+                            item.id !== id
+                    )
+            );
+
+            if (
+                selected?.id === id
+            ) {
+                setSelected(null);
+            }
+        } catch (error) {
+            console.error(
+                "Delete media error:",
+                error
+            );
+
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to delete media."
+            );
         }
     }
 

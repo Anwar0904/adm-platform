@@ -1,6 +1,14 @@
 import { NextRequest } from "next/server";
+import fs from "fs/promises";
+import path from "path";
+
+import mongoose from "mongoose";
 
 import { connectDB } from "@/lib/db";
+import { Media } from "@/models/media.model";
+
+import { requirePermission } from "@/middleware/auth.middleware";
+import { PERMISSIONS } from "@/constants/permissions";
 
 import {
     ApiResponse,
@@ -10,45 +18,84 @@ import {
     ApiErrorHandler,
 } from "@/lib/api/api-error";
 
-
-
-import {
-    requirePermission,
-} from "@/middleware/auth.middleware";
-
-import { PERMISSIONS } from "@/constants/permissions";
-
-import {
-    UpdateMediaSchema,
-} from "@/validators/media.validator";
-import mediaService from "@/services/media/media.service";
-
-type Context = {
+interface Params {
     params: Promise<{
         id: string;
     }>;
-};
+}
 
-export async function GET(
+export async function DELETE(
     request: NextRequest,
-    { params }: Context
+    { params }: Params
 ) {
     try {
-
         await connectDB();
 
         await requirePermission(
             request,
-            PERMISSIONS.SERVICE_READ
+            PERMISSIONS.MEDIA_DELETE
         );
 
         const { id } = await params;
 
+        if (
+            !mongoose.Types.ObjectId.isValid(id)
+        ) {
+            throw new Error(
+                "Invalid media ID."
+            );
+        }
+
         const media =
-            await mediaService.getMediaById(id);
+            await Media.findOne({
+                _id: id,
+                isDeleted: false,
+            });
 
-        return ApiResponse.success(media);
+        if (!media) {
+            throw new Error(
+                "Media not found."
+            );
+        }
 
+        /*
+         * Delete physical file.
+         */
+        if (media.url) {
+            const relativePath =
+                media.url.startsWith("/")
+                    ? media.url.slice(1)
+                    : media.url;
+
+            const filePath =
+                path.join(
+                    process.cwd(),
+                    "public",
+                    relativePath
+                );
+
+            try {
+                await fs.unlink(
+                    filePath
+                );
+            } catch {
+                /*
+                 * The database record should still
+                 * be marked deleted even if the
+                 * physical file is already missing.
+                 */
+            }
+        }
+
+        media.isDeleted = true;
+        media.deletedAt = new Date();
+
+        await media.save();
+
+        return ApiResponse.success(
+            null,
+            "Media deleted successfully."
+        );
     } catch (error) {
         return ApiErrorHandler.handle(error);
     }
@@ -56,63 +103,75 @@ export async function GET(
 
 export async function PATCH(
     request: NextRequest,
-    { params }: Context
+    { params }: Params
 ) {
     try {
-
         await connectDB();
 
         await requirePermission(
             request,
-            PERMISSIONS.SERVICE_UPDATE
+            PERMISSIONS.MEDIA_UPDATE
         );
-
-        const body =
-            await request.json();
-
-        const data =
-            UpdateMediaSchema.parse(body);
 
         const { id } = await params;
 
-        const media =
-            await mediaService.updateMedia(
-                id,
-                data
+        if (
+            !mongoose.Types.ObjectId.isValid(id)
+        ) {
+            throw new Error(
+                "Invalid media ID."
             );
+        }
+
+        const media =
+            await Media.findOne({
+                _id: id,
+                isDeleted: true,
+            });
+
+        if (!media) {
+            throw new Error(
+                "Deleted media not found."
+            );
+        }
+
+        /*
+         * Restore only when the physical file
+         * still exists.
+         */
+        if (media.url) {
+            const relativePath =
+                media.url.startsWith("/")
+                    ? media.url.slice(1)
+                    : media.url;
+
+            const filePath =
+                path.join(
+                    process.cwd(),
+                    "public",
+                    relativePath
+                );
+
+            try {
+                await fs.access(
+                    filePath
+                );
+            } catch {
+                throw new Error(
+                    "Cannot restore media because the physical file no longer exists."
+                );
+            }
+        }
+
+        media.isDeleted = false;
+        media.deletedAt = null;
+
+        await media.save();
 
         return ApiResponse.success(
             media,
-            "Media updated successfully."
+            "Media restored successfully."
         );
-
-    } catch (error) {
-        return ApiErrorHandler.handle(error);
-    }
-}
-
-export async function DELETE(
-    request: NextRequest,
-    { params }: Context
-) {
-    try {
-
-        await connectDB();
-
-        await requirePermission(
-            request,
-            PERMISSIONS.SERVICE_DELETE
-        );
-
-        const { id } = await params;
-
-        await mediaService.deleteMedia(id);
-
-        return ApiResponse.success(
-            null,
-            "Media deleted successfully."
-        );
-
     } catch (error) {
         return ApiErrorHandler.handle(error);
     }
