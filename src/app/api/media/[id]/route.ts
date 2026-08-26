@@ -24,6 +24,42 @@ interface Params {
     }>;
 }
 
+export async function GET(
+    request: NextRequest,
+    { params }: Params
+) {
+    try {
+        await connectDB();
+
+        await requirePermission(
+            request,
+            PERMISSIONS.MEDIA_READ
+        );
+
+        const { id } = await params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new Error("Invalid media ID.");
+        }
+
+        const media = await Media.findOne({
+            _id: id,
+            isDeleted: false,
+        }).lean();
+
+        if (!media) {
+            throw new Error("Media not found.");
+        }
+
+        return ApiResponse.success(
+            media,
+            "Media fetched successfully."
+        );
+    } catch (error) {
+        return ApiErrorHandler.handle(error);
+    }
+}
+
 export async function DELETE(
     request: NextRequest,
     { params }: Params

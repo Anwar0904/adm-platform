@@ -9,7 +9,14 @@ export const SeoSchema = z.object({
 
     keywords: z.array(z.string()).default([]),
 
-    canonicalUrl: z.string().url().optional(),
+    canonicalUrl: z.preprocess(
+        (value) =>
+            typeof value === "string" &&
+            value.trim() === ""
+                ? undefined
+                : value,
+        z.string().url().optional()
+    ),
 
     ogTitle: z.string().optional(),
 

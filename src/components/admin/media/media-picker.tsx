@@ -59,7 +59,7 @@ interface MediaPickerProps {
 
 type MediaApiResponse = {
     success?: boolean;
-    data?: {
+    data?: MediaItem[] | {
         media?: MediaItem[];
         items?: MediaItem[];
         pagination?: {
@@ -72,54 +72,77 @@ type MediaApiResponse = {
     message?: string;
 };
 
-function normalizeMediaItem(item: any): MediaItem {
+function getMediaItems(result: MediaApiResponse) {
+    if (Array.isArray(result.data)) {
+        return result.data;
+    }
+
+    return result.data?.media ?? result.data?.items ?? [];
+}
+
+function getPagination(result: MediaApiResponse) {
+    return Array.isArray(result.data)
+        ? undefined
+        : result.data?.pagination;
+}
+
+function getRecord(value: unknown) {
+    return value && typeof value === "object"
+        ? value as Record<string, unknown>
+        : {};
+}
+
+function getString(...values: unknown[]) {
+    return values.find(
+        (value): value is string => typeof value === "string"
+    ) ?? "";
+}
+
+function normalizeMediaItem(item: unknown): MediaItem {
+    const value = getRecord(item);
+    const nestedMedia = getRecord(value.media);
+    const nestedFile = getRecord(value.file);
+
     return {
-        _id: String(item?._id ?? item?.id ?? ""),
-        title:
-            item?.title ??
-            item?.name ??
-            item?.filename ??
-            item?.originalName ??
-            "",
-        url:
-            item?.url ??
-            item?.secureUrl ??
-            item?.publicUrl ??
-            item?.media?.url ??
-            item?.file?.url ??
-            "",
-        path:
-            item?.path ??
-            item?.filePath ??
-            item?.media?.path ??
-            item?.file?.path ??
-            "",
-        mimeType:
-            item?.mimeType ??
-            item?.type ??
-            item?.media?.mimeType ??
-            "",
-        alt:
-            item?.alt ??
-            item?.altText ??
-            "",
-        filename:
-            item?.filename ??
-            "",
-        originalName:
-            item?.originalName ??
-            "",
+        _id: String(value._id ?? value.id ?? ""),
+        title: getString(
+            value.title,
+            value.name,
+            value.filename,
+            value.originalName
+        ),
+        url: getString(
+            value.url,
+            value.secureUrl,
+            value.publicUrl,
+            nestedMedia.url,
+            nestedFile.url
+        ),
+        path: getString(
+            value.path,
+            value.filePath,
+            nestedMedia.path,
+            nestedFile.path
+        ),
+        mimeType: getString(
+            value.mimeType,
+            value.type,
+            nestedMedia.mimeType
+        ),
+        alt: getString(value.alt, value.altText),
+        filename: getString(value.filename),
+        originalName: getString(value.originalName),
         width:
-            typeof item?.width === "number"
-                ? item.width
+            typeof value.width === "number"
+                ? value.width
                 : undefined,
         height:
-            typeof item?.height === "number"
-                ? item.height
+            typeof value.height === "number"
+                ? value.height
                 : undefined,
         size:
-            typeof item?.size === "number"
-                ? item.size
+            typeof value.size === "number"
+                ? value.size
                 : undefined,
     };
 }
@@ -246,9 +269,7 @@ export default function MediaPicker({
                 }
 
                 const rawItems =
-                    result?.data?.media ??
-                    result?.data?.items ??
-                    [];
+                    getMediaItems(result);
 
                 const normalized =
                     rawItems
@@ -292,8 +313,7 @@ export default function MediaPicker({
                 });
 
                 const pagination =
-                    result?.data
-                        ?.pagination;
+                    getPagination(result);
 
                 const resolvedTotalPages =
                     Number(
@@ -441,11 +461,7 @@ export default function MediaPicker({
                             await fallback.json();
 
                         const rawItems =
-                            result?.data
-                                ?.media ??
-                            result?.data
-                                ?.items ??
-                            [];
+                            getMediaItems(result);
 
                         const found =
                             rawItems
@@ -492,13 +508,13 @@ export default function MediaPicker({
      */
 
     useEffect(() => {
-        if (value) {
-            loadSelectedMedia(value);
-        } else {
-            setSelectedMedia(
-                null
-            );
-        }
+        void Promise.resolve().then(() => {
+            if (value) {
+                return loadSelectedMedia(value);
+            }
+
+            setSelectedMedia(null);
+        });
     }, [
         value,
         loadSelectedMedia,
@@ -513,9 +529,10 @@ export default function MediaPicker({
     useEffect(() => {
         if (!open) return;
 
-        setPage(1);
-
-        loadMedia(1, true);
+        void Promise.resolve().then(() => {
+            setPage(1);
+            return loadMedia(1, true);
+        });
     }, [
         open,
         loadMedia,

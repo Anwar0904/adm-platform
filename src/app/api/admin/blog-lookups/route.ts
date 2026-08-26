@@ -9,6 +9,7 @@ import { PERMISSIONS } from "@/constants/permissions";
 
 import { Category } from "@/models/category.model";
 import { Tag } from "@/models/tag.model";
+import { Media } from "@/models/media.model";
 
 export async function GET(
     request: NextRequest
@@ -36,7 +37,7 @@ export async function GET(
             )
             : undefined;
 
-        const [categories, tags] =
+        const [categories, tags, media] =
             await Promise.all([
                 Category.find(
                     regex
@@ -69,12 +70,30 @@ export async function GET(
                     .sort({ name: 1 })
                     .limit(20)
                     .lean(),
+
+                Media.find({
+                    isDeleted: false,
+                    type: "image",
+                })
+                    .select(
+                        "_id name originalName url alt mimeType"
+                    )
+                    .sort({ createdAt: -1 })
+                    .limit(100)
+                    .lean(),
             ]);
 
         return ApiResponse.success(
             {
                 categories,
                 tags,
+                media: media.map((item) => ({
+                    _id: String(item._id),
+                    title: item.originalName || item.name,
+                    url: item.url,
+                    alt: item.alt,
+                    mimeType: item.mimeType,
+                })),
             },
             "Blog lookup data fetched successfully."
         );
