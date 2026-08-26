@@ -52,6 +52,11 @@ const PortfolioSchema =
         type: String,
         required: true,
       },
+      category: {
+        type: Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
+      },
 
       featuredImage: {
         type: Schema.Types.ObjectId,
@@ -161,7 +166,7 @@ const PortfolioSchema =
     }
   );
 
-  PortfolioSchema.index(
+PortfolioSchema.index(
   { slug: 1 },
   {
     unique: true,
@@ -170,7 +175,7 @@ const PortfolioSchema =
     },
   }
 );
-
+PortfolioSchema.index({ category: 1 });
 PortfolioSchema.index({ featured: 1 });
 PortfolioSchema.index({ status: 1 });
 PortfolioSchema.index({ services: 1 });

@@ -16,6 +16,9 @@ export interface IPortfolio {
 
   shortDescription: string;
 
+  category: Types.ObjectId;
+
+
   content: string;
 
   featuredImage?: Types.ObjectId | null;
@@ -53,7 +56,7 @@ export interface IPortfolio {
   deletedAt?: Date | null;
 }
 
-export interface PortfolioMethods {}
+export interface PortfolioMethods { }
 
 export interface PortfolioStatics {
   findBySlug(slug: string): Promise<PortfolioDocument | null>;
