@@ -1,144 +1,101 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import {
+    FormEvent,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 import Link from "next/link";
 import {
     Check,
     ChevronLeft,
     Edit3,
     Folder,
+    Loader2,
     Plus,
+    RefreshCw,
     Search,
     Trash2,
     X,
 } from "lucide-react";
 
 type Category = {
-    id: string;
+    _id: string;
     name: string;
     slug: string;
-    description: string;
-    posts: number;
-    status: "active" | "inactive";
+    description?: string;
+    status?: "active" | "inactive";
+    posts?: number;
     createdAt: string;
 };
 
-const initialCategories: Category[] = [
-    {
-        id: "1",
-        name: "Artificial Intelligence",
-        slug: "artificial-intelligence",
-        description:
-            "AI, machine learning, LLMs and intelligent digital solutions.",
-        posts: 12,
-        status: "active",
-        createdAt: "Jul 25, 2026",
-    },
-    {
-        id: "2",
-        name: "Web Development",
-        slug: "web-development",
-        description:
-            "Modern web applications, architecture and engineering.",
-        posts: 9,
-        status: "active",
-        createdAt: "Jul 20, 2026",
-    },
-    {
-        id: "3",
-        name: "Next.js",
-        slug: "next-js",
-        description:
-            "Next.js development, performance and production practices.",
-        posts: 7,
-        status: "active",
-        createdAt: "Jul 18, 2026",
-    },
-    {
-        id: "4",
-        name: "UI / UX",
-        slug: "ui-ux",
-        description:
-            "Interface design, usability and digital experiences.",
-        posts: 6,
-        status: "active",
-        createdAt: "Jul 15, 2026",
-    },
-    {
-        id: "5",
-        name: "Cloud",
-        slug: "cloud",
-        description:
-            "Cloud infrastructure, deployment and scalable systems.",
-        posts: 4,
-        status: "active",
-        createdAt: "Jul 10, 2026",
-    },
-    {
-        id: "6",
-        name: "DevOps",
-        slug: "devops",
-        description:
-            "CI/CD, infrastructure automation and developer operations.",
-        posts: 3,
-        status: "active",
-        createdAt: "Jul 8, 2026",
-    },
-    {
-        id: "7",
-        name: "Blockchain",
-        slug: "blockchain",
-        description:
-            "Blockchain, Web3, smart contracts and decentralized applications.",
-        posts: 5,
-        status: "active",
-        createdAt: "Jul 5, 2026",
-    },
-    {
-        id: "8",
-        name: "Digital Marketing",
-        slug: "digital-marketing",
-        description:
-            "SEO, content strategy, growth and digital marketing.",
-        posts: 4,
-        status: "active",
-        createdAt: "Jul 2, 2026",
-    },
-    {
-        id: "9",
-        name: "Case Studies",
-        slug: "case-studies",
-        description:
-            "ADM projects, results and client success stories.",
-        posts: 3,
-        status: "active",
-        createdAt: "Jun 28, 2026",
-    },
-    {
-        id: "10",
-        name: "Company News",
-        slug: "company-news",
-        description:
-            "ADM announcements, culture and company updates.",
-        posts: 2,
-        status: "active",
-        createdAt: "Jun 25, 2026",
-    },
-];
+type ApiResponse<T> = {
+    success?: boolean;
+    data?: T;
+    message?: string;
+};
+
+type CategoryListResponse =
+    | Category[]
+    | {
+        categories?: Category[];
+    };
 
 function createSlug(value: string) {
     return value
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
         .replace(/^-+|-+$/g, "");
+}
+
+function getCategoriesFromResponse(
+    body: ApiResponse<CategoryListResponse>
+): Category[] {
+    if (Array.isArray(body.data)) {
+        return body.data;
+    }
+
+    return body.data?.categories ?? [];
+}
+
+function getErrorMessage(
+    body: unknown,
+    fallback: string
+) {
+    if (
+        typeof body === "object" &&
+        body !== null &&
+        "message" in body &&
+        typeof body.message === "string"
+    ) {
+        return body.message;
+    }
+
+    return fallback;
 }
 
 export default function CategoriesManagement() {
     const [categories, setCategories] =
-        useState<Category[]>(
-            initialCategories
-        );
+        useState<Category[]>([]);
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [saving, setSaving] =
+        useState(false);
+
+    const [deleting, setDeleting] =
+        useState(false);
+
+    const [error, setError] =
+        useState<string | null>(null);
+
+    const [success, setSuccess] =
+        useState<string | null>(null);
 
     const [search, setSearch] =
         useState("");
@@ -162,32 +119,96 @@ export default function CategoriesManagement() {
         useState("");
 
     const [status, setStatus] =
-        useState<
-            "active" | "inactive"
-        >("active");
+        useState<"active" | "inactive">(
+            "active"
+        );
 
     const [slugManuallyEdited, setSlugManuallyEdited] =
         useState(false);
 
-    const filteredCategories = useMemo(() => {
-        const query =
-            search.trim().toLowerCase();
+    async function loadCategories() {
+        setLoading(true);
+        setError(null);
 
-        if (!query) return categories;
+        try {
+            const response = await fetch(
+                "/api/categories",
+                {
+                    method: "GET",
+                    cache: "no-store",
+                }
+            );
 
-        return categories.filter(
-            (category) =>
-                category.name
-                    .toLowerCase()
-                    .includes(query) ||
-                category.slug
-                    .toLowerCase()
-                    .includes(query) ||
-                category.description
-                    .toLowerCase()
-                    .includes(query)
+            const body =
+                (await response.json()) as ApiResponse<CategoryListResponse>;
+
+            if (!response.ok) {
+                throw new Error(
+                    getErrorMessage(
+                        body,
+                        "Unable to load categories."
+                    )
+                );
+            }
+
+            setCategories(
+                getCategoriesFromResponse(body)
+            );
+        } catch (reason) {
+            setError(
+                reason instanceof Error
+                    ? reason.message
+                    : "Unable to load categories."
+            );
+            setCategories([]);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const filteredCategories =
+        useMemo(() => {
+            const query =
+                search.trim().toLowerCase();
+
+            if (!query) {
+                return categories;
+            }
+
+            return categories.filter(
+                (category) =>
+                    category.name
+                        .toLowerCase()
+                        .includes(query) ||
+                    category.slug
+                        .toLowerCase()
+                        .includes(query) ||
+                    (
+                        category.description ??
+                        ""
+                    )
+                        .toLowerCase()
+                        .includes(query)
+            );
+        }, [categories, search]);
+
+    const totalArticles =
+        categories.reduce(
+            (total, category) =>
+                total +
+                Number(category.posts ?? 0),
+            0
         );
-    }, [categories, search]);
+
+    const activeCount =
+        categories.filter(
+            (category) =>
+                category.status !== "inactive"
+        ).length;
 
     function resetForm() {
         setName("");
@@ -200,6 +221,8 @@ export default function CategoriesManagement() {
 
     function openCreate() {
         resetForm();
+        setError(null);
+        setSuccess(null);
         setShowForm(true);
     }
 
@@ -210,14 +233,22 @@ export default function CategoriesManagement() {
         setName(category.name);
         setSlug(category.slug);
         setDescription(
-            category.description
+            category.description ?? ""
         );
-        setStatus(category.status);
+        setStatus(
+            category.status === "inactive"
+                ? "inactive"
+                : "active"
+        );
         setSlugManuallyEdited(true);
+        setError(null);
+        setSuccess(null);
         setShowForm(true);
     }
 
     function closeForm() {
+        if (saving) return;
+
         setShowForm(false);
         resetForm();
     }
@@ -232,7 +263,7 @@ export default function CategoriesManagement() {
         }
     }
 
-    function handleSubmit(
+    async function handleSubmit(
         event: FormEvent<HTMLFormElement>
     ) {
         event.preventDefault();
@@ -241,70 +272,146 @@ export default function CategoriesManagement() {
             name.trim();
 
         const cleanSlug =
-            slug.trim() ||
-            createSlug(cleanName);
-
-        if (!cleanName || !cleanSlug)
-            return;
-
-        if (editing) {
-            setCategories((current) =>
-                current.map((category) =>
-                    category.id ===
-                        editing.id
-                        ? {
-                            ...category,
-                            name: cleanName,
-                            slug: cleanSlug,
-                            description:
-                                description.trim(),
-                            status,
-                        }
-                        : category
-                )
+            createSlug(
+                slug.trim() ||
+                cleanName
             );
-        } else {
-            const newCategory: Category =
-            {
-                id: crypto.randomUUID(),
+
+        const cleanDescription =
+            description.trim();
+
+        if (!cleanName) {
+            setError(
+                "Category name is required."
+            );
+            return;
+        }
+
+        if (!cleanSlug) {
+            setError(
+                "A valid category slug is required."
+            );
+            return;
+        }
+
+        setSaving(true);
+        setError(null);
+        setSuccess(null);
+
+        try {
+            const payload = {
                 name: cleanName,
                 slug: cleanSlug,
                 description:
-                    description.trim(),
-                posts: 0,
+                    cleanDescription,
                 status,
-                createdAt:
-                    new Intl.DateTimeFormat(
-                        "en-US",
-                        {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                        }
-                    ).format(new Date()),
             };
 
-            setCategories((current) => [
-                newCategory,
-                ...current,
-            ]);
-        }
+            const response =
+                await fetch(
+                    editing
+                        ? `/api/categories/${editing._id}`
+                        : "/api/categories",
+                    {
+                        method: editing
+                            ? "PATCH"
+                            : "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
+                        body: JSON.stringify(
+                            payload
+                        ),
+                    }
+                );
 
-        closeForm();
+            const body =
+                (await response.json()) as ApiResponse<Category>;
+
+            if (!response.ok) {
+                throw new Error(
+                    getErrorMessage(
+                        body,
+                        editing
+                            ? "Unable to update category."
+                            : "Unable to create category."
+                    )
+                );
+            }
+
+            await loadCategories();
+
+            setSuccess(
+                editing
+                    ? "Category updated successfully."
+                    : "Category created successfully."
+            );
+
+            setShowForm(false);
+            resetForm();
+        } catch (reason) {
+            setError(
+                reason instanceof Error
+                    ? reason.message
+                    : "Something went wrong."
+            );
+        } finally {
+            setSaving(false);
+        }
     }
 
-    function confirmDelete() {
+    async function confirmDelete() {
         if (!deleteTarget) return;
 
-        setCategories((current) =>
-            current.filter(
-                (category) =>
-                    category.id !==
-                    deleteTarget.id
-            )
-        );
+        setDeleting(true);
+        setError(null);
+        setSuccess(null);
 
-        setDeleteTarget(null);
+        try {
+            const response =
+                await fetch(
+                    `/api/categories/${deleteTarget._id}`,
+                    {
+                        method: "DELETE",
+                    }
+                );
+
+            const body =
+                (await response.json()) as ApiResponse<null>;
+
+            if (!response.ok) {
+                throw new Error(
+                    getErrorMessage(
+                        body,
+                        "Unable to delete category."
+                    )
+                );
+            }
+
+            setCategories(
+                (current) =>
+                    current.filter(
+                        (category) =>
+                            category._id !==
+                            deleteTarget._id
+                    )
+            );
+
+            setSuccess(
+                "Category deleted successfully."
+            );
+
+            setDeleteTarget(null);
+        } catch (reason) {
+            setError(
+                reason instanceof Error
+                    ? reason.message
+                    : "Unable to delete category."
+            );
+        } finally {
+            setDeleting(false);
+        }
     }
 
     return (
@@ -317,9 +424,7 @@ export default function CategoriesManagement() {
                         href="/admin/blogs"
                         className="mb-3 inline-flex items-center gap-1 text-xs font-bold text-slate-400 transition hover:text-blue-600"
                     >
-                        <ChevronLeft
-                            size={14}
-                        />
+                        <ChevronLeft size={14} />
                         Blogs
                     </Link>
 
@@ -332,19 +437,73 @@ export default function CategoriesManagement() {
                     </h1>
 
                     <p className="mt-2 text-sm leading-6 text-slate-500">
-                        Organize ADM articles into clear,
-                        searchable content categories.
+                        Manage the categories used
+                        across ADM content.
                     </p>
                 </div>
 
-                <button
-                    onClick={openCreate}
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
-                >
-                    <Plus size={18} />
-                    Add Category
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={loadCategories}
+                        disabled={loading}
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+                    >
+                        <RefreshCw
+                            size={17}
+                            className={
+                                loading
+                                    ? "animate-spin"
+                                    : ""
+                            }
+                        />
+                        Refresh
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={openCreate}
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+                    >
+                        <Plus size={18} />
+                        Add Category
+                    </button>
+                </div>
             </section>
+
+            {/* Feedback */}
+
+            {error && (
+                <div className="flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <span>{error}</span>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setError(null)
+                        }
+                        className="shrink-0"
+                    >
+                        <X size={17} />
+                    </button>
+                </div>
+            )}
+
+            {success && (
+                <div className="flex items-start justify-between gap-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                    <span>{success}</span>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setSuccess(null)
+                        }
+                        className="shrink-0"
+                    >
+                        <X size={17} />
+                    </button>
+                </div>
+            )}
 
             {/* Stats */}
 
@@ -364,14 +523,8 @@ export default function CategoriesManagement() {
                         Active
                     </p>
 
-                    <p className="mt-2 text-3xl font-black text-slate-900">
-                        {
-                            categories.filter(
-                                (category) =>
-                                    category.status ===
-                                    "active"
-                            ).length
-                        }
+                    <p className="mt-2 text-3xl font-black text-emerald-600">
+                        {activeCount}
                     </p>
                 </div>
 
@@ -380,13 +533,8 @@ export default function CategoriesManagement() {
                         Articles Assigned
                     </p>
 
-                    <p className="mt-2 text-3xl font-black text-slate-900">
-                        {categories.reduce(
-                            (total, category) =>
-                                total +
-                                category.posts,
-                            0
-                        )}
+                    <p className="mt-2 text-3xl font-black text-blue-600">
+                        {totalArticles}
                     </p>
                 </div>
             </section>
@@ -413,271 +561,315 @@ export default function CategoriesManagement() {
                 </div>
             </section>
 
-            {/* Category table */}
+            {/* Loading */}
 
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="hidden overflow-x-auto md:block">
-                    <table className="w-full min-w-[760px]">
-                        <thead>
-                            <tr className="border-b border-slate-100 bg-slate-50/70">
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
-                                    Category
-                                </th>
+            {loading ? (
+                <section className="flex min-h-[320px] items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="flex flex-col items-center gap-3 text-slate-500">
+                        <Loader2
+                            size={30}
+                            className="animate-spin text-blue-600"
+                        />
 
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
-                                    Slug
-                                </th>
+                        <p className="text-sm font-semibold">
+                            Loading categories...
+                        </p>
+                    </div>
+                </section>
+            ) : (
+                <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    {/* Desktop */}
 
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
-                                    Articles
-                                </th>
+                    <div className="hidden overflow-x-auto md:block">
+                        <table className="w-full min-w-[760px]">
+                            <thead>
+                                <tr className="border-b border-slate-100 bg-slate-50/70">
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Category
+                                    </th>
 
-                                <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
-                                    Status
-                                </th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Slug
+                                    </th>
 
-                                <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-400">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Articles
+                                    </th>
 
-                        <tbody className="divide-y divide-slate-100">
-                            {filteredCategories.map(
-                                (category) => (
-                                    <tr
-                                        key={
-                                            category.id
-                                        }
-                                        className="group transition hover:bg-slate-50/70"
-                                    >
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                                                    <Folder
-                                                        size={
-                                                            19
-                                                        }
-                                                    />
-                                                </div>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Status
+                                    </th>
 
-                                                <div className="min-w-0">
-                                                    <p className="font-bold text-slate-900">
-                                                        {
-                                                            category.name
-                                                        }
-                                                    </p>
+                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-400">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
 
-                                                    <p className="mt-0.5 max-w-sm truncate text-xs text-slate-400">
-                                                        {
-                                                            category.description
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            <code className="rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs text-slate-600">
-                                                /
-                                                {
-                                                    category.slug
-                                                }
-                                            </code>
-                                        </td>
-
-                                        <td className="px-6 py-4 text-sm font-semibold text-slate-700">
-                                            {
-                                                category.posts
+                            <tbody className="divide-y divide-slate-100">
+                                {filteredCategories.map(
+                                    (category) => (
+                                        <tr
+                                            key={
+                                                category._id
                                             }
-                                        </td>
+                                            className="transition hover:bg-slate-50/70"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                                        <Folder
+                                                            size={
+                                                                19
+                                                            }
+                                                        />
+                                                    </div>
 
-                                        <td className="px-6 py-4">
-                                            <span
-                                                className={[
-                                                    "inline-flex rounded-full px-2.5 py-1 text-xs font-bold",
-                                                    category.status ===
-                                                        "active"
-                                                        ? "bg-emerald-50 text-emerald-600"
-                                                        : "bg-slate-100 text-slate-500",
-                                                ].join(
-                                                    " "
-                                                )}
-                                            >
-                                                {
-                                                    category.status
-                                                }
-                                            </span>
-                                        </td>
+                                                    <div className="min-w-0">
+                                                        <p className="font-bold text-slate-900">
+                                                            {
+                                                                category.name
+                                                            }
+                                                        </p>
 
-                                        <td className="px-6 py-4">
-                                            <div className="flex justify-end gap-1">
-                                                <button
-                                                    onClick={() =>
-                                                        openEdit(
-                                                            category
-                                                        )
-                                                    }
-                                                    className="rounded-xl p-2.5 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
-                                                    title="Edit"
-                                                >
-                                                    <Edit3
-                                                        size={
-                                                            17
-                                                        }
-                                                    />
-                                                </button>
+                                                        <p className="mt-0.5 max-w-sm truncate text-xs text-slate-400">
+                                                            {
+                                                                category.description ||
+                                                                "No description"
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
 
-                                                <button
-                                                    onClick={() =>
-                                                        setDeleteTarget(
-                                                            category
-                                                        )
-                                                    }
-                                                    className="rounded-xl p-2.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2
-                                                        size={
-                                                            17
-                                                        }
-                                                    />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Mobile cards */}
-
-                <div className="divide-y divide-slate-100 md:hidden">
-                    {filteredCategories.map(
-                        (category) => (
-                            <article
-                                key={
-                                    category.id
-                                }
-                                className="p-4"
-                            >
-                                <div className="flex gap-3">
-                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                                        <Folder
-                                            size={
-                                                19
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div>
-                                                <h3 className="font-bold text-slate-900">
-                                                    {
-                                                        category.name
-                                                    }
-                                                </h3>
-
-                                                <p className="mt-1 text-xs text-slate-400">
+                                            <td className="px-6 py-4">
+                                                <code className="rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs text-slate-600">
                                                     /
                                                     {
                                                         category.slug
                                                     }
-                                                </p>
-                                            </div>
+                                                </code>
+                                            </td>
 
-                                            <span
-                                                className={[
-                                                    "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold",
-                                                    category.status ===
-                                                        "active"
-                                                        ? "bg-emerald-50 text-emerald-600"
-                                                        : "bg-slate-100 text-slate-500",
-                                                ].join(
-                                                    " "
-                                                )}
-                                            >
+                                            <td className="px-6 py-4 text-sm font-semibold text-slate-700">
                                                 {
-                                                    category.status
+                                                    category.posts ??
+                                                    0
                                                 }
-                                            </span>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <span
+                                                    className={[
+                                                        "inline-flex rounded-full px-2.5 py-1 text-xs font-bold capitalize",
+                                                        category.status ===
+                                                            "inactive"
+                                                            ? "bg-slate-100 text-slate-500"
+                                                            : "bg-emerald-50 text-emerald-600",
+                                                    ].join(
+                                                        " "
+                                                    )}
+                                                >
+                                                    {category.status ===
+                                                        "inactive"
+                                                        ? "inactive"
+                                                        : "active"}
+                                                </span>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-end gap-1">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            openEdit(
+                                                                category
+                                                            )
+                                                        }
+                                                        className="rounded-xl p-2.5 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
+                                                        title="Edit"
+                                                    >
+                                                        <Edit3
+                                                            size={
+                                                                17
+                                                            }
+                                                        />
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setDeleteTarget(
+                                                                category
+                                                            )
+                                                        }
+                                                        className="rounded-xl p-2.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2
+                                                            size={
+                                                                17
+                                                            }
+                                                        />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile */}
+
+                    <div className="divide-y divide-slate-100 md:hidden">
+                        {filteredCategories.map(
+                            (category) => (
+                                <article
+                                    key={
+                                        category._id
+                                    }
+                                    className="p-4"
+                                >
+                                    <div className="flex gap-3">
+                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                            <Folder
+                                                size={
+                                                    19
+                                                }
+                                            />
                                         </div>
 
-                                        <p className="mt-3 text-sm leading-5 text-slate-500">
-                                            {
-                                                category.description
-                                            }
-                                        </p>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <h3 className="font-bold text-slate-900">
+                                                        {
+                                                            category.name
+                                                        }
+                                                    </h3>
 
-                                        <div className="mt-4 flex items-center justify-between">
-                                            <span className="text-xs font-semibold text-slate-400">
+                                                    <p className="mt-1 truncate text-xs text-slate-400">
+                                                        /
+                                                        {
+                                                            category.slug
+                                                        }
+                                                    </p>
+                                                </div>
+
+                                                <span
+                                                    className={[
+                                                        "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold",
+                                                        category.status ===
+                                                            "inactive"
+                                                            ? "bg-slate-100 text-slate-500"
+                                                            : "bg-emerald-50 text-emerald-600",
+                                                    ].join(
+                                                        " "
+                                                    )}
+                                                >
+                                                    {category.status ===
+                                                        "inactive"
+                                                        ? "inactive"
+                                                        : "active"}
+                                                </span>
+                                            </div>
+
+                                            <p className="mt-3 text-sm leading-5 text-slate-500">
                                                 {
-                                                    category.posts
-                                                }{" "}
-                                                articles
-                                            </span>
+                                                    category.description ||
+                                                    "No description"
+                                                }
+                                            </p>
 
-                                            <div className="flex gap-1">
-                                                <button
-                                                    onClick={() =>
-                                                        openEdit(
-                                                            category
-                                                        )
-                                                    }
-                                                    className="rounded-lg p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600"
-                                                >
-                                                    <Edit3
-                                                        size={
-                                                            16
-                                                        }
-                                                    />
-                                                </button>
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <span className="text-xs font-semibold text-slate-400">
+                                                    {
+                                                        category.posts ??
+                                                        0
+                                                    }{" "}
+                                                    articles
+                                                </span>
 
-                                                <button
-                                                    onClick={() =>
-                                                        setDeleteTarget(
-                                                            category
-                                                        )
-                                                    }
-                                                    className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                                                >
-                                                    <Trash2
-                                                        size={
-                                                            16
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            openEdit(
+                                                                category
+                                                            )
                                                         }
-                                                    />
-                                                </button>
+                                                        className="rounded-lg p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600"
+                                                    >
+                                                        <Edit3
+                                                            size={
+                                                                16
+                                                            }
+                                                        />
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setDeleteTarget(
+                                                                category
+                                                            )
+                                                        }
+                                                        className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                                                    >
+                                                        <Trash2
+                                                            size={
+                                                                16
+                                                            }
+                                                        />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </article>
-                        )
-                    )}
-                </div>
-
-                {!filteredCategories.length && (
-                    <div className="py-20 text-center">
-                        <Folder
-                            size={38}
-                            className="mx-auto text-slate-300"
-                        />
-
-                        <h3 className="mt-4 font-black text-slate-900">
-                            No categories found
-                        </h3>
-
-                        <p className="mt-2 text-sm text-slate-500">
-                            Try a different search term.
-                        </p>
+                                </article>
+                            )
+                        )}
                     </div>
-                )}
-            </section>
 
-            {/* Create / Edit modal */}
+                    {!filteredCategories.length && (
+                        <div className="py-20 text-center">
+                            <Folder
+                                size={38}
+                                className="mx-auto text-slate-300"
+                            />
+
+                            <h3 className="mt-4 font-black text-slate-900">
+                                No categories found
+                            </h3>
+
+                            <p className="mt-2 text-sm text-slate-500">
+                                {search
+                                    ? "Try a different search term."
+                                    : "Create your first category."}
+                            </p>
+
+                            {!search && (
+                                <button
+                                    type="button"
+                                    onClick={
+                                        openCreate
+                                    }
+                                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700"
+                                >
+                                    <Plus
+                                        size={16}
+                                    />
+                                    Add Category
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </section>
+            )}
+
+            {/* Create / Edit */}
 
             {showForm && (
                 <div
@@ -691,7 +883,7 @@ export default function CategoriesManagement() {
                         }
                     }}
                 >
-                    <div className="w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl">
+                    <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white shadow-2xl">
                         <div className="flex items-center justify-between border-b border-slate-100 p-6">
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
@@ -708,16 +900,14 @@ export default function CategoriesManagement() {
                             </div>
 
                             <button
+                                type="button"
                                 onClick={
                                     closeForm
                                 }
-                                className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                                disabled={saving}
+                                className="rounded-xl p-2 text-slate-400 hover:bg-slate-100"
                             >
-                                <X
-                                    size={
-                                        19
-                                    }
-                                />
+                                <X size={19} />
                             </button>
                         </div>
 
@@ -734,18 +924,15 @@ export default function CategoriesManagement() {
 
                                 <input
                                     value={name}
-                                    onChange={(
-                                        event
-                                    ) =>
+                                    onChange={(event) =>
                                         handleNameChange(
-                                            event
-                                                .target
-                                                .value
+                                            event.target.value
                                         )
                                     }
                                     placeholder="e.g. Artificial Intelligence"
                                     required
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                                    disabled={saving}
+                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
                             </div>
 
@@ -756,28 +943,26 @@ export default function CategoriesManagement() {
 
                                 <input
                                     value={slug}
-                                    onChange={(
-                                        event
-                                    ) => {
+                                    onChange={(event) => {
                                         setSlug(
                                             createSlug(
-                                                event
-                                                    .target
-                                                    .value
+                                                event.target.value
                                             )
                                         );
-
                                         setSlugManuallyEdited(
                                             true
                                         );
                                     }}
                                     placeholder="artificial-intelligence"
                                     required
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                                    disabled={saving}
+                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
 
                                 <p className="mt-1.5 text-xs text-slate-400">
-                                    Used in the public category URL.
+                                    Automatically generated
+                                    from the name unless
+                                    manually changed.
                                 </p>
                             </div>
 
@@ -790,18 +975,15 @@ export default function CategoriesManagement() {
                                     value={
                                         description
                                     }
-                                    onChange={(
-                                        event
-                                    ) =>
+                                    onChange={(event) =>
                                         setDescription(
-                                            event
-                                                .target
-                                                .value
+                                            event.target.value
                                         )
                                     }
-                                    placeholder="Briefly describe this category..."
                                     rows={4}
-                                    className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                                    disabled={saving}
+                                    placeholder="Briefly describe this category..."
+                                    className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
                             </div>
 
@@ -817,14 +999,15 @@ export default function CategoriesManagement() {
                                             "inactive",
                                         ] as const
                                     ).map(
-                                        (
-                                            value
-                                        ) => (
+                                        (value) => (
                                             <button
                                                 key={
                                                     value
                                                 }
                                                 type="button"
+                                                disabled={
+                                                    saving
+                                                }
                                                 onClick={() =>
                                                     setStatus(
                                                         value
@@ -864,15 +1047,26 @@ export default function CategoriesManagement() {
                                     onClick={
                                         closeForm
                                     }
-                                    className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+                                    disabled={saving}
+                                    className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
 
                                 <button
                                     type="submit"
-                                    className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"
+                                    disabled={saving}
+                                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
+                                    {saving && (
+                                        <Loader2
+                                            size={
+                                                16
+                                            }
+                                            className="animate-spin"
+                                        />
+                                    )}
+
                                     {editing
                                         ? "Save Changes"
                                         : "Create Category"}
@@ -906,26 +1100,31 @@ export default function CategoriesManagement() {
                             .
                         </p>
 
-                        {deleteTarget.posts >
-                            0 && (
+                        {(deleteTarget.posts ??
+                            0) > 0 && (
                                 <div className="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-700">
                                     This category currently
-                                    contains{" "}
+                                    has{" "}
                                     {
                                         deleteTarget.posts
                                     }{" "}
-                                    articles. In the production
-                                    API, deletion should be blocked
-                                    or require reassignment.
+                                    assigned articles.
+                                    Your backend should
+                                    reject deletion or
+                                    handle reassignment.
                                 </div>
                             )}
 
                         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                             <button
+                                type="button"
                                 onClick={() =>
                                     setDeleteTarget(
                                         null
                                     )
+                                }
+                                disabled={
+                                    deleting
                                 }
                                 className="h-11 rounded-xl border border-slate-200 px-5 text-sm font-bold text-slate-600 hover:bg-slate-50"
                             >
@@ -933,11 +1132,24 @@ export default function CategoriesManagement() {
                             </button>
 
                             <button
+                                type="button"
                                 onClick={
                                     confirmDelete
                                 }
-                                className="h-11 rounded-xl bg-red-600 px-5 text-sm font-bold text-white hover:bg-red-700"
+                                disabled={
+                                    deleting
+                                }
+                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60"
                             >
+                                {deleting && (
+                                    <Loader2
+                                        size={
+                                            16
+                                        }
+                                        className="animate-spin"
+                                    />
+                                )}
+
                                 Delete Category
                             </button>
                         </div>
