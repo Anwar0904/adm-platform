@@ -152,35 +152,47 @@ class TagService {
         data: UpdateTagInput,
         userId: string
     ) {
-        const tag =
-            await Tag.findById(id);
+        const tag = await Tag.findOne({
+            _id: id,
+            isDeleted: false,
+        });
 
-        if (!tag || tag.isDeleted) {
+        if (!tag) {
             throw new ApiError(
                 404,
                 "Tag not found."
             );
         }
 
-        if (
-            data.slug &&
-            data.slug !== tag.slug
-        ) {
+        const updateData = {
+            ...data,
+        };
+
+        if (data.name || data.slug) {
+            const nextSlug = generateSlug(
+                data.slug || data.name!
+            );
+
             const exists =
                 await TagRepository.slugExists(
-                    data.slug,
+                    nextSlug,
                     id
                 );
 
             if (exists) {
                 throw new ApiError(
                     409,
-                    "Slug already exists."
+                    "A tag with this slug already exists."
                 );
             }
+
+            updateData.slug = nextSlug;
         }
 
-        Object.assign(tag, data);
+        Object.assign(
+            tag,
+            updateData
+        );
 
         tag.updatedBy =
             new Types.ObjectId(userId);
