@@ -34,98 +34,99 @@ const testimonials = [
 
 export default function TestimonialsSection() {
   return (
-    <section className="py-32 flex justify-center">
-
-      <div className="container">
-
-        <div className="mb-16 text-center">
-
-          <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+    <section className="flex justify-center px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
+      <div className="container w-full">
+        {/* Header */}
+        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
+          <span className="inline-flex rounded-full bg-blue-100 px-4 py-2 text-xs font-semibold text-blue-700 sm:px-5 sm:text-sm">
             Testimonials
           </span>
 
-          <h2 className="mt-6 text-5xl font-black">
+          <h2 className="mt-5 text-3xl font-black leading-tight tracking-tight text-slate-900 sm:mt-6 sm:text-4xl md:text-5xl lg:text-6xl">
             Trusted By Amazing Clients
           </h2>
 
-          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-muted-foreground">
-            We measure success through long-term partnerships and
-            client satisfaction.
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8">
+            We measure success through long-term partnerships and client
+            satisfaction.
           </p>
-
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-
+        {/* Testimonials */}
+        <div className="grid gap-5 sm:gap-6 lg:grid-cols-3 lg:gap-8">
           {testimonials.map((item) => (
             <article
               key={item.id}
-              className="group rounded-3xl border bg-white p-8 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-blue-600 hover:shadow-2xl"
+              className="
+                group
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                p-5
+                shadow-sm
+                transition-all
+                duration-300
+                hover:-translate-y-1
+                hover:border-blue-500
+                hover:shadow-xl
+                sm:rounded-3xl
+                sm:p-7
+                lg:p-8
+              "
             >
-
-              <div className="mb-6 flex">
-
-                {[...Array(5)].map((_, i) => (
+              {/* Rating */}
+              <div className="mb-5 flex gap-1 sm:mb-6">
+                {[...Array(5)].map((_, index) => (
                   <Star
-                    key={i}
-                    className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                    key={index}
+                    className="h-4 w-4 fill-yellow-400 text-yellow-400 sm:h-5 sm:w-5"
                   />
                 ))}
-
               </div>
 
-              <p className="leading-8 text-muted-foreground">
-                "{item.review}"
+              {/* Review */}
+              <p className="text-sm leading-7 text-slate-600 sm:text-base sm:leading-8">
+                &quot;{item.review}&quot;
               </p>
 
-              <div className="mt-10 flex items-center gap-4">
-
-                <div className="relative h-16 w-16 overflow-hidden rounded-full">
-
+              {/* Client */}
+              <div className="mt-8 flex items-center gap-3 sm:mt-10 sm:gap-4">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-blue-100 sm:h-14 sm:w-14">
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
+                    sizes="56px"
                     className="object-cover"
                   />
-
                 </div>
 
-                <div>
-
-                  <h4 className="font-bold">
+                <div className="min-w-0">
+                  <h4 className="truncate text-sm font-bold text-slate-900 sm:text-base">
                     {item.name}
                   </h4>
 
-                  <p className="text-sm text-muted-foreground">
+                  <p className="mt-0.5 text-xs leading-5 text-slate-500 sm:text-sm">
                     {item.role}
                   </p>
-
                 </div>
-
               </div>
-
             </article>
           ))}
-
         </div>
 
-        <div className="mt-16 text-center">
-
+        {/* CTA */}
+        <div className="mt-10 text-center sm:mt-14">
           <Link
             href="/testimonials"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-semibold text-white transition hover:scale-105 hover:shadow-xl"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-lg sm:w-auto sm:px-8 sm:py-4 sm:text-base"
           >
             View All Testimonials
-
-            <ArrowRight className="h-5 w-5" />
-
+            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
           </Link>
-
         </div>
-
       </div>
-
     </section>
   );
 }
