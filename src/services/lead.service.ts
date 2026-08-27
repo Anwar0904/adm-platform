@@ -1,9 +1,4 @@
-import {
-    SortOrder,
-    Types,
-} from "mongoose";
-
-import { Lead } from "@/models/lead.model";
+import { Types } from "mongoose";
 
 import LeadRepository from "@/repositories/lead.repository";
 
@@ -22,139 +17,150 @@ import {
 } from "@/types/lead-management";
 
 class LeadService {
-    async getLeads(
-        query: LeadQuery
-    ) {
-        const page = Number(
-            query.page ?? 1
+    async getLeads(query: LeadQuery) {
+        const page = Math.max(
+            1,
+            Number(query.page ?? 1)
         );
 
-        const limit = Number(
-            query.limit ?? 10
+        const limit = Math.min(
+            100,
+            Math.max(
+                1,
+                Number(query.limit ?? 10)
+            )
         );
 
-        const filter: Record<
-            string,
-            unknown
-        > = {
+        const filter: Record<string, unknown> = {
             isDeleted: false,
         };
 
-        if (query.search) {
+        if (query.search?.trim()) {
+            const search = query.search.trim();
+
             filter.$or = [
                 {
                     fullName: {
-                        $regex:
-                            query.search,
-                        $options:
-                            "i",
+                        $regex: search,
+                        $options: "i",
                     },
                 },
                 {
                     email: {
-                        $regex:
-                            query.search,
-                        $options:
-                            "i",
+                        $regex: search,
+                        $options: "i",
                     },
                 },
                 {
                     company: {
-                        $regex:
-                            query.search,
-                        $options:
-                            "i",
+                        $regex: search,
+                        $options: "i",
+                    },
+                },
+                {
+                    phone: {
+                        $regex: search,
+                        $options: "i",
+                    },
+                },
+                {
+                    projectTitle: {
+                        $regex: search,
+                        $options: "i",
                     },
                 },
             ];
         }
 
         if (query.status) {
-            filter.status =
-                query.status;
+            filter.status = query.status;
         }
 
         if (query.source) {
-            filter.source =
-                query.source;
+            filter.source = query.source;
         }
 
-        if (
-            query.assignedTo
-        ) {
-            filter.assignedTo =
-                new Types.ObjectId(
-                    query.assignedTo
+        if (query.assignedTo) {
+            if (!Types.ObjectId.isValid(query.assignedTo)) {
+                throw new ApiError(
+                    400,
+                    "Invalid assigned user ID."
                 );
+            }
+
+            filter.assignedTo =
+                new Types.ObjectId(query.assignedTo);
         }
 
-        let sort: Record<
-            string,
-            SortOrder
-        > = {
+        let sort: Record<string, 1 | -1> = {
             createdAt: -1,
         };
 
-        if (query.sort) {
-            const field =
-                query.sort.replace(
-                    "-",
-                    ""
-                );
+        if (query.sort?.trim()) {
+            const rawField = query.sort.trim();
 
-            sort = {
-                [field]:
-                    query.sort.startsWith(
-                        "-"
-                    )
-                        ? -1
-                        : 1,
-            };
+            const descending =
+                rawField.startsWith("-");
+
+            const field = rawField.replace(
+                /^-/,
+                ""
+            );
+
+            const allowedSortFields = [
+                "createdAt",
+                "updatedAt",
+                "fullName",
+                "email",
+                "status",
+                "source",
+                "company",
+                "contactedAt",
+            ];
+
+            if (allowedSortFields.includes(field)) {
+                sort = {
+                    [field]: descending ? -1 : 1,
+                };
+            }
         }
 
-        const [
-            leads,
-            total,
-        ] = await Promise.all([
+        const [leads, total] = await Promise.all([
             LeadRepository.getLeads(
                 filter,
                 page,
                 limit,
                 sort
             ),
-            LeadRepository.countLeads(
-                filter
-            ),
+            LeadRepository.countLeads(filter),
         ]);
 
         return {
             leads,
-
             pagination: {
                 page,
                 limit,
                 total,
                 totalPages:
-                    Math.ceil(
-                        total /
-                        limit
-                    ),
+                    total === 0
+                        ? 1
+                        : Math.ceil(total / limit),
             },
         };
     }
 
-    async getLeadById(
-        id: string
-    ) {
-        const lead =
-            await LeadRepository.findById(
-                id
+    async getLeadById(id: string) {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new ApiError(
+                400,
+                "Invalid lead ID."
             );
+        }
 
-        if (
-            !lead ||
-            lead.isDeleted
-        ) {
+        const lead =
+            await LeadRepository.findById(id);
+
+        if (!lead || lead.isDeleted) {
             throw new ApiError(
                 404,
                 "Lead not found."
@@ -168,10 +174,11 @@ class LeadService {
         data: CreateLeadInput,
         userId?: string
     ) {
+        const email =
+            data.email.trim().toLowerCase();
+
         const existing =
-            await LeadRepository.findByEmail(
-                data.email
-            );
+            await LeadRepository.findByEmail(email);
 
         if (
             existing &&
@@ -179,57 +186,59 @@ class LeadService {
         ) {
             throw new ApiError(
                 409,
-                "Lead already exists."
+                "A lead with this email already exists."
             );
         }
 
+        const actorId =
+            userId &&
+                Types.ObjectId.isValid(userId)
+                ? new Types.ObjectId(userId)
+                : null;
+
         return LeadRepository.create({
-            fullName: data.fullName,
+            fullName: data.fullName.trim(),
+            email,
+            phone: data.phone?.trim(),
+            company: data.company?.trim(),
+            website: data.website?.trim(),
 
-            email: data.email,
-
-            phone: data.phone,
-
-            company: data.company,
-
-            website: data.website,
             projectTitle:
-                data.projectTitle ?? "",
+                data.projectTitle?.trim() ?? "",
 
             projectType:
-                data.projectType ?? "",
+                data.projectType?.trim() ?? "",
 
             timeline:
-                data.timeline ?? "",
+                data.timeline?.trim() ?? "",
 
             preferredContact:
-                data.preferredContact ??
-                "email",
+                data.preferredContact ?? "email",
 
             attachments:
                 data.attachments ?? [],
 
-            message: data.message,
+            message: data.message.trim(),
 
-            budget: data.budget ?? null,
+            budget:
+                data.budget ?? null,
 
             notes:
-                data.notes?.map(
-                    (note) => ({
-                        note: note.note,
-
-                        createdAt:
-                            note.createdAt ??
-                            new Date(),
-
-                        createdBy:
-                            note.createdBy
-                                ? new Types.ObjectId(
-                                    note.createdBy
-                                )
-                                : null,
-                    })
-                ) ?? [],
+                data.notes?.map((note) => ({
+                    note: note.note.trim(),
+                    createdAt:
+                        note.createdAt ??
+                        new Date(),
+                    createdBy:
+                        note.createdBy &&
+                            Types.ObjectId.isValid(
+                                note.createdBy
+                            )
+                            ? new Types.ObjectId(
+                                note.createdBy
+                            )
+                            : null,
+                })) ?? [],
 
             interestedServices:
                 data.interestedServices.map(
@@ -238,7 +247,10 @@ class LeadService {
                 ),
 
             assignedTo:
-                data.assignedTo
+                data.assignedTo &&
+                    Types.ObjectId.isValid(
+                        data.assignedTo
+                    )
                     ? new Types.ObjectId(
                         data.assignedTo
                     )
@@ -252,16 +264,10 @@ class LeadService {
                 data.status ??
                 LEAD_STATUS.NEW,
 
-            createdBy: userId
-                ? new Types.ObjectId(userId)
-                : null,
-
-            updatedBy: userId
-                ? new Types.ObjectId(userId)
-                : null,
+            createdBy: actorId,
+            updatedBy: actorId,
 
             isDeleted: false,
-
             deletedAt: null,
         });
     }
@@ -271,42 +277,148 @@ class LeadService {
         data: UpdateLeadInput,
         userId: string
     ) {
-        const lead =
-            await Lead.findById(
-                id
+        if (!Types.ObjectId.isValid(id)) {
+            throw new ApiError(
+                400,
+                "Invalid lead ID."
             );
+        }
 
-        if (
-            !lead ||
-            lead.isDeleted
-        ) {
+        if (!Types.ObjectId.isValid(userId)) {
+            throw new ApiError(
+                400,
+                "Invalid user ID."
+            );
+        }
+
+        const lead =
+            await LeadRepository.findById(id);
+
+        if (!lead || lead.isDeleted) {
             throw new ApiError(
                 404,
                 "Lead not found."
             );
         }
 
-        Object.assign(
-            lead,
-            data
-        );
+        if (data.email !== undefined) {
+            const email =
+                data.email
+                    .trim()
+                    .toLowerCase();
 
-        if (
-            data.interestedServices
-        ) {
-            lead.interestedServices =
-                data.interestedServices.map(
-                    (id) =>
-                        new Types.ObjectId(
-                            id
-                        )
+            const existing =
+                await LeadRepository.findByEmail(
+                    email
                 );
+
+            if (
+                existing &&
+                existing._id.toString() !== id &&
+                !existing.isDeleted
+            ) {
+                throw new ApiError(
+                    409,
+                    "Another lead already uses this email."
+                );
+            }
+
+            lead.email = email;
+        }
+
+        if (data.fullName !== undefined) {
+            lead.fullName =
+                data.fullName.trim();
+        }
+
+        if (data.phone !== undefined) {
+            lead.phone =
+                data.phone?.trim();
+        }
+
+        if (data.company !== undefined) {
+            lead.company =
+                data.company?.trim();
+        }
+
+        if (data.website !== undefined) {
+            lead.website =
+                data.website?.trim();
+        }
+
+        if (data.projectTitle !== undefined) {
+            lead.projectTitle =
+                data.projectTitle.trim();
+        }
+
+        if (data.projectType !== undefined) {
+            lead.projectType =
+                data.projectType.trim();
+        }
+
+        if (data.timeline !== undefined) {
+            lead.timeline =
+                data.timeline.trim();
         }
 
         if (
-            data.assignedTo !==
+            data.preferredContact !==
             undefined
         ) {
+            lead.preferredContact =
+                data.preferredContact;
+        }
+
+        if (data.attachments !== undefined) {
+            lead.attachments =
+                data.attachments;
+        }
+
+        if (data.message !== undefined) {
+            lead.message =
+                data.message.trim();
+        }
+
+        if (data.budget !== undefined) {
+            lead.budget =
+                data.budget;
+        }
+
+        if (data.interestedServices !== undefined) {
+            lead.interestedServices =
+                data.interestedServices.map(
+                    (serviceId) => {
+                        if (
+                            !Types.ObjectId.isValid(
+                                serviceId
+                            )
+                        ) {
+                            throw new ApiError(
+                                400,
+                                "Invalid interested service ID."
+                            );
+                        }
+
+                        return new Types.ObjectId(
+                            serviceId
+                        );
+                    }
+                );
+        }
+
+        if (data.assignedTo !== undefined) {
+            if (
+                data.assignedTo &&
+                !Types.ObjectId.isValid(
+                    data.assignedTo
+                )
+            ) {
+                throw new ApiError(
+                    400,
+                    "Invalid assigned user ID."
+                );
+            }
+
             lead.assignedTo =
                 data.assignedTo
                     ? new Types.ObjectId(
@@ -315,23 +427,32 @@ class LeadService {
                     : null;
         }
 
+        if (data.source !== undefined) {
+            lead.source = data.source;
+        }
+
+        if (data.status !== undefined) {
+            lead.status = data.status;
+        }
+
         lead.updatedBy =
-            new Types.ObjectId(
-                userId
-            );
+            new Types.ObjectId(userId);
 
         await lead.save();
 
-        return lead;
+        return LeadRepository.findById(id);
     }
 
-    async deleteLead(
-        id: string
-    ) {
-        const lead =
-            await Lead.findById(
-                id
+    async deleteLead(id: string) {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new ApiError(
+                400,
+                "Invalid lead ID."
             );
+        }
+
+        const lead =
+            await LeadRepository.findById(id);
 
         if (!lead) {
             throw new ApiError(
@@ -340,9 +461,7 @@ class LeadService {
             );
         }
 
-        if (
-            lead.isDeleted
-        ) {
+        if (lead.isDeleted) {
             throw new ApiError(
                 400,
                 "Lead already deleted."
@@ -350,20 +469,23 @@ class LeadService {
         }
 
         lead.isDeleted = true;
-
-        lead.deletedAt =
-            new Date();
+        lead.deletedAt = new Date();
 
         await lead.save();
 
         return true;
     }
 
-    async restoreLead(
-        id: string
-    ) {
+    async restoreLead(id: string) {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new ApiError(
+                400,
+                "Invalid lead ID."
+            );
+        }
+
         const lead =
-            await Lead.findById(id);
+            await LeadRepository.findById(id);
 
         if (!lead) {
             throw new ApiError(
@@ -372,26 +494,36 @@ class LeadService {
             );
         }
 
-        lead.isDeleted = false;
+        if (!lead.isDeleted) {
+            throw new ApiError(
+                400,
+                "Lead is already active."
+            );
+        }
 
+        lead.isDeleted = false;
         lead.deletedAt = null;
 
         await lead.save();
 
-        return lead;
+        return LeadRepository.findById(id);
     }
 
     async changeStatus(
         id: string,
         status: LeadStatus
     ) {
-        const lead =
-            await Lead.findById(id);
+        if (!Types.ObjectId.isValid(id)) {
+            throw new ApiError(
+                400,
+                "Invalid lead ID."
+            );
+        }
 
-        if (
-            !lead ||
-            lead.isDeleted
-        ) {
+        const lead =
+            await LeadRepository.findById(id);
+
+        if (!lead || lead.isDeleted) {
             throw new ApiError(
                 404,
                 "Lead not found."
@@ -405,51 +537,65 @@ class LeadService {
             LEAD_STATUS.CONVERTED
         ) {
             lead.convertedAt =
+                lead.convertedAt ??
                 new Date();
         }
 
         await lead.save();
 
-        return lead;
+        return LeadRepository.findById(id);
     }
 
     async assignLead(
         id: string,
         assignedTo: string
     ) {
-        const lead =
-            await Lead.findById(id);
+        if (!Types.ObjectId.isValid(id)) {
+            throw new ApiError(
+                400,
+                "Invalid lead ID."
+            );
+        }
 
         if (
-            !lead ||
-            lead.isDeleted
+            !Types.ObjectId.isValid(
+                assignedTo
+            )
         ) {
+            throw new ApiError(
+                400,
+                "Invalid assigned user ID."
+            );
+        }
+
+        const lead =
+            await LeadRepository.findById(id);
+
+        if (!lead || lead.isDeleted) {
             throw new ApiError(
                 404,
                 "Lead not found."
             );
         }
 
-        lead.assignedTo =
-            new Types.ObjectId(
-                assignedTo
-            );
-
-        await lead.save();
-
-        return lead;
+        return LeadRepository.assignLead(
+            id,
+            new Types.ObjectId(assignedTo)
+        );
     }
 
-    async markContacted(
-        id: string
-    ) {
-        const lead =
-            await Lead.findById(id);
+    async markContacted(id: string) {
+        if (!Types.ObjectId.isValid(id)) {
+            throw new ApiError(
+                400,
+                "Invalid lead ID."
+            );
+        }
 
-        if (
-            !lead ||
-            lead.isDeleted
-        ) {
+        const lead =
+            await LeadRepository.findById(id);
+
+        if (!lead || lead.isDeleted) {
             throw new ApiError(
                 404,
                 "Lead not found."
@@ -469,7 +615,7 @@ class LeadService {
 
         await lead.save();
 
-        return lead;
+        return LeadRepository.findById(id);
     }
 }
 

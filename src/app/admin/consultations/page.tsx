@@ -7,17 +7,6 @@ import {
     useState,
 } from "react";
 
-type ConsultationStatus =
-    | "scheduled"
-    | "completed"
-    | "cancelled"
-    | "rescheduled";
-
-type MeetingType =
-    | "zoom"
-    | "in_person"
-    | "phone";
-
 type LeadStatus =
     | "new"
     | "contacted"
@@ -33,8 +22,18 @@ type LeadSource =
     | "social_media"
     | "email"
     | "phone"
-    | "other"
-    | string;
+    | "other";
+
+type ConsultationStatus =
+    | "scheduled"
+    | "completed"
+    | "cancelled"
+    | "rescheduled";
+
+type MeetingType =
+    | "zoom"
+    | "in_person"
+    | "phone";
 
 interface User {
     _id: string;
@@ -52,6 +51,7 @@ interface Service {
 interface LeadNote {
     _id?: string;
     note: string;
+    content?: string;
     createdAt?: string;
     createdBy?: User | null;
 }
@@ -67,7 +67,6 @@ interface Lead {
     projectType?: string;
     timeline?: string;
     preferredContact?: string;
-    attachments?: string[];
     message?: string;
     budget?: {
         min?: number;
@@ -76,27 +75,20 @@ interface Lead {
         amount?: number;
         type?: string;
     } | null;
-    notes?: LeadNote[];
     interestedServices?: Service[];
     assignedTo?: User | null;
     source?: LeadSource;
-    status?: LeadStatus | string;
+    status: LeadStatus;
     contactedAt?: string;
     convertedAt?: string;
-    createdBy?: User | null;
-    updatedBy?: User | null;
+    notes?: LeadNote[];
     createdAt: string;
     updatedAt: string;
-    isDeleted?: boolean;
-    deletedAt?: string | null;
 }
 
 interface Consultation {
     _id: string;
-    lead:
-    | Lead
-    | string
-    | null;
+    lead: Lead;
     assignedTo?: User | null;
     scheduledAt: string;
     duration: number;
@@ -115,44 +107,49 @@ interface Consultation {
     updatedAt: string;
 }
 
-interface Pagination {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-}
-
 interface ApiResult<T> {
     success: boolean;
     data: T;
     message?: string;
 }
 
-interface ConsultationListResponse {
-    consultations: Consultation[];
-    pagination: Pagination;
-}
-
 interface LeadListResponse {
     leads: Lead[];
-    pagination: Pagination;
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
 }
 
-type ViewMode = "leads" | "consultations";
+interface ConsultationListResponse {
+    consultations: Consultation[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
 
-const leadStatusStyles: Record<string, string> = {
-    new: "border-blue-100 bg-blue-50 text-blue-700",
+const leadStatusStyles: Record<
+    LeadStatus,
+    string
+> = {
+    new: "bg-blue-50 text-blue-700 border-blue-100",
     contacted:
-        "border-indigo-100 bg-indigo-50 text-indigo-700",
+        "bg-violet-50 text-violet-700 border-violet-100",
     qualified:
-        "border-violet-100 bg-violet-50 text-violet-700",
+        "bg-cyan-50 text-cyan-700 border-cyan-100",
     proposal:
-        "border-amber-100 bg-amber-50 text-amber-700",
+        "bg-amber-50 text-amber-700 border-amber-100",
     negotiation:
-        "border-orange-100 bg-orange-50 text-orange-700",
+        "bg-orange-50 text-orange-700 border-orange-100",
     converted:
-        "border-emerald-100 bg-emerald-50 text-emerald-700",
-    lost: "border-red-100 bg-red-50 text-red-700",
+        "bg-emerald-50 text-emerald-700 border-emerald-100",
+    lost:
+        "bg-red-50 text-red-700 border-red-100",
 };
 
 const consultationStatusStyles: Record<
@@ -160,24 +157,27 @@ const consultationStatusStyles: Record<
     string
 > = {
     scheduled:
-        "border-blue-100 bg-blue-50 text-blue-700",
+        "bg-blue-50 text-blue-700 border-blue-100",
     completed:
-        "border-emerald-100 bg-emerald-50 text-emerald-700",
+        "bg-emerald-50 text-emerald-700 border-emerald-100",
     cancelled:
-        "border-red-100 bg-red-50 text-red-700",
+        "bg-red-50 text-red-700 border-red-100",
     rescheduled:
-        "border-amber-100 bg-amber-50 text-amber-700",
+        "bg-amber-50 text-amber-700 border-amber-100",
 };
 
-const leadStatusOptions: LeadStatus[] = [
-    "new",
-    "contacted",
-    "qualified",
-    "proposal",
-    "negotiation",
-    "converted",
-    "lost",
-];
+const leadStatusLabels: Record<
+    LeadStatus,
+    string
+> = {
+    new: "New",
+    contacted: "Contacted",
+    qualified: "Qualified",
+    proposal: "Proposal",
+    negotiation: "Negotiation",
+    converted: "Converted",
+    lost: "Lost",
+};
 
 const meetingLabels: Record<
     MeetingType,
@@ -188,19 +188,15 @@ const meetingLabels: Record<
     phone: "Phone",
 };
 
-function getLeadName(
-    lead?: Lead | null
-) {
+function getLeadName(lead?: Lead | null) {
     return (
         lead?.fullName ||
         "Unknown lead"
     );
 }
 
-function formatDate(
-    value?: string
-) {
-    if (!value) return "—";
+function formatDate(date?: string) {
+    if (!date) return "—";
 
     return new Intl.DateTimeFormat(
         "en-US",
@@ -209,13 +205,11 @@ function formatDate(
             day: "numeric",
             year: "numeric",
         }
-    ).format(new Date(value));
+    ).format(new Date(date));
 }
 
-function formatDateTime(
-    value?: string
-) {
-    if (!value) return "—";
+function formatDateTime(date?: string) {
+    if (!date) return "—";
 
     return new Intl.DateTimeFormat(
         "en-US",
@@ -226,13 +220,11 @@ function formatDateTime(
             hour: "numeric",
             minute: "2-digit",
         }
-    ).format(new Date(value));
+    ).format(new Date(date));
 }
 
-function formatTime(
-    value?: string
-) {
-    if (!value) return "—";
+function formatTime(date?: string) {
+    if (!date) return "—";
 
     return new Intl.DateTimeFormat(
         "en-US",
@@ -240,24 +232,18 @@ function formatTime(
             hour: "numeric",
             minute: "2-digit",
         }
-    ).format(new Date(value));
+    ).format(new Date(date));
 }
 
-function isToday(
-    value?: string
-) {
-    if (!value) return false;
-
-    const date = new Date(value);
+function isToday(date: string) {
+    const value = new Date(date);
     const now = new Date();
 
     return (
-        date.getFullYear() ===
-        now.getFullYear() &&
-        date.getMonth() ===
-        now.getMonth() &&
-        date.getDate() ===
-        now.getDate()
+        value.getDate() === now.getDate() &&
+        value.getMonth() === now.getMonth() &&
+        value.getFullYear() ===
+        now.getFullYear()
     );
 }
 
@@ -269,211 +255,85 @@ function isUpcoming(
         "scheduled" &&
         new Date(
             consultation.scheduledAt
-        ).getTime() >
-        Date.now()
+        ) > new Date()
     );
 }
 
-function formatStatus(
-    value?: string
-) {
-    if (!value) return "Unknown";
-
-    return value
-        .replaceAll("_", " ")
-        .replace(
-            /\b\w/g,
-            (char) =>
-                char.toUpperCase()
-        );
-}
-
 export default function ConsultationsPage() {
-    const [view, setView] =
-        useState<ViewMode>("leads");
+    const [activeView, setActiveView] =
+        useState<
+            "overview" | "leads" | "consultations"
+        >("overview");
+
+    const [consultations, setConsultations] =
+        useState<Consultation[]>([]);
 
     const [leads, setLeads] =
         useState<Lead[]>([]);
 
-    const [
-        consultations,
-        setConsultations,
-    ] = useState<Consultation[]>([]);
+    const [consultationLoading, setConsultationLoading] =
+        useState(true);
 
-    const [
-        leadPagination,
-        setLeadPagination,
-    ] = useState<Pagination>({
-        page: 1,
-        limit: 10,
-        total: 0,
-        totalPages: 1,
-    });
+    const [leadLoading, setLeadLoading] =
+        useState(true);
 
-    const [
-        consultationPagination,
-        setConsultationPagination,
-    ] = useState<Pagination>({
-        page: 1,
-        limit: 10,
-        total: 0,
-        totalPages: 1,
-    });
+    const [error, setError] =
+        useState("");
 
     const [search, setSearch] =
+        useState("");
+
+    const [leadSearch, setLeadSearch] =
+        useState("");
+
+    const [status, setStatus] =
         useState("");
 
     const [leadStatus, setLeadStatus] =
         useState("");
 
-    const [
-        consultationStatus,
-        setConsultationStatus,
-    ] = useState("");
-
-    const [
-        meetingType,
-        setMeetingType,
-    ] = useState("");
-
-    const [
-        leadSource,
-        setLeadSource,
-    ] = useState("");
+    const [meetingType, setMeetingType] =
+        useState("");
 
     const [page, setPage] =
         useState(1);
 
-    const [loading, setLoading] =
-        useState(true);
+    const [leadPage, setLeadPage] =
+        useState(1);
 
-    const [refreshing, setRefreshing] =
-        useState(false);
+    const [totalPages, setTotalPages] =
+        useState(1);
 
-    const [error, setError] =
-        useState("");
+    const [leadTotalPages, setLeadTotalPages] =
+        useState(1);
 
-    const [selectedLead, setSelectedLead] =
-        useState<Lead | null>(null);
-
-    const [
-        selectedConsultation,
-        setSelectedConsultation,
-    ] =
+    const [selectedConsultation, setSelectedConsultation] =
         useState<Consultation | null>(
             null
         );
 
-    const [
-        showCreateConsultation,
-        setShowCreateConsultation,
-    ] = useState(false);
+    const [selectedLead, setSelectedLead] =
+        useState<Lead | null>(null);
 
-    const [
-        showLeadNote,
-        setShowLeadNote,
-    ] = useState(false);
-
-    const [
-        showConsultationNote,
-        setShowConsultationNote,
-    ] = useState(false);
-
-    const [actionLoading, setActionLoading] =
+    const [showCreateConsultation, setShowCreateConsultation] =
         useState(false);
 
-    const activePagination =
-        view === "leads"
-            ? leadPagination
-            : consultationPagination;
+    const [showCreateLead, setShowCreateLead] =
+        useState(false);
 
-    const fetchLeads =
-        useCallback(async () => {
-            try {
-                setLoading(true);
-                setError("");
+    const [showNote, setShowNote] =
+        useState(false);
 
-                const params =
-                    new URLSearchParams();
+    const [showLeadNote, setShowLeadNote] =
+        useState(false);
 
-                params.set(
-                    "page",
-                    String(page)
-                );
-                params.set("limit", "10");
-
-                if (search.trim()) {
-                    params.set(
-                        "search",
-                        search.trim()
-                    );
-                }
-
-                if (leadStatus) {
-                    params.set(
-                        "status",
-                        leadStatus
-                    );
-                }
-
-                if (leadSource) {
-                    params.set(
-                        "source",
-                        leadSource
-                    );
-                }
-
-                const response =
-                    await fetch(
-                        `/api/leads?${params.toString()}`,
-                        {
-                            credentials:
-                                "include",
-                            cache: "no-store",
-                        }
-                    );
-
-                const result =
-                    (await response.json()) as ApiResult<LeadListResponse>;
-
-                if (
-                    !response.ok ||
-                    !result.success
-                ) {
-                    throw new Error(
-                        result.message ||
-                        "Failed to load leads."
-                    );
-                }
-
-                setLeads(
-                    result.data.leads
-                );
-
-                setLeadPagination(
-                    result.data.pagination
-                );
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to load leads."
-                );
-            } finally {
-                setLoading(false);
-                setRefreshing(false);
-            }
-        }, [
-            page,
-            search,
-            leadStatus,
-            leadSource,
-        ]);
+    const [refreshing, setRefreshing] =
+        useState(false);
 
     const fetchConsultations =
         useCallback(async () => {
             try {
-                setLoading(true);
+                setConsultationLoading(true);
                 setError("");
 
                 const params =
@@ -483,7 +343,11 @@ export default function ConsultationsPage() {
                     "page",
                     String(page)
                 );
-                params.set("limit", "10");
+
+                params.set(
+                    "limit",
+                    "10"
+                );
 
                 if (search.trim()) {
                     params.set(
@@ -492,10 +356,10 @@ export default function ConsultationsPage() {
                     );
                 }
 
-                if (consultationStatus) {
+                if (status) {
                     params.set(
                         "status",
-                        consultationStatus
+                        status
                     );
                 }
 
@@ -512,7 +376,8 @@ export default function ConsultationsPage() {
                         {
                             credentials:
                                 "include",
-                            cache: "no-store",
+                            cache:
+                                "no-store",
                         }
                     );
 
@@ -533,8 +398,9 @@ export default function ConsultationsPage() {
                     result.data.consultations
                 );
 
-                setConsultationPagination(
+                setTotalPages(
                     result.data.pagination
+                        .totalPages || 1
                 );
             } catch (err) {
                 setError(
@@ -543,157 +409,197 @@ export default function ConsultationsPage() {
                         : "Failed to load consultations."
                 );
             } finally {
-                setLoading(false);
+                setConsultationLoading(
+                    false
+                );
                 setRefreshing(false);
             }
         }, [
             page,
             search,
-            consultationStatus,
+            status,
             meetingType,
+        ]);
+
+    const fetchLeads =
+        useCallback(async () => {
+            try {
+                setLeadLoading(true);
+
+                const params =
+                    new URLSearchParams();
+
+                params.set(
+                    "page",
+                    String(leadPage)
+                );
+
+                params.set(
+                    "limit",
+                    "10"
+                );
+
+                if (leadSearch.trim()) {
+                    params.set(
+                        "search",
+                        leadSearch.trim()
+                    );
+                }
+
+                if (leadStatus) {
+                    params.set(
+                        "status",
+                        leadStatus
+                    );
+                }
+
+                const response =
+                    await fetch(
+                        `/api/leads?${params.toString()}`,
+                        {
+                            credentials:
+                                "include",
+                            cache:
+                                "no-store",
+                        }
+                    );
+
+                const result =
+                    (await response.json()) as ApiResult<LeadListResponse>;
+
+                if (
+                    !response.ok ||
+                    !result.success
+                ) {
+                    throw new Error(
+                        result.message ||
+                        "Failed to load leads."
+                    );
+                }
+
+                setLeads(
+                    result.data.leads
+                );
+
+                setLeadTotalPages(
+                    result.data.pagination
+                        .totalPages || 1
+                );
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to load leads."
+                );
+            } finally {
+                setLeadLoading(false);
+            }
+        }, [
+            leadPage,
+            leadSearch,
+            leadStatus,
         ]);
 
     useEffect(() => {
         const timer = setTimeout(
-            () => {
-                if (view === "leads") {
-                    fetchLeads();
-                } else {
-                    fetchConsultations();
-                }
-            },
+            fetchConsultations,
             300
         );
 
         return () =>
             clearTimeout(timer);
-    }, [
-        view,
-        fetchLeads,
-        fetchConsultations,
-    ]);
+    }, [fetchConsultations]);
 
     useEffect(() => {
-        setPage(1);
-        setSearch("");
-        setError("");
-    }, [view]);
+        const timer = setTimeout(
+            fetchLeads,
+            300
+        );
 
-    const refresh = () => {
+        return () =>
+            clearTimeout(timer);
+    }, [fetchLeads]);
+
+    const refresh = async () => {
         setRefreshing(true);
 
-        if (view === "leads") {
-            fetchLeads();
-        } else {
-            fetchConsultations();
-        }
+        await Promise.all([
+            fetchConsultations(),
+            fetchLeads(),
+        ]);
+
+        setRefreshing(false);
     };
 
-    async function leadAction(
-        id: string,
-        action:
-            | "status"
-            | "assign"
-            | "contacted"
-            | "restore",
-        value?: string
-    ) {
-        setActionLoading(true);
+    const consultationStats =
+        useMemo(() => {
+            const scheduled =
+                consultations.filter(
+                    (item) =>
+                        item.status ===
+                        "scheduled"
+                ).length;
 
-        try {
-            let url =
-                `/api/leads/${id}`;
+            const today =
+                consultations.filter(
+                    (item) =>
+                        item.status ===
+                        "scheduled" &&
+                        isToday(
+                            item.scheduledAt
+                        )
+                ).length;
 
-            let body:
-                | Record<string, unknown>
-                | undefined;
+            const completed =
+                consultations.filter(
+                    (item) =>
+                        item.status ===
+                        "completed"
+                ).length;
 
-            if (action === "status") {
-                url += "/status";
-                body = {
-                    status: value,
-                };
-            }
+            const upcoming =
+                consultations.filter(
+                    isUpcoming
+                ).length;
 
-            if (action === "assign") {
-                url += "/assign";
-                body = {
-                    assignedTo: value,
-                };
-            }
+            return {
+                scheduled,
+                today,
+                completed,
+                upcoming,
+            };
+        }, [consultations]);
 
-            if (action === "contacted") {
-                url += "/contacted";
-            }
-
-            if (action === "restore") {
-                url += "/restore";
-            }
-
-            const response =
-                await fetch(url, {
-                    method: "PATCH",
-                    headers: body
-                        ? {
-                            "Content-Type":
-                                "application/json",
-                        }
-                        : undefined,
-                    credentials:
-                        "include",
-                    body: body
-                        ? JSON.stringify(body)
-                        : undefined,
-                });
-
-            const result =
-                (await response.json()) as ApiResult<Lead>;
-
-            if (
-                !response.ok ||
-                !result.success
-            ) {
-                throw new Error(
-                    result.message ||
-                    "Lead action failed."
-                );
-            }
-
-            const updated =
-                result.data;
-
-            setLeads((current) =>
-                current.map((lead) =>
-                    lead._id === id
-                        ? updated
-                        : lead
-                )
-            );
-
-            if (
-                selectedLead?._id === id
-            ) {
-                setSelectedLead(
-                    updated
-                );
-            }
-        } catch (err) {
-            alert(
-                err instanceof Error
-                    ? err.message
-                    : "Lead action failed."
-            );
-        } finally {
-            setActionLoading(false);
-        }
-    }
+    const leadStats =
+        useMemo(() => {
+            return {
+                total: leads.length,
+                new: leads.filter(
+                    (lead) =>
+                        lead.status === "new"
+                ).length,
+                contacted: leads.filter(
+                    (lead) =>
+                        lead.status ===
+                        "contacted"
+                ).length,
+                qualified: leads.filter(
+                    (lead) =>
+                        lead.status ===
+                        "qualified"
+                ).length,
+                converted: leads.filter(
+                    (lead) =>
+                        lead.status ===
+                        "converted"
+                ).length,
+            };
+        }, [leads]);
 
     async function updateConsultationStatus(
         id: string,
-        status: ConsultationStatus
+        nextStatus: ConsultationStatus
     ) {
-        setActionLoading(true);
-
         try {
             const response =
                 await fetch(
@@ -707,7 +613,8 @@ export default function ConsultationsPage() {
                         credentials:
                             "include",
                         body: JSON.stringify({
-                            status,
+                            status:
+                                nextStatus,
                         }),
                     }
                 );
@@ -742,25 +649,21 @@ export default function ConsultationsPage() {
             alert(
                 err instanceof Error
                     ? err.message
-                    : "Failed to update consultation."
+                    : "Failed to update status."
             );
-        } finally {
-            setActionLoading(false);
         }
     }
 
-    async function addLeadNote(
+    async function updateLeadStatus(
         id: string,
-        note: string
+        nextStatus: LeadStatus
     ) {
-        setActionLoading(true);
-
         try {
             const response =
                 await fetch(
-                    `/api/leads/${id}/notes`,
+                    `/api/leads/${id}`,
                     {
-                        method: "POST",
+                        method: "PATCH",
                         headers: {
                             "Content-Type":
                                 "application/json",
@@ -768,7 +671,8 @@ export default function ConsultationsPage() {
                         credentials:
                             "include",
                         body: JSON.stringify({
-                            note,
+                            status:
+                                nextStatus,
                         }),
                     }
                 );
@@ -782,7 +686,7 @@ export default function ConsultationsPage() {
             ) {
                 throw new Error(
                     result.message ||
-                    "Failed to add note."
+                    "Failed to update lead."
                 );
             }
 
@@ -790,68 +694,7 @@ export default function ConsultationsPage() {
                 result.data
             );
 
-            setLeads((current) =>
-                current.map((lead) =>
-                    lead._id === id
-                        ? result.data
-                        : lead
-                )
-            );
-
-            setShowLeadNote(false);
-        } catch (err) {
-            alert(
-                err instanceof Error
-                    ? err.message
-                    : "Failed to add note."
-            );
-        } finally {
-            setActionLoading(false);
-        }
-    }
-
-    async function addConsultationNote(
-        id: string,
-        content: string
-    ) {
-        setActionLoading(true);
-
-        try {
-            const response =
-                await fetch(
-                    `/api/consultations/${id}/notes`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type":
-                                "application/json",
-                        },
-                        credentials:
-                            "include",
-                        body: JSON.stringify({
-                            content,
-                        }),
-                    }
-                );
-
-            const result =
-                (await response.json()) as ApiResult<Consultation>;
-
-            if (
-                !response.ok ||
-                !result.success
-            ) {
-                throw new Error(
-                    result.message ||
-                    "Failed to add note."
-                );
-            }
-
-            setSelectedConsultation(
-                result.data
-            );
-
-            setConsultations(
+            setLeads(
                 (current) =>
                     current.map(
                         (item) =>
@@ -860,90 +703,222 @@ export default function ConsultationsPage() {
                                 : item
                     )
             );
+        } catch (err) {
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to update lead."
+            );
+        }
+    }
 
-            setShowConsultationNote(
-                false
+    async function markLeadContacted(
+        id: string
+    ) {
+        try {
+            const response =
+                await fetch(
+                    `/api/leads/${id}/contacted`,
+                    {
+                        method: "PATCH",
+                        credentials:
+                            "include",
+                    }
+                );
+
+            const result =
+                (await response.json()) as ApiResult<Lead>;
+
+            if (
+                !response.ok ||
+                !result.success
+            ) {
+                throw new Error(
+                    result.message ||
+                    "Failed to mark lead as contacted."
+                );
+            }
+
+            setSelectedLead(
+                result.data
+            );
+
+            setLeads(
+                (current) =>
+                    current.map(
+                        (item) =>
+                            item._id === id
+                                ? result.data
+                                : item
+                    )
             );
         } catch (err) {
             alert(
                 err instanceof Error
                     ? err.message
-                    : "Failed to add note."
+                    : "Failed to mark contacted."
             );
-        } finally {
-            setActionLoading(false);
         }
     }
 
-    const leadStats =
-        useMemo(() => {
-            return {
-                total:
-                    leadPagination.total,
+    async function addConsultationNote(
+        id: string,
+        content: string
+    ) {
+        const response =
+            await fetch(
+                `/api/consultations/${id}/notes`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                    },
+                    credentials:
+                        "include",
+                    body: JSON.stringify({
+                        content,
+                    }),
+                }
+            );
 
-                new: leads.filter(
-                    (lead) =>
-                        lead.status ===
-                        "new"
-                ).length,
+        const result =
+            (await response.json()) as ApiResult<Consultation>;
 
-                contacted: leads.filter(
-                    (lead) =>
-                        lead.status ===
-                        "contacted"
-                ).length,
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+            throw new Error(
+                result.message ||
+                "Failed to add note."
+            );
+        }
 
-                converted: leads.filter(
-                    (lead) =>
-                        lead.status ===
-                        "converted"
-                ).length,
-            };
-        }, [
-            leads,
-            leadPagination.total,
-        ]);
+        setSelectedConsultation(
+            result.data
+        );
 
-    const consultationStats =
-        useMemo(() => {
-            return {
-                total:
-                    consultationPagination.total,
+        setConsultations(
+            (current) =>
+                current.map(
+                    (item) =>
+                        item._id === id
+                            ? result.data
+                            : item
+                )
+        );
 
-                today:
-                    consultations.filter(
-                        (item) =>
-                            item.status ===
-                            "scheduled" &&
-                            isToday(
-                                item.scheduledAt
-                            )
-                    ).length,
+        setShowNote(false);
+    }
 
-                upcoming:
-                    consultations.filter(
-                        isUpcoming
-                    ).length,
+    async function addLeadNote(
+        id: string,
+        content: string
+    ) {
+        const response =
+            await fetch(
+                `/api/leads/${id}/notes`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                    },
+                    credentials:
+                        "include",
+                    body: JSON.stringify({
+                        note: content,
+                    }),
+                }
+            );
 
-                completed:
-                    consultations.filter(
-                        (item) =>
-                            item.status ===
-                            "completed"
-                    ).length,
-            };
-        }, [
-            consultations,
-            consultationPagination.total,
-        ]);
+        const result =
+            (await response.json()) as ApiResult<Lead>;
+
+        if (
+            !response.ok ||
+            !result.success
+        ) {
+            throw new Error(
+                result.message ||
+                "Failed to add lead note."
+            );
+        }
+
+        setSelectedLead(
+            result.data
+        );
+
+        setLeads(
+            (current) =>
+                current.map(
+                    (item) =>
+                        item._id === id
+                            ? result.data
+                            : item
+                )
+        );
+
+        setShowLeadNote(false);
+    }
+
+    async function deleteLead(
+        id: string
+    ) {
+        if (
+            !window.confirm(
+                "Move this lead to deleted records?"
+            )
+        ) {
+            return;
+        }
+
+        try {
+            const response =
+                await fetch(
+                    `/api/leads/${id}`,
+                    {
+                        method: "DELETE",
+                        credentials:
+                            "include",
+                    }
+                );
+
+            const result =
+                (await response.json()) as ApiResult<null>;
+
+            if (
+                !response.ok ||
+                !result.success
+            ) {
+                throw new Error(
+                    result.message ||
+                    "Failed to delete lead."
+                );
+            }
+
+            setSelectedLead(null);
+
+            await fetchLeads();
+        } catch (err) {
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to delete lead."
+            );
+        }
+    }
 
     return (
         <div className="min-h-screen bg-[#f8fafc] p-4 sm:p-6 lg:p-8">
             <div className="mx-auto max-w-[1600px] space-y-6">
-                <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <div className="mb-2 flex items-center gap-2 text-sm text-slate-500">
-                            <span>Admin</span>
+                            <span>
+                                Admin
+                            </span>
                             <span>/</span>
                             <span className="text-slate-900">
                                 CRM
@@ -954,240 +929,265 @@ export default function ConsultationsPage() {
                             Leads & Consultations
                         </h1>
 
-                        <p className="mt-1 max-w-2xl text-sm text-slate-500">
-                            Manage incoming leads,
-                            follow-ups, assignments,
-                            consultations and client
-                            communication from one place.
+                        <p className="mt-1 text-sm text-slate-500">
+                            Manage incoming leads, follow-ups and scheduled consultations from one place.
                         </p>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <button
                             type="button"
                             onClick={refresh}
-                            disabled={refreshing}
+                            disabled={
+                                refreshing
+                            }
                             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
                         >
-                            <svg
-                                className={`h-4 w-4 ${refreshing
+                            <span
+                                className={
+                                    refreshing
                                         ? "animate-spin"
                                         : ""
-                                    }`}
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
+                                }
                             >
-                                <path d="M20 11a8.1 8.1 0 0 0-15.5-3M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 3M20 19v-4h-4" />
-                            </svg>
+                                ↻
+                            </span>
                             Refresh
                         </button>
 
-                        {view ===
-                            "consultations" && (
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setShowCreateConsultation(
-                                            true
-                                        )
-                                    }
-                                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
-                                >
-                                    <span className="text-lg">
-                                        +
-                                    </span>
-                                    New Consultation
-                                </button>
-                            )}
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setShowCreateLead(
+                                    true
+                                )
+                            }
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                        >
+                            + New Lead
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setShowCreateConsultation(
+                                    true
+                                )
+                            }
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
+                        >
+                            + New Consultation
+                        </button>
                     </div>
                 </header>
 
-                <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setView("leads")
+                <section className="grid grid-cols-2 gap-3 lg:grid-cols-7">
+                    <StatCard
+                        label="Leads"
+                        value={
+                            leadStats.total
                         }
-                        className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition ${view === "leads"
-                                ? "bg-slate-950 text-white"
-                                : "text-slate-600 hover:bg-slate-50"
-                            }`}
+                    />
+
+                    <StatCard
+                        label="New"
+                        value={
+                            leadStats.new
+                        }
+                    />
+
+                    <StatCard
+                        label="Contacted"
+                        value={
+                            leadStats.contacted
+                        }
+                    />
+
+                    <StatCard
+                        label="Qualified"
+                        value={
+                            leadStats.qualified
+                        }
+                    />
+
+                    <StatCard
+                        label="Converted"
+                        value={
+                            leadStats.converted
+                        }
+                    />
+
+                    <StatCard
+                        label="Today"
+                        value={
+                            consultationStats.today
+                        }
+                    />
+
+                    <StatCard
+                        label="Upcoming"
+                        value={
+                            consultationStats.upcoming
+                        }
+                    />
+                </section>
+
+                <section className="flex overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm">
+                    <ViewTab
+                        active={
+                            activeView ===
+                            "overview"
+                        }
+                        onClick={() =>
+                            setActiveView(
+                                "overview"
+                            )
+                        }
+                    >
+                        Overview
+                    </ViewTab>
+
+                    <ViewTab
+                        active={
+                            activeView ===
+                            "leads"
+                        }
+                        onClick={() =>
+                            setActiveView(
+                                "leads"
+                            )
+                        }
                     >
                         Leads
-                        <span
-                            className={`ml-2 rounded-md px-1.5 py-0.5 text-[10px] ${view ===
-                                    "leads"
-                                    ? "bg-white/15 text-white"
-                                    : "bg-slate-100 text-slate-500"
-                                }`}
-                        >
-                            {leadPagination.total}
-                        </span>
-                    </button>
+                    </ViewTab>
 
-                    <button
-                        type="button"
+                    <ViewTab
+                        active={
+                            activeView ===
+                            "consultations"
+                        }
                         onClick={() =>
-                            setView(
+                            setActiveView(
                                 "consultations"
                             )
                         }
-                        className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition ${view ===
-                                "consultations"
-                                ? "bg-slate-950 text-white"
-                                : "text-slate-600 hover:bg-slate-50"
-                            }`}
                     >
                         Consultations
-                        <span
-                            className={`ml-2 rounded-md px-1.5 py-0.5 text-[10px] ${view ===
-                                    "consultations"
-                                    ? "bg-white/15 text-white"
-                                    : "bg-slate-100 text-slate-500"
-                                }`}
-                        >
-                            {
-                                consultationPagination.total
-                            }
+                    </ViewTab>
+                </section>
+
+                {error && (
+                    <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <span>
+                            {error}
                         </span>
-                    </button>
-                </div>
 
-                {view === "leads" ? (
-                    <>
-                        <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                            <StatCard
-                                label="Total Leads"
-                                value={
-                                    leadStats.total
-                                }
-                                icon="users"
-                            />
-                            <StatCard
-                                label="New"
-                                value={
-                                    leadStats.new
-                                }
-                                icon="spark"
-                            />
-                            <StatCard
-                                label="Contacted"
-                                value={
-                                    leadStats.contacted
-                                }
-                                icon="phone"
-                            />
-                            <StatCard
-                                label="Converted"
-                                value={
-                                    leadStats.converted
-                                }
-                                icon="check"
-                            />
-                        </section>
-
-                        <LeadFilters
-                            search={search}
-                            setSearch={(value) => {
-                                setPage(1);
-                                setSearch(
-                                    value
-                                );
-                            }}
-                            status={
-                                leadStatus
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setError("")
                             }
-                            setStatus={(value) => {
-                                setPage(1);
-                                setLeadStatus(
-                                    value
-                                );
-                            }}
-                            source={
-                                leadSource
-                            }
-                            setSource={(value) => {
-                                setPage(1);
-                                setLeadSource(
-                                    value
-                                );
-                            }}
-                        />
+                            className="font-bold"
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
 
-                        {error && (
-                            <ErrorBox
-                                message={
-                                    error
-                                }
-                            />
-                        )}
-
-                        <LeadTable
+                {activeView ===
+                    "overview" && (
+                        <Overview
                             leads={leads}
-                            loading={loading}
-                            onOpen={(lead) =>
+                            consultations={
+                                consultations
+                            }
+                            loading={
+                                leadLoading ||
+                                consultationLoading
+                            }
+                            onLead={(lead) =>
                                 setSelectedLead(
                                     lead
                                 )
                             }
-                        />
-                    </>
-                ) : (
-                    <>
-                        <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                            <StatCard
-                                label="Total"
-                                value={
-                                    consultationStats.total
-                                }
-                                icon="calendar"
-                            />
-                            <StatCard
-                                label="Today"
-                                value={
-                                    consultationStats.today
-                                }
-                                icon="clock"
-                            />
-                            <StatCard
-                                label="Upcoming"
-                                value={
-                                    consultationStats.upcoming
-                                }
-                                icon="upcoming"
-                            />
-                            <StatCard
-                                label="Completed"
-                                value={
-                                    consultationStats.completed
-                                }
-                                icon="check"
-                            />
-                        </section>
-
-                        <ConsultationFilters
-                            search={search}
-                            setSearch={(value) => {
-                                setPage(1);
-                                setSearch(
-                                    value
-                                );
-                            }}
-                            status={
-                                consultationStatus
+                            onConsultation={(
+                                consultation
+                            ) =>
+                                setSelectedConsultation(
+                                    consultation
+                                )
                             }
-                            setStatus={(value) => {
-                                setPage(1);
-                                setConsultationStatus(
-                                    value
-                                );
-                            }}
+                            onViewLeads={() =>
+                                setActiveView(
+                                    "leads"
+                                )
+                            }
+                            onViewConsultations={() =>
+                                setActiveView(
+                                    "consultations"
+                                )
+                            }
+                        />
+                    )}
+
+                {activeView === "leads" && (
+                    <LeadManagement
+                        leads={leads}
+                        loading={leadLoading}
+                        search={leadSearch}
+                        status={leadStatus}
+                        page={leadPage}
+                        totalPages={
+                            leadTotalPages
+                        }
+                        onSearch={(value) => {
+                            setLeadPage(1);
+                            setLeadSearch(
+                                value
+                            );
+                        }}
+                        onStatus={(value) => {
+                            setLeadPage(1);
+                            setLeadStatus(
+                                value
+                            );
+                        }}
+                        onPage={setLeadPage}
+                        onOpen={(lead) =>
+                            setSelectedLead(
+                                lead
+                            )
+                        }
+                    />
+                )}
+
+                {activeView ===
+                    "consultations" && (
+                        <ConsultationManagement
+                            consultations={
+                                consultations
+                            }
+                            loading={
+                                consultationLoading
+                            }
+                            search={search}
+                            status={status}
                             meetingType={
                                 meetingType
                             }
-                            setMeetingType={(
+                            page={page}
+                            totalPages={
+                                totalPages
+                            }
+                            onSearch={(value) => {
+                                setPage(1);
+                                setSearch(value);
+                            }}
+                            onStatus={(value) => {
+                                setPage(1);
+                                setStatus(value);
+                            }}
+                            onMeetingType={(
                                 value
                             ) => {
                                 setPage(1);
@@ -1195,58 +1195,12 @@ export default function ConsultationsPage() {
                                     value
                                 );
                             }}
-                        />
-
-                        {error && (
-                            <ErrorBox
-                                message={
-                                    error
-                                }
-                            />
-                        )}
-
-                        <ConsultationTable
-                            consultations={
-                                consultations
-                            }
-                            loading={loading}
+                            onPage={setPage}
                             onOpen={(
                                 consultation
                             ) =>
                                 setSelectedConsultation(
                                     consultation
-                                )
-                            }
-                        />
-                    </>
-                )}
-
-                {!loading &&
-                    activePagination.total >
-                    0 && (
-                        <Pagination
-                            page={page}
-                            totalPages={
-                                activePagination.totalPages
-                            }
-                            onPrevious={() =>
-                                setPage(
-                                    (value) =>
-                                        Math.max(
-                                            1,
-                                            value -
-                                            1
-                                        )
-                                )
-                            }
-                            onNext={() =>
-                                setPage(
-                                    (value) =>
-                                        Math.min(
-                                            activePagination.totalPages,
-                                            value +
-                                            1
-                                        )
                                 )
                             }
                         />
@@ -1256,44 +1210,24 @@ export default function ConsultationsPage() {
             {selectedLead && (
                 <LeadDrawer
                     lead={selectedLead}
-                    loading={actionLoading}
                     onClose={() =>
                         setSelectedLead(
                             null
                         )
                     }
-                    onStatusChange={(
-                        status
-                    ) =>
-                        leadAction(
-                            selectedLead._id,
-                            "status",
-                            status
-                        )
+                    onStatusChange={
+                        updateLeadStatus
                     }
-                    onAssign={(userId) =>
-                        leadAction(
-                            selectedLead._id,
-                            "assign",
-                            userId
-                        )
-                    }
-                    onContacted={() =>
-                        leadAction(
-                            selectedLead._id,
-                            "contacted"
-                        )
-                    }
-                    onRestore={() =>
-                        leadAction(
-                            selectedLead._id,
-                            "restore"
-                        )
+                    onMarkContacted={
+                        markLeadContacted
                     }
                     onAddNote={() =>
                         setShowLeadNote(
                             true
                         )
+                    }
+                    onDelete={
+                        deleteLead
                     }
                 />
             )}
@@ -1303,7 +1237,6 @@ export default function ConsultationsPage() {
                     consultation={
                         selectedConsultation
                     }
-                    loading={actionLoading}
                     onClose={() =>
                         setSelectedConsultation(
                             null
@@ -1313,9 +1246,7 @@ export default function ConsultationsPage() {
                         updateConsultationStatus
                     }
                     onAddNote={() =>
-                        setShowConsultationNote(
-                            true
-                        )
+                        setShowNote(true)
                     }
                 />
             )}
@@ -1325,44 +1256,59 @@ export default function ConsultationsPage() {
                     <NoteModal
                         title="Add Lead Note"
                         placeholder="Write a note about this lead..."
-                        loading={
-                            actionLoading
-                        }
                         onClose={() =>
                             setShowLeadNote(
                                 false
                             )
                         }
-                        onSubmit={(note) =>
-                            addLeadNote(
+                        onSubmit={async (
+                            content
+                        ) => {
+                            await addLeadNote(
                                 selectedLead._id,
-                                note
-                            )
-                        }
+                                content
+                            );
+                        }}
                     />
                 )}
 
-            {showConsultationNote &&
+            {showNote &&
                 selectedConsultation && (
                     <NoteModal
                         title="Add Consultation Note"
                         placeholder="Write a note about this consultation..."
-                        loading={
-                            actionLoading
-                        }
                         onClose={() =>
-                            setShowConsultationNote(
+                            setShowNote(
                                 false
                             )
                         }
-                        onSubmit={(content) =>
-                            addConsultationNote(
+                        onSubmit={async (
+                            content
+                        ) => {
+                            await addConsultationNote(
                                 selectedConsultation._id,
                                 content
-                            )
-                        }
+                            );
+                        }}
                     />
                 )}
+
+            {showCreateLead && (
+                <CreateLeadModal
+                    onClose={() =>
+                        setShowCreateLead(
+                            false
+                        )
+                    }
+                    onCreated={() => {
+                        setShowCreateLead(
+                            false
+                        );
+                        setLeadPage(1);
+                        fetchLeads();
+                    }}
+                />
+            )}
 
             {showCreateConsultation && (
                 <CreateConsultationModal
@@ -1376,9 +1322,6 @@ export default function ConsultationsPage() {
                         setShowCreateConsultation(
                             false
                         );
-                        setView(
-                            "consultations"
-                        );
                         setPage(1);
                         fetchConsultations();
                     }}
@@ -1388,254 +1331,341 @@ export default function ConsultationsPage() {
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Filters                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function LeadFilters({
-    search,
-    setSearch,
-    status,
-    setStatus,
-    source,
-    setSource,
+function ViewTab({
+    active,
+    onClick,
+    children,
 }: {
-    search: string;
-    setSearch: (value: string) => void;
-    status: string;
-    setStatus: (value: string) => void;
-    source: string;
-    setSource: (value: string) => void;
+    active: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
 }) {
     return (
-        <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
-            <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px]">
-                <SearchInput
-                    value={search}
-                    onChange={setSearch}
-                    placeholder="Search name, email, company..."
-                />
-
-                <select
-                    value={status}
-                    onChange={(event) =>
-                        setStatus(
-                            event.target.value
-                        )
-                    }
-                    className="input"
-                >
-                    <option value="">
-                        All statuses
-                    </option>
-
-                    {leadStatusOptions.map(
-                        (item) => (
-                            <option
-                                key={item}
-                                value={item}
-                            >
-                                {formatStatus(
-                                    item
-                                )}
-                            </option>
-                        )
-                    )}
-                </select>
-
-                <select
-                    value={source}
-                    onChange={(event) =>
-                        setSource(
-                            event.target.value
-                        )
-                    }
-                    className="input"
-                >
-                    <option value="">
-                        All sources
-                    </option>
-                    <option value="website">
-                        Website
-                    </option>
-                    <option value="referral">
-                        Referral
-                    </option>
-                    <option value="social_media">
-                        Social Media
-                    </option>
-                    <option value="email">
-                        Email
-                    </option>
-                    <option value="phone">
-                        Phone
-                    </option>
-                    <option value="other">
-                        Other
-                    </option>
-                </select>
-            </div>
-        </section>
+        <button
+            type="button"
+            onClick={onClick}
+            className={`whitespace-nowrap rounded-xl px-5 py-2.5 text-sm font-semibold transition ${active
+                    ? "bg-slate-950 text-white shadow-sm"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                }`}
+        >
+            {children}
+        </button>
     );
 }
 
-function ConsultationFilters({
-    search,
-    setSearch,
-    status,
-    setStatus,
-    meetingType,
-    setMeetingType,
-}: {
-    search: string;
-    setSearch: (value: string) => void;
-    status: string;
-    setStatus: (value: string) => void;
-    meetingType: string;
-    setMeetingType: (value: string) => void;
-}) {
-    return (
-        <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
-            <div className="grid gap-3 lg:grid-cols-[1fr_190px_190px]">
-                <SearchInput
-                    value={search}
-                    onChange={setSearch}
-                    placeholder="Search consultations, leads..."
-                />
-
-                <select
-                    value={status}
-                    onChange={(event) =>
-                        setStatus(
-                            event.target.value
-                        )
-                    }
-                    className="input"
-                >
-                    <option value="">
-                        All statuses
-                    </option>
-                    <option value="scheduled">
-                        Scheduled
-                    </option>
-                    <option value="rescheduled">
-                        Rescheduled
-                    </option>
-                    <option value="completed">
-                        Completed
-                    </option>
-                    <option value="cancelled">
-                        Cancelled
-                    </option>
-                </select>
-
-                <select
-                    value={meetingType}
-                    onChange={(event) =>
-                        setMeetingType(
-                            event.target.value
-                        )
-                    }
-                    className="input"
-                >
-                    <option value="">
-                        All meeting types
-                    </option>
-                    <option value="zoom">
-                        Online
-                    </option>
-                    <option value="in_person">
-                        In Person
-                    </option>
-                    <option value="phone">
-                        Phone
-                    </option>
-                </select>
-            </div>
-        </section>
-    );
-}
-
-function SearchInput({
+function StatCard({
+    label,
     value,
-    onChange,
-    placeholder,
 }: {
-    value: string;
-    onChange: (value: string) => void;
-    placeholder: string;
+    label: string;
+    value: number;
 }) {
     return (
-        <div className="relative">
-            <svg
-                className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-            >
-                <circle
-                    cx="11"
-                    cy="11"
-                    r="7"
-                />
-                <path d="m20 20-4-4" />
-            </svg>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">
+                {label}
+            </p>
 
-            <input
-                value={value}
-                onChange={(event) =>
-                    onChange(
-                        event.target.value
-                    )
-                }
-                placeholder={placeholder}
-                className="input pl-10"
-            />
+            <p className="mt-2 text-2xl font-bold text-slate-950">
+                {value}
+            </p>
         </div>
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Lead table                                                                 */
-/* -------------------------------------------------------------------------- */
+function Overview({
+    leads,
+    consultations,
+    loading,
+    onLead,
+    onConsultation,
+    onViewLeads,
+    onViewConsultations,
+}: {
+    leads: Lead[];
+    consultations: Consultation[];
+    loading: boolean;
+    onLead: (lead: Lead) => void;
+    onConsultation: (
+        consultation: Consultation
+    ) => void;
+    onViewLeads: () => void;
+    onViewConsultations: () => void;
+}) {
+    const recentLeads =
+        leads.slice(0, 5);
 
-function LeadTable({
+    const upcoming =
+        consultations
+            .filter(isUpcoming)
+            .sort(
+                (a, b) =>
+                    new Date(
+                        a.scheduledAt
+                    ).getTime() -
+                    new Date(
+                        b.scheduledAt
+                    ).getTime()
+            )
+            .slice(0, 5);
+
+    return (
+        <div className="grid gap-6 xl:grid-cols-2">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <div>
+                        <h2 className="font-bold text-slate-950">
+                            Recent Leads
+                        </h2>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                            Latest opportunities entering the pipeline.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={
+                            onViewLeads
+                        }
+                        className="text-xs font-semibold text-slate-600 hover:text-slate-950"
+                    >
+                        View all →
+                    </button>
+                </div>
+
+                <div className="divide-y divide-slate-100">
+                    {loading ? (
+                        <ListSkeleton />
+                    ) : recentLeads.length ===
+                        0 ? (
+                        <EmptyState text="No leads found." />
+                    ) : (
+                        recentLeads.map(
+                            (lead) => (
+                                <button
+                                    type="button"
+                                    key={
+                                        lead._id
+                                    }
+                                    onClick={() =>
+                                        onLead(
+                                            lead
+                                        )
+                                    }
+                                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-slate-50"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-slate-900">
+                                            {
+                                                lead.fullName
+                                            }
+                                        </p>
+
+                                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                                            {
+                                                lead.email
+                                            }
+                                        </p>
+                                    </div>
+
+                                    <LeadStatusBadge
+                                        status={
+                                            lead.status
+                                        }
+                                    />
+                                </button>
+                            )
+                        )
+                    )}
+                </div>
+            </section>
+
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <div>
+                        <h2 className="font-bold text-slate-950">
+                            Upcoming Consultations
+                        </h2>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                            Meetings that need attention.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={
+                            onViewConsultations
+                        }
+                        className="text-xs font-semibold text-slate-600 hover:text-slate-950"
+                    >
+                        View all →
+                    </button>
+                </div>
+
+                <div className="divide-y divide-slate-100">
+                    {loading ? (
+                        <ListSkeleton />
+                    ) : upcoming.length ===
+                        0 ? (
+                        <EmptyState text="No upcoming consultations." />
+                    ) : (
+                        upcoming.map(
+                            (
+                                consultation
+                            ) => (
+                                <button
+                                    type="button"
+                                    key={
+                                        consultation._id
+                                    }
+                                    onClick={() =>
+                                        onConsultation(
+                                            consultation
+                                        )
+                                    }
+                                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-slate-50"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-slate-900">
+                                            {getLeadName(
+                                                consultation.lead
+                                            )}
+                                        </p>
+
+                                        <p className="mt-0.5 text-xs text-slate-500">
+                                            {formatDate(
+                                                consultation.scheduledAt
+                                            )}{" "}
+                                            ·{" "}
+                                            {formatTime(
+                                                consultation.scheduledAt
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    <span className="shrink-0 rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                                        {
+                                            meetingLabels[
+                                            consultation.meetingType
+                                            ]
+                                        }
+                                    </span>
+                                </button>
+                            )
+                        )
+                    )}
+                </div>
+            </section>
+        </div>
+    );
+}
+
+function LeadManagement({
     leads,
     loading,
+    search,
+    status,
+    page,
+    totalPages,
+    onSearch,
+    onStatus,
+    onPage,
     onOpen,
 }: {
     leads: Lead[];
     loading: boolean;
+    search: string;
+    status: string;
+    page: number;
+    totalPages: number;
+    onSearch: (value: string) => void;
+    onStatus: (value: string) => void;
+    onPage: (page: number) => void;
     onOpen: (lead: Lead) => void;
 }) {
     return (
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 p-4">
+                <div className="flex flex-col gap-3 xl:flex-row">
+                    <div className="relative min-w-0 flex-1">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                            ⌕
+                        </span>
+
+                        <input
+                            value={search}
+                            onChange={(e) =>
+                                onSearch(
+                                    e.target.value
+                                )
+                            }
+                            placeholder="Search leads by name, email, company, phone or project..."
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
+                        />
+                    </div>
+
+                    <select
+                        value={status}
+                        onChange={(e) =>
+                            onStatus(
+                                e.target.value
+                            )
+                        }
+                        className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none"
+                    >
+                        <option value="">
+                            All lead statuses
+                        </option>
+
+                        {Object.entries(
+                            leadStatusLabels
+                        ).map(
+                            ([
+                                value,
+                                label,
+                            ]) => (
+                                <option
+                                    key={
+                                        value
+                                    }
+                                    value={
+                                        value
+                                    }
+                                >
+                                    {label}
+                                </option>
+                            )
+                        )}
+                    </select>
+                </div>
+            </div>
+
             <div className="overflow-x-auto">
-                <table className="w-full min-w-[1050px]">
+                <table className="w-full min-w-[950px]">
                     <thead>
                         <tr className="border-b border-slate-200 bg-slate-50/80">
-                            <TableHead>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Lead
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Project
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Source
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Assigned
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Status
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Created
-                            </TableHead>
-                            <TableHead align="right">
+                            </th>
+                            <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Action
-                            </TableHead>
+                            </th>
                         </tr>
                     </thead>
 
@@ -1657,11 +1687,15 @@ function LeadTable({
                             )
                         ) : leads.length ===
                             0 ? (
-                            <EmptyRow
-                                columns={7}
-                                title="No leads found"
-                                description="Try changing your filters or search."
-                            />
+                            <tr>
+                                <td
+                                    colSpan={
+                                        7
+                                    }
+                                >
+                                    <EmptyState text="No leads found." />
+                                </td>
+                            </tr>
                         ) : (
                             leads.map(
                                 (lead) => (
@@ -1669,7 +1703,7 @@ function LeadTable({
                                         key={
                                             lead._id
                                         }
-                                        className="group transition hover:bg-slate-50/70"
+                                        className="group hover:bg-slate-50/70"
                                     >
                                         <td className="px-5 py-4">
                                             <button
@@ -1686,15 +1720,17 @@ function LeadTable({
                                                         lead.fullName
                                                     }
                                                 </p>
+
                                                 <p className="mt-0.5 text-xs text-slate-500">
                                                     {
                                                         lead.email
                                                     }
                                                 </p>
-                                                {lead.company && (
+
+                                                {lead.phone && (
                                                     <p className="mt-1 text-xs text-slate-400">
                                                         {
-                                                            lead.company
+                                                            lead.phone
                                                         }
                                                     </p>
                                                 )}
@@ -1703,41 +1739,42 @@ function LeadTable({
 
                                         <td className="px-5 py-4">
                                             <p className="text-sm font-medium text-slate-800">
-                                                {lead.projectTitle ||
-                                                    "—"}
+                                                {
+                                                    lead.projectTitle ||
+                                                    "No project title"
+                                                }
                                             </p>
-                                            <p className="mt-1 text-xs text-slate-400">
-                                                {lead.projectType ||
-                                                    "No project type"}
-                                            </p>
+
+                                            {lead.company && (
+                                                <p className="mt-1 text-xs text-slate-500">
+                                                    {
+                                                        lead.company
+                                                    }
+                                                </p>
+                                            )}
                                         </td>
 
                                         <td className="px-5 py-4">
                                             <span className="text-sm capitalize text-slate-600">
-                                                {formatStatus(
-                                                    lead.source
+                                                {(
+                                                    lead.source ||
+                                                    "website"
+                                                ).replace(
+                                                    /_/g,
+                                                    " "
                                                 )}
                                             </span>
                                         </td>
 
                                         <td className="px-5 py-4">
                                             {lead.assignedTo ? (
-                                                <div>
-                                                    <p className="text-sm font-medium text-slate-800">
-                                                        {
-                                                            lead
-                                                                .assignedTo
-                                                                .name
-                                                        }
-                                                    </p>
-                                                    <p className="text-xs text-slate-400">
-                                                        {
-                                                            lead
-                                                                .assignedTo
-                                                                .email
-                                                        }
-                                                    </p>
-                                                </div>
+                                                <p className="text-sm font-medium text-slate-700">
+                                                    {
+                                                        lead
+                                                            .assignedTo
+                                                            .name
+                                                    }
+                                                </p>
                                             ) : (
                                                 <span className="text-sm text-slate-400">
                                                     Unassigned
@@ -1746,27 +1783,16 @@ function LeadTable({
                                         </td>
 
                                         <td className="px-5 py-4">
-                                            <StatusBadge
+                                            <LeadStatusBadge
                                                 status={
-                                                    lead.status ||
-                                                    "new"
-                                                }
-                                                styles={
-                                                    leadStatusStyles
+                                                    lead.status
                                                 }
                                             />
                                         </td>
 
-                                        <td className="px-5 py-4">
-                                            <p className="text-sm text-slate-700">
-                                                {formatDate(
-                                                    lead.createdAt
-                                                )}
-                                            </p>
-                                            {lead.contactedAt && (
-                                                <p className="mt-1 text-xs text-emerald-600">
-                                                    Contacted
-                                                </p>
+                                        <td className="px-5 py-4 text-sm text-slate-500">
+                                            {formatDate(
+                                                lead.createdAt
                                             )}
                                         </td>
 
@@ -1778,7 +1804,7 @@ function LeadTable({
                                                         lead
                                                     )
                                                 }
-                                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-white"
+                                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white"
                                             >
                                                 View
                                             </button>
@@ -1790,56 +1816,147 @@ function LeadTable({
                     </tbody>
                 </table>
             </div>
+
+            {!loading &&
+                leads.length > 0 && (
+                    <Pagination
+                        page={page}
+                        totalPages={
+                            totalPages
+                        }
+                        onPage={onPage}
+                    />
+                )}
         </section>
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Consultation table                                                         */
-/* -------------------------------------------------------------------------- */
-
-function ConsultationTable({
+function ConsultationManagement({
     consultations,
     loading,
+    search,
+    status,
+    meetingType,
+    page,
+    totalPages,
+    onSearch,
+    onStatus,
+    onMeetingType,
+    onPage,
     onOpen,
 }: {
     consultations: Consultation[];
     loading: boolean;
+    search: string;
+    status: string;
+    meetingType: string;
+    page: number;
+    totalPages: number;
+    onSearch: (value: string) => void;
+    onStatus: (value: string) => void;
+    onMeetingType: (value: string) => void;
+    onPage: (page: number) => void;
     onOpen: (
         consultation: Consultation
     ) => void;
 }) {
     return (
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 p-4">
+                <div className="flex flex-col gap-3 xl:flex-row">
+                    <input
+                        value={search}
+                        onChange={(e) =>
+                            onSearch(
+                                e.target.value
+                            )
+                        }
+                        placeholder="Search consultations..."
+                        className="h-11 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-slate-400 focus:bg-white"
+                    />
+
+                    <select
+                        value={status}
+                        onChange={(e) =>
+                            onStatus(
+                                e.target.value
+                            )
+                        }
+                        className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700"
+                    >
+                        <option value="">
+                            All statuses
+                        </option>
+                        <option value="scheduled">
+                            Scheduled
+                        </option>
+                        <option value="rescheduled">
+                            Rescheduled
+                        </option>
+                        <option value="completed">
+                            Completed
+                        </option>
+                        <option value="cancelled">
+                            Cancelled
+                        </option>
+                    </select>
+
+                    <select
+                        value={
+                            meetingType
+                        }
+                        onChange={(e) =>
+                            onMeetingType(
+                                e.target.value
+                            )
+                        }
+                        className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700"
+                    >
+                        <option value="">
+                            All meeting types
+                        </option>
+                        <option value="zoom">
+                            Online
+                        </option>
+                        <option value="in_person">
+                            In Person
+                        </option>
+                        <option value="phone">
+                            Phone
+                        </option>
+                    </select>
+                </div>
+            </div>
+
             <div className="overflow-x-auto">
-                <table className="w-full min-w-[1000px]">
+                <table className="w-full min-w-[950px]">
                     <thead>
                         <tr className="border-b border-slate-200 bg-slate-50/80">
-                            <TableHead>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Lead
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Schedule
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Meeting
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Assigned
-                            </TableHead>
-                            <TableHead>
+                            </th>
+                            <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Status
-                            </TableHead>
-                            <TableHead align="right">
+                            </th>
+                            <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Action
-                            </TableHead>
+                            </th>
                         </tr>
                     </thead>
 
                     <tbody className="divide-y divide-slate-100">
                         {loading ? (
                             Array.from({
-                                length: 7,
+                                length: 6,
                             }).map(
                                 (_, index) => (
                                     <SkeletonRow
@@ -1854,210 +1971,241 @@ function ConsultationTable({
                             )
                         ) : consultations.length ===
                             0 ? (
-                            <EmptyRow
-                                columns={6}
-                                title="No consultations found"
-                                description="Try changing your filters or schedule a new consultation."
-                            />
+                            <tr>
+                                <td
+                                    colSpan={
+                                        6
+                                    }
+                                >
+                                    <EmptyState text="No consultations found." />
+                                </td>
+                            </tr>
                         ) : (
                             consultations.map(
                                 (
                                     consultation
-                                ) => {
-                                    const lead =
-                                        typeof consultation.lead ===
-                                            "object"
-                                            ? consultation.lead
-                                            : null;
-
-                                    return (
-                                        <tr
-                                            key={
-                                                consultation._id
-                                            }
-                                            className="group transition hover:bg-slate-50/70"
-                                        >
-                                            <td className="px-5 py-4">
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        onOpen(
-                                                            consultation
-                                                        )
-                                                    }
-                                                    className="text-left"
-                                                >
-                                                    <p className="font-semibold text-slate-900">
-                                                        {getLeadName(
-                                                            lead
-                                                        )}
-                                                    </p>
-
-                                                    <p className="mt-0.5 text-xs text-slate-500">
-                                                        {lead?.email ||
-                                                            "No email"}
-                                                    </p>
-
-                                                    {lead?.company && (
-                                                        <p className="mt-1 text-xs text-slate-400">
-                                                            {
-                                                                lead.company
-                                                            }
-                                                        </p>
-                                                    )}
-                                                </button>
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                <p className="text-sm font-medium text-slate-900">
-                                                    {formatDate(
-                                                        consultation.scheduledAt
-                                                    )}
-                                                </p>
-
-                                                <p className="mt-1 text-xs text-slate-500">
-                                                    {formatTime(
-                                                        consultation.scheduledAt
-                                                    )}{" "}
-                                                    ·{" "}
-                                                    {
-                                                        consultation.duration
-                                                    }{" "}
-                                                    min
-                                                </p>
-
-                                                {isToday(
-                                                    consultation.scheduledAt
-                                                ) && (
-                                                        <span className="mt-1.5 inline-flex rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
-                                                            TODAY
-                                                        </span>
-                                                    )}
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                <p className="text-sm font-medium text-slate-800">
-                                                    {
-                                                        meetingLabels[
-                                                        consultation
-                                                            .meetingType
-                                                        ]
-                                                    }
-                                                </p>
-
-                                                {consultation.meetingType ===
-                                                    "zoom" &&
-                                                    consultation.meetingLink && (
-                                                        <a
-                                                            href={
-                                                                consultation.meetingLink
-                                                            }
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="mt-1 inline-block text-xs font-medium text-blue-600 hover:underline"
-                                                        >
-                                                            Open meeting
-                                                        </a>
-                                                    )}
-
-                                                {consultation.meetingType ===
-                                                    "in_person" &&
-                                                    consultation.location && (
-                                                        <p className="mt-1 text-xs text-slate-500">
-                                                            {
-                                                                consultation.location
-                                                            }
-                                                        </p>
-                                                    )}
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                {consultation.assignedTo ? (
-                                                    <div>
-                                                        <p className="text-sm font-medium text-slate-800">
-                                                            {
-                                                                consultation
-                                                                    .assignedTo
-                                                                    .name
-                                                            }
-                                                        </p>
-                                                        <p className="text-xs text-slate-400">
-                                                            {
-                                                                consultation
-                                                                    .assignedTo
-                                                                    .email
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-sm text-slate-400">
-                                                        Unassigned
-                                                    </span>
-                                                )}
-                                            </td>
-
-                                            <td className="px-5 py-4">
-                                                <StatusBadge
-                                                    status={
-                                                        consultation.status
-                                                    }
-                                                    styles={
-                                                        consultationStatusStyles
-                                                    }
-                                                />
-                                            </td>
-
-                                            <td className="px-5 py-4 text-right">
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        onOpen(
-                                                            consultation
-                                                        )
-                                                    }
-                                                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-white"
-                                                >
-                                                    View
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                }
+                                ) => (
+                                    <ConsultationRow
+                                        key={
+                                            consultation._id
+                                        }
+                                        consultation={
+                                            consultation
+                                        }
+                                        onOpen={() =>
+                                            onOpen(
+                                                consultation
+                                            )
+                                        }
+                                    />
+                                )
                             )
                         )}
                     </tbody>
                 </table>
             </div>
+
+            {!loading &&
+                consultations.length >
+                0 && (
+                    <Pagination
+                        page={page}
+                        totalPages={
+                            totalPages
+                        }
+                        onPage={onPage}
+                    />
+                )}
         </section>
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Lead drawer                                                                */
-/* -------------------------------------------------------------------------- */
+function ConsultationRow({
+    consultation,
+    onOpen,
+}: {
+    consultation: Consultation;
+    onOpen: () => void;
+}) {
+    return (
+        <tr className="group hover:bg-slate-50/70">
+            <td className="px-5 py-4">
+                <button
+                    type="button"
+                    onClick={onOpen}
+                    className="text-left"
+                >
+                    <p className="font-semibold text-slate-900">
+                        {getLeadName(
+                            consultation.lead
+                        )}
+                    </p>
+
+                    <p className="mt-0.5 text-xs text-slate-500">
+                        {
+                            consultation
+                                .lead
+                                ?.email
+                        }
+                    </p>
+
+                    {consultation.lead
+                        ?.company && (
+                            <p className="mt-1 text-xs text-slate-400">
+                                {
+                                    consultation
+                                        .lead
+                                        .company
+                                }
+                            </p>
+                        )}
+                </button>
+            </td>
+
+            <td className="px-5 py-4">
+                <p className="text-sm font-medium text-slate-900">
+                    {formatDate(
+                        consultation.scheduledAt
+                    )}
+                </p>
+
+                <p className="mt-1 text-xs text-slate-500">
+                    {formatTime(
+                        consultation.scheduledAt
+                    )}{" "}
+                    ·{" "}
+                    {
+                        consultation.duration
+                    }{" "}
+                    min
+                </p>
+
+                {isToday(
+                    consultation.scheduledAt
+                ) && (
+                        <span className="mt-1.5 inline-flex rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                            TODAY
+                        </span>
+                    )}
+            </td>
+
+            <td className="px-5 py-4">
+                <p className="text-sm font-medium text-slate-800">
+                    {
+                        meetingLabels[
+                        consultation.meetingType
+                        ]
+                    }
+                </p>
+
+                {consultation.meetingType ===
+                    "zoom" &&
+                    consultation.meetingLink && (
+                        <a
+                            href={
+                                consultation.meetingLink
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-1 inline-block text-xs font-semibold text-blue-600 hover:underline"
+                        >
+                            Open meeting
+                        </a>
+                    )}
+
+                {consultation.meetingType ===
+                    "in_person" &&
+                    consultation.location && (
+                        <p className="mt-1 text-xs text-slate-500">
+                            {
+                                consultation.location
+                            }
+                        </p>
+                    )}
+            </td>
+
+            <td className="px-5 py-4">
+                {consultation.assignedTo ? (
+                    <p className="text-sm font-medium text-slate-700">
+                        {
+                            consultation
+                                .assignedTo
+                                .name
+                        }
+                    </p>
+                ) : (
+                    <span className="text-sm text-slate-400">
+                        Unassigned
+                    </span>
+                )}
+            </td>
+
+            <td className="px-5 py-4">
+                <span
+                    className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${consultationStatusStyles[
+                        consultation.status
+                        ]
+                        }`}
+                >
+                    {
+                        consultation.status
+                    }
+                </span>
+            </td>
+
+            <td className="px-5 py-4 text-right">
+                <button
+                    type="button"
+                    onClick={onOpen}
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-white"
+                >
+                    View
+                </button>
+            </td>
+        </tr>
+    );
+}
+
+function LeadStatusBadge({
+    status,
+}: {
+    status: LeadStatus;
+}) {
+    return (
+        <span
+            className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${leadStatusStyles[
+                status
+                ]
+                }`}
+        >
+            {
+                leadStatusLabels[
+                status
+                ]
+            }
+        </span>
+    );
+}
 
 function LeadDrawer({
     lead,
-    loading,
     onClose,
     onStatusChange,
-    onAssign,
-    onContacted,
-    onRestore,
+    onMarkContacted,
     onAddNote,
+    onDelete,
 }: {
     lead: Lead;
-    loading: boolean;
     onClose: () => void;
     onStatusChange: (
-        status: string
+        id: string,
+        status: LeadStatus
     ) => void;
-    onAssign: (
-        userId: string
+    onMarkContacted: (
+        id: string
     ) => void;
-    onContacted: () => void;
-    onRestore: () => void;
     onAddNote: () => void;
+    onDelete: (id: string) => void;
 }) {
     return (
         <DrawerShell
@@ -2066,91 +2214,58 @@ function LeadDrawer({
             onClose={onClose}
         >
             <div className="space-y-6">
-                <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <StatusBadge
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <LeadStatusBadge
                             status={
-                                lead.status ||
-                                "new"
-                            }
-                            styles={
-                                leadStatusStyles
+                                lead.status
                             }
                         />
 
                         <select
                             value={
-                                lead.status ||
-                                "new"
+                                lead.status
                             }
-                            disabled={loading}
-                            onChange={(event) =>
+                            onChange={(e) =>
                                 onStatusChange(
-                                    event.target
-                                        .value
+                                    lead._id,
+                                    e.target
+                                        .value as LeadStatus
                                 )
                             }
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium outline-none"
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium"
                         >
-                            {leadStatusOptions.map(
-                                (status) => (
+                            {Object.entries(
+                                leadStatusLabels
+                            ).map(
+                                ([
+                                    value,
+                                    label,
+                                ]) => (
                                     <option
                                         key={
-                                            status
+                                            value
                                         }
                                         value={
-                                            status
+                                            value
                                         }
                                     >
-                                        {formatStatus(
-                                            status
-                                        )}
+                                        {label}
                                     </option>
                                 )
                             )}
                         </select>
                     </div>
+                </div>
 
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                        {!lead.contactedAt && (
-                            <button
-                                type="button"
-                                disabled={
-                                    loading
-                                }
-                                onClick={
-                                    onContacted
-                                }
-                                className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
-                            >
-                                Mark Contacted
-                            </button>
-                        )}
-
-                        {lead.isDeleted && (
-                            <button
-                                type="button"
-                                disabled={
-                                    loading
-                                }
-                                onClick={
-                                    onRestore
-                                }
-                                className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 disabled:opacity-50"
-                            >
-                                Restore Lead
-                            </button>
-                        )}
-                    </div>
-                </section>
-
-                <DetailSection title="Contact Information">
+                <DetailSection title="Contact">
                     <Detail
                         label="Name"
                         value={
                             lead.fullName
                         }
                     />
+
                     <Detail
                         label="Email"
                         value={
@@ -2164,6 +2279,7 @@ function LeadDrawer({
                             </a>
                         }
                     />
+
                     <Detail
                         label="Phone"
                         value={
@@ -2181,6 +2297,7 @@ function LeadDrawer({
                             )
                         }
                     />
+
                     <Detail
                         label="Company"
                         value={
@@ -2188,6 +2305,7 @@ function LeadDrawer({
                             "—"
                         }
                     />
+
                     <Detail
                         label="Website"
                         value={
@@ -2202,9 +2320,11 @@ function LeadDrawer({
                                     }
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-blue-600 hover:underline"
+                                    className="max-w-[260px] truncate text-blue-600 hover:underline"
                                 >
-                                    Open website
+                                    {
+                                        lead.website
+                                    }
                                 </a>
                             ) : (
                                 "—"
@@ -2221,6 +2341,7 @@ function LeadDrawer({
                             "—"
                         }
                     />
+
                     <Detail
                         label="Type"
                         value={
@@ -2228,6 +2349,7 @@ function LeadDrawer({
                             "—"
                         }
                     />
+
                     <Detail
                         label="Timeline"
                         value={
@@ -2235,6 +2357,7 @@ function LeadDrawer({
                             "—"
                         }
                     />
+
                     <Detail
                         label="Preferred Contact"
                         value={
@@ -2242,21 +2365,52 @@ function LeadDrawer({
                             "—"
                         }
                     />
-                </DetailSection>
 
-                <DetailSection title="Lead Details">
                     <Detail
                         label="Source"
-                        value={formatStatus(
-                            lead.source
-                        )}
+                        value={
+                            (
+                                lead.source ||
+                                "website"
+                            ).replace(
+                                /_/g,
+                                " "
+                            )
+                        }
                     />
+                </DetailSection>
+
+                {lead.budget && (
+                    <DetailSection title="Budget">
+                        <Detail
+                            label="Amount"
+                            value={
+                                formatBudget(
+                                    lead.budget
+                                )
+                            }
+                        />
+                    </DetailSection>
+                )}
+
+                {lead.message && (
+                    <DetailSection title="Message">
+                        <p className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                            {
+                                lead.message
+                            }
+                        </p>
+                    </DetailSection>
+                )}
+
+                <DetailSection title="Activity">
                     <Detail
                         label="Created"
                         value={formatDateTime(
                             lead.createdAt
                         )}
                     />
+
                     <Detail
                         label="Contacted"
                         value={
@@ -2267,71 +2421,13 @@ function LeadDrawer({
                                 : "Not contacted"
                         }
                     />
-                    <Detail
-                        label="Converted"
-                        value={
-                            lead.convertedAt
-                                ? formatDateTime(
-                                    lead.convertedAt
-                                )
-                                : "—"
-                        }
-                    />
-                </DetailSection>
 
-                {lead.budget && (
-                    <DetailSection title="Budget">
+                    {lead.convertedAt && (
                         <Detail
-                            label="Minimum"
-                            value={
-                                lead.budget.min !==
-                                    undefined
-                                    ? `${lead.budget.currency || "USD"} ${lead.budget.min}`
-                                    : "—"
-                            }
-                        />
-                        <Detail
-                            label="Maximum"
-                            value={
-                                lead.budget.max !==
-                                    undefined
-                                    ? `${lead.budget.currency || "USD"} ${lead.budget.max}`
-                                    : "—"
-                            }
-                        />
-                    </DetailSection>
-                )}
-
-                {lead.message && (
-                    <DetailSection title="Message">
-                        <p className="whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                            {
-                                lead.message
-                            }
-                        </p>
-                    </DetailSection>
-                )}
-
-                <DetailSection title="Assignment">
-                    <Detail
-                        label="Assigned To"
-                        value={
-                            lead.assignedTo
-                                ? lead
-                                    .assignedTo
-                                    .name
-                                : "Unassigned"
-                        }
-                    />
-
-                    {lead.assignedTo && (
-                        <Detail
-                            label="Email"
-                            value={
-                                lead
-                                    .assignedTo
-                                    .email
-                            }
+                            label="Converted"
+                            value={formatDateTime(
+                                lead.convertedAt
+                            )}
                         />
                     )}
                 </DetailSection>
@@ -2355,14 +2451,17 @@ function LeadDrawer({
                                     >
                                         <p className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
                                             {
-                                                note.note
+                                                note.note ||
+                                                note.content
                                             }
                                         </p>
 
                                         <p className="mt-2 text-[11px] text-slate-400">
-                                            {formatDateTime(
-                                                note.createdAt
-                                            )}
+                                            {note.createdAt
+                                                ? formatDateTime(
+                                                    note.createdAt
+                                                )
+                                                : ""}
                                         </p>
                                     </div>
                                 )
@@ -2378,30 +2477,52 @@ function LeadDrawer({
                             onClick={
                                 onAddNote
                             }
-                            className="w-full rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
+                            className="w-full rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
                         >
                             + Add Note
                         </button>
                     </div>
                 </DetailSection>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                    {!lead.contactedAt && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                onMarkContacted(
+                                    lead._id
+                                )
+                            }
+                            className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                        >
+                            Mark Contacted
+                        </button>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            onDelete(
+                                lead._id
+                            )
+                        }
+                        className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-100"
+                    >
+                        Delete Lead
+                    </button>
+                </div>
             </div>
         </DrawerShell>
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Consultation drawer                                                        */
-/* -------------------------------------------------------------------------- */
-
 function ConsultationDrawer({
     consultation,
-    loading,
     onClose,
     onStatusChange,
     onAddNote,
 }: {
     consultation: Consultation;
-    loading: boolean;
     onClose: () => void;
     onStatusChange: (
         id: string,
@@ -2410,10 +2531,7 @@ function ConsultationDrawer({
     onAddNote: () => void;
 }) {
     const lead =
-        typeof consultation.lead ===
-            "object"
-            ? consultation.lead
-            : null;
+        consultation.lead;
 
     return (
         <DrawerShell
@@ -2424,30 +2542,31 @@ function ConsultationDrawer({
             onClose={onClose}
         >
             <div className="space-y-6">
-                <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <StatusBadge
-                            status={
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <span
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize ${consultationStatusStyles[
+                                consultation.status
+                                ]
+                                }`}
+                        >
+                            {
                                 consultation.status
                             }
-                            styles={
-                                consultationStatusStyles
-                            }
-                        />
+                        </span>
 
                         <select
                             value={
                                 consultation.status
                             }
-                            disabled={loading}
-                            onChange={(event) =>
+                            onChange={(e) =>
                                 onStatusChange(
                                     consultation._id,
-                                    event.target
+                                    e.target
                                         .value as ConsultationStatus
                                 )
                             }
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium outline-none"
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium"
                         >
                             <option value="scheduled">
                                 Scheduled
@@ -2463,15 +2582,18 @@ function ConsultationDrawer({
                             </option>
                         </select>
                     </div>
-                </section>
+                </div>
 
                 <DetailSection title="Lead Information">
                     <Detail
                         label="Name"
-                        value={getLeadName(
-                            lead
-                        )}
+                        value={
+                            getLeadName(
+                                lead
+                            )
+                        }
                     />
+
                     <Detail
                         label="Email"
                         value={
@@ -2479,6 +2601,7 @@ function ConsultationDrawer({
                             "—"
                         }
                     />
+
                     <Detail
                         label="Phone"
                         value={
@@ -2486,6 +2609,7 @@ function ConsultationDrawer({
                             "—"
                         }
                     />
+
                     <Detail
                         label="Company"
                         value={
@@ -2493,6 +2617,7 @@ function ConsultationDrawer({
                             "—"
                         }
                     />
+
                     <Detail
                         label="Project"
                         value={
@@ -2509,6 +2634,7 @@ function ConsultationDrawer({
                             consultation.scheduledAt
                         )}
                     />
+
                     <Detail
                         label="Time"
                         value={`${formatTime(
@@ -2516,6 +2642,7 @@ function ConsultationDrawer({
                         )} · ${consultation.duration
                             } minutes`}
                     />
+
                     <Detail
                         label="Type"
                         value={
@@ -2565,21 +2692,11 @@ function ConsultationDrawer({
                                 : "Unassigned"
                         }
                     />
-                    {consultation.assignedTo && (
-                        <Detail
-                            label="Email"
-                            value={
-                                consultation
-                                    .assignedTo
-                                    .email
-                            }
-                        />
-                    )}
                 </DetailSection>
 
                 {consultation.agenda && (
                     <DetailSection title="Agenda">
-                        <p className="whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                        <p className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
                             {
                                 consultation.agenda
                             }
@@ -2590,8 +2707,8 @@ function ConsultationDrawer({
                 <DetailSection title="Notes">
                     <div className="space-y-3">
                         {consultation.notes &&
-                            consultation.notes.length >
-                            0 ? (
+                            consultation.notes
+                                .length > 0 ? (
                             consultation.notes.map(
                                 (
                                     note,
@@ -2611,9 +2728,11 @@ function ConsultationDrawer({
                                         </p>
 
                                         <p className="mt-2 text-[11px] text-slate-400">
-                                            {formatDateTime(
-                                                note.createdAt
-                                            )}
+                                            {note.createdAt
+                                                ? formatDateTime(
+                                                    note.createdAt
+                                                )
+                                                : ""}
                                         </p>
                                     </div>
                                 )
@@ -2629,7 +2748,7 @@ function ConsultationDrawer({
                             onClick={
                                 onAddNote
                             }
-                            className="w-full rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
+                            className="w-full rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
                         >
                             + Add Note
                         </button>
@@ -2640,9 +2759,533 @@ function ConsultationDrawer({
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Create consultation                                                        */
-/* -------------------------------------------------------------------------- */
+function DrawerShell({
+    title,
+    subtitle,
+    onClose,
+    children,
+}: {
+    title: string;
+    subtitle: string;
+    onClose: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <div className="fixed inset-0 z-50">
+            <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]"
+            />
+
+            <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
+                    <div className="min-w-0">
+                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                            {title}
+                        </p>
+
+                        <h2 className="mt-1 truncate text-lg font-bold text-slate-950">
+                            {subtitle}
+                        </h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl text-slate-500 hover:bg-slate-100"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-5 sm:p-6">
+                    {children}
+                </div>
+
+                <div className="border-t border-slate-200 p-4">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                    >
+                        Close
+                    </button>
+                </div>
+            </aside>
+        </div>
+    );
+}
+
+function DetailSection({
+    title,
+    children,
+}: {
+    title: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <section>
+            <h3 className="mb-3 text-sm font-bold text-slate-900">
+                {title}
+            </h3>
+
+            <div className="space-y-3">
+                {children}
+            </div>
+        </section>
+    );
+}
+
+function Detail({
+    label,
+    value,
+}: {
+    label: string;
+    value: React.ReactNode;
+}) {
+    return (
+        <div className="flex flex-col gap-1 border-b border-slate-100 pb-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <span className="text-xs font-medium text-slate-400">
+                {label}
+            </span>
+
+            <span className="break-words text-right text-sm font-medium text-slate-700">
+                {value}
+            </span>
+        </div>
+    );
+}
+
+function NoteModal({
+    title,
+    placeholder,
+    onClose,
+    onSubmit,
+}: {
+    title: string;
+    placeholder: string;
+    onClose: () => void;
+    onSubmit: (
+        content: string
+    ) => Promise<void>;
+}) {
+    const [content, setContent] =
+        useState("");
+
+    const [saving, setSaving] =
+        useState(false);
+
+    async function submit(
+        event: React.FormEvent
+    ) {
+        event.preventDefault();
+
+        if (!content.trim()) return;
+
+        setSaving(true);
+
+        try {
+            await onSubmit(
+                content.trim()
+            );
+        } catch (err) {
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to save note."
+            );
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+            <form
+                onSubmit={submit}
+                className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl sm:p-6"
+            >
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-slate-950">
+                        {title}
+                    </h2>
+
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="text-xl text-slate-400"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <textarea
+                    value={content}
+                    onChange={(e) =>
+                        setContent(
+                            e.target.value
+                        )
+                    }
+                    rows={6}
+                    autoFocus
+                    placeholder={
+                        placeholder
+                    }
+                    className="mt-5 w-full resize-none rounded-xl border border-slate-200 p-4 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
+                />
+
+                <div className="mt-4 flex justify-end gap-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        disabled={
+                            saving ||
+                            !content.trim()
+                        }
+                        className="rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                        {saving
+                            ? "Saving..."
+                            : "Add Note"}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+function CreateLeadModal({
+    onClose,
+    onCreated,
+}: {
+    onClose: () => void;
+    onCreated: () => void;
+}) {
+    const [form, setForm] =
+        useState({
+            fullName: "",
+            email: "",
+            phone: "",
+            company: "",
+            website: "",
+            projectTitle: "",
+            projectType: "",
+            timeline: "",
+            preferredContact:
+                "email",
+            message: "",
+        });
+
+    const [saving, setSaving] =
+        useState(false);
+
+    async function submit(
+        event: React.FormEvent
+    ) {
+        event.preventDefault();
+
+        if (
+            !form.fullName.trim() ||
+            !form.email.trim() ||
+            !form.message.trim()
+        ) {
+            alert(
+                "Name, email and message are required."
+            );
+            return;
+        }
+
+        setSaving(true);
+
+        try {
+            const response =
+                await fetch(
+                    "/api/leads",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
+                        credentials:
+                            "include",
+                        body: JSON.stringify({
+                            ...form,
+                            interestedServices:
+                                [],
+                        }),
+                    }
+                );
+
+            const result =
+                (await response.json()) as ApiResult<Lead>;
+
+            if (
+                !response.ok ||
+                !result.success
+            ) {
+                throw new Error(
+                    result.message ||
+                    "Failed to create lead."
+                );
+            }
+
+            onCreated();
+        } catch (err) {
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to create lead."
+            );
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    return (
+        <ModalShell
+            title="New Lead"
+            subtitle="Create a lead manually."
+            onClose={onClose}
+        >
+            <form
+                onSubmit={submit}
+            >
+                <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+                    <Field
+                        label="Full Name"
+                        required
+                    >
+                        <input
+                            value={
+                                form.fullName
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        fullName:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        />
+                    </Field>
+
+                    <Field
+                        label="Email"
+                        required
+                    >
+                        <input
+                            type="email"
+                            value={
+                                form.email
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        email:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        />
+                    </Field>
+
+                    <Field label="Phone">
+                        <input
+                            value={
+                                form.phone
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        phone:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        />
+                    </Field>
+
+                    <Field label="Company">
+                        <input
+                            value={
+                                form.company
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        company:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        />
+                    </Field>
+
+                    <Field label="Project Title">
+                        <input
+                            value={
+                                form.projectTitle
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        projectTitle:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        />
+                    </Field>
+
+                    <Field label="Project Type">
+                        <input
+                            value={
+                                form.projectType
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        projectType:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        />
+                    </Field>
+
+                    <Field label="Timeline">
+                        <input
+                            value={
+                                form.timeline
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        timeline:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        />
+                    </Field>
+
+                    <Field label="Preferred Contact">
+                        <select
+                            value={
+                                form.preferredContact
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        preferredContact:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        >
+                            <option value="email">
+                                Email
+                            </option>
+                            <option value="phone">
+                                Phone
+                            </option>
+                            <option value="whatsapp">
+                                WhatsApp
+                            </option>
+                        </select>
+                    </Field>
+
+                    <Field
+                        label="Website"
+                        className="sm:col-span-2"
+                    >
+                        <input
+                            value={
+                                form.website
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        website:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input"
+                        />
+                    </Field>
+
+                    <Field
+                        label="Message"
+                        required
+                        className="sm:col-span-2"
+                    >
+                        <textarea
+                            rows={5}
+                            value={
+                                form.message
+                            }
+                            onChange={(e) =>
+                                setForm(
+                                    (current) => ({
+                                        ...current,
+                                        message:
+                                            e.target
+                                                .value,
+                                    })
+                                )
+                            }
+                            className="input resize-none"
+                        />
+                    </Field>
+                </div>
+
+                <ModalFooter
+                    onClose={onClose}
+                    saving={saving}
+                    submitLabel="Create Lead"
+                />
+            </form>
+        </ModalShell>
+    );
+}
 
 function CreateConsultationModal({
     leads,
@@ -2663,7 +3306,9 @@ function CreateConsultationModal({
         useState("30");
 
     const [meetingType, setMeetingType] =
-        useState<MeetingType>("zoom");
+        useState<MeetingType>(
+            "zoom"
+        );
 
     const [meetingLink, setMeetingLink] =
         useState("");
@@ -2677,41 +3322,15 @@ function CreateConsultationModal({
     const [saving, setSaving] =
         useState(false);
 
-    const [searchLead, setSearchLead] =
-        useState("");
-
-    const filteredLeads =
-        useMemo(() => {
-            if (!searchLead.trim()) {
-                return leads;
-            }
-
-            const value =
-                searchLead.toLowerCase();
-
-            return leads.filter(
-                (item) =>
-                    item.fullName
-                        .toLowerCase()
-                        .includes(value) ||
-                    item.email
-                        .toLowerCase()
-                        .includes(value) ||
-                    item.company
-                        ?.toLowerCase()
-                        .includes(value)
-            );
-        }, [
-            leads,
-            searchLead,
-        ]);
-
     async function submit(
         event: React.FormEvent
     ) {
         event.preventDefault();
 
-        if (!lead || !scheduledAt) {
+        if (
+            !lead ||
+            !scheduledAt
+        ) {
             alert(
                 "Lead and schedule are required."
             );
@@ -2719,7 +3338,8 @@ function CreateConsultationModal({
         }
 
         if (
-            meetingType === "zoom" &&
+            meetingType ===
+            "zoom" &&
             !meetingLink.trim()
         ) {
             alert(
@@ -2807,7 +3427,7 @@ function CreateConsultationModal({
     return (
         <ModalShell
             title="New Consultation"
-            subtitle="Schedule a meeting for an existing lead."
+            subtitle="Schedule a consultation for an existing lead."
             onClose={onClose}
         >
             <form
@@ -2819,81 +3439,45 @@ function CreateConsultationModal({
                         required
                         className="sm:col-span-2"
                     >
-                        <input
+                        <select
                             value={
-                                searchLead
+                                lead
                             }
-                            onChange={(
-                                event
-                            ) => {
-                                setSearchLead(
-                                    event
-                                        .target
-                                        .value
-                                );
+                            onChange={(e) =>
                                 setLead(
-                                    ""
-                                );
-                            }}
-                            placeholder="Search lead by name, email or company..."
+                                    e.target
+                                        .value
+                                )
+                            }
                             className="input"
-                        />
+                        >
+                            <option value="">
+                                Select a lead
+                            </option>
 
-                        {searchLead &&
-                            !lead && (
-                                <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
-                                    {filteredLeads.length >
-                                        0 ? (
-                                        filteredLeads
-                                            .slice(
-                                                0,
-                                                8
-                                            )
-                                            .map(
-                                                (
-                                                    item
-                                                ) => (
-                                                    <button
-                                                        key={
-                                                            item._id
-                                                        }
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setLead(
-                                                                item._id
-                                                            );
-                                                            setSearchLead(
-                                                                item.fullName
-                                                            );
-                                                        }}
-                                                        className="block w-full border-b border-slate-100 px-4 py-3 text-left last:border-0 hover:bg-slate-50"
-                                                    >
-                                                        <p className="text-sm font-semibold text-slate-900">
-                                                            {
-                                                                item.fullName
-                                                            }
-                                                        </p>
-                                                        <p className="text-xs text-slate-500">
-                                                            {
-                                                                item.email
-                                                            }
-                                                        </p>
-                                                    </button>
-                                                )
-                                            )
-                                    ) : (
-                                        <p className="px-4 py-3 text-sm text-slate-500">
-                                            No leads found.
-                                        </p>
-                                    )}
-                                </div>
+                            {leads.map(
+                                (
+                                    item
+                                ) => (
+                                    <option
+                                        key={
+                                            item._id
+                                        }
+                                        value={
+                                            item._id
+                                        }
+                                    >
+                                        {
+                                            item.fullName
+                                        }{" "}
+                                        —{" "}
+                                        {
+                                            item.email
+                                        }
+                                    </option>
+                                )
                             )}
-
-                        {lead && (
-                            <p className="mt-2 text-xs font-medium text-emerald-600">
-                                Lead selected
-                            </p>
-                        )}
+                        </select>
                     </Field>
 
                     <Field
@@ -2905,12 +3489,9 @@ function CreateConsultationModal({
                             value={
                                 scheduledAt
                             }
-                            onChange={(
-                                event
-                            ) =>
+                            onChange={(e) =>
                                 setScheduledAt(
-                                    event
-                                        .target
+                                    e.target
                                         .value
                                 )
                             }
@@ -2923,12 +3504,9 @@ function CreateConsultationModal({
                             value={
                                 duration
                             }
-                            onChange={(
-                                event
-                            ) =>
+                            onChange={(e) =>
                                 setDuration(
-                                    event
-                                        .target
+                                    e.target
                                         .value
                                 )
                             }
@@ -2960,12 +3538,9 @@ function CreateConsultationModal({
                             value={
                                 meetingType
                             }
-                            onChange={(
-                                event
-                            ) =>
+                            onChange={(e) =>
                                 setMeetingType(
-                                    event
-                                        .target
+                                    e.target
                                         .value as MeetingType
                                 )
                             }
@@ -2993,12 +3568,9 @@ function CreateConsultationModal({
                                     value={
                                         meetingLink
                                     }
-                                    onChange={(
-                                        event
-                                    ) =>
+                                    onChange={(e) =>
                                         setMeetingLink(
-                                            event
-                                                .target
+                                            e.target
                                                 .value
                                         )
                                     }
@@ -3018,12 +3590,9 @@ function CreateConsultationModal({
                                     value={
                                         location
                                     }
-                                    onChange={(
-                                        event
-                                    ) =>
+                                    onChange={(e) =>
                                         setLocation(
-                                            event
-                                                .target
+                                            e.target
                                                 .value
                                         )
                                     }
@@ -3042,12 +3611,9 @@ function CreateConsultationModal({
                             value={
                                 agenda
                             }
-                            onChange={(
-                                event
-                            ) =>
+                            onChange={(e) =>
                                 setAgenda(
-                                    event
-                                        .target
+                                    e.target
                                         .value
                                 )
                             }
@@ -3064,69 +3630,6 @@ function CreateConsultationModal({
                 />
             </form>
         </ModalShell>
-    );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Generic UI                                                                 */
-/* -------------------------------------------------------------------------- */
-
-function DrawerShell({
-    title,
-    subtitle,
-    onClose,
-    children,
-}: {
-    title: string;
-    subtitle: string;
-    onClose: () => void;
-    children: React.ReactNode;
-}) {
-    return (
-        <div className="fixed inset-0 z-50">
-            <button
-                type="button"
-                aria-label="Close drawer"
-                onClick={onClose}
-                className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]"
-            />
-
-            <aside className="absolute right-0 top-0 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl">
-                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 sm:px-6">
-                    <div>
-                        <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-                            {title}
-                        </p>
-
-                        <h2 className="mt-1 text-lg font-bold text-slate-950">
-                            {subtitle}
-                        </h2>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg text-xl text-slate-500 hover:bg-slate-100"
-                    >
-                        ×
-                    </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-5 sm:p-6">
-                    {children}
-                </div>
-
-                <div className="border-t border-slate-200 p-4">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="w-full rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
-                    >
-                        Close
-                    </button>
-                </div>
-            </aside>
-        </div>
     );
 }
 
@@ -3170,97 +3673,6 @@ function ModalShell({
     );
 }
 
-function NoteModal({
-    title,
-    placeholder,
-    loading,
-    onClose,
-    onSubmit,
-}: {
-    title: string;
-    placeholder: string;
-    loading: boolean;
-    onClose: () => void;
-    onSubmit: (
-        value: string
-    ) => void;
-}) {
-    const [value, setValue] =
-        useState("");
-
-    return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-            <form
-                onSubmit={(event) => {
-                    event.preventDefault();
-
-                    if (
-                        value.trim()
-                    ) {
-                        onSubmit(
-                            value.trim()
-                        );
-                    }
-                }}
-                className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl sm:p-6"
-            >
-                <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-slate-950">
-                        {title}
-                    </h2>
-
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="text-xl text-slate-400"
-                    >
-                        ×
-                    </button>
-                </div>
-
-                <textarea
-                    value={value}
-                    onChange={(event) =>
-                        setValue(
-                            event.target
-                                .value
-                        )
-                    }
-                    rows={6}
-                    autoFocus
-                    placeholder={
-                        placeholder
-                    }
-                    className="mt-5 w-full resize-none rounded-xl border border-slate-200 p-4 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
-                />
-
-                <div className="mt-4 flex justify-end gap-2">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700"
-                    >
-                        Cancel
-                    </button>
-
-                    <button
-                        type="submit"
-                        disabled={
-                            loading ||
-                            !value.trim()
-                        }
-                        className="rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-                    >
-                        {loading
-                            ? "Saving..."
-                            : "Add Note"}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-}
-
 function ModalFooter({
     onClose,
     saving,
@@ -3275,7 +3687,7 @@ function ModalFooter({
             <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700"
             >
                 Cancel
             </button>
@@ -3286,276 +3698,9 @@ function ModalFooter({
                 className="rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
             >
                 {saving
-                    ? "Creating..."
+                    ? "Saving..."
                     : submitLabel}
             </button>
-        </div>
-    );
-}
-
-function DetailSection({
-    title,
-    children,
-}: {
-    title: string;
-    children: React.ReactNode;
-}) {
-    return (
-        <section>
-            <h3 className="mb-3 text-sm font-bold text-slate-900">
-                {title}
-            </h3>
-
-            <div className="space-y-3">
-                {children}
-            </div>
-        </section>
-    );
-}
-
-function Detail({
-    label,
-    value,
-}: {
-    label: string;
-    value: React.ReactNode;
-}) {
-    return (
-        <div className="flex flex-col gap-1 border-b border-slate-100 pb-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-            <span className="text-xs font-medium text-slate-400">
-                {label}
-            </span>
-
-            <span className="text-right text-sm font-medium text-slate-700">
-                {value}
-            </span>
-        </div>
-    );
-}
-
-function StatCard({
-    label,
-    value,
-    icon,
-}: {
-    label: string;
-    value: number;
-    icon: string;
-}) {
-    return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <div className="flex items-start justify-between gap-3">
-                <div>
-                    <p className="text-xs font-medium text-slate-500 sm:text-sm">
-                        {label}
-                    </p>
-
-                    <p className="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">
-                        {value}
-                    </p>
-                </div>
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                    {icon ===
-                        "check"
-                        ? "✓"
-                        : icon ===
-                            "clock"
-                            ? "◷"
-                            : icon ===
-                                "upcoming"
-                                ? "↗"
-                                : icon ===
-                                    "phone"
-                                    ? "☎"
-                                    : icon ===
-                                        "spark"
-                                        ? "✦"
-                                        : icon ===
-                                            "users"
-                                            ? "♙"
-                                            : "▣"}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function StatusBadge({
-    status,
-    styles,
-}: {
-    status: string;
-    styles: Record<
-        string,
-        string
-    >;
-}) {
-    return (
-        <span
-            className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${styles[status] ||
-                "border-slate-200 bg-slate-50 text-slate-600"
-                }`}
-        >
-            {formatStatus(
-                status
-            )}
-        </span>
-    );
-}
-
-function Pagination({
-    page,
-    totalPages,
-    onPrevious,
-    onNext,
-}: {
-    page: number;
-    totalPages: number;
-    onPrevious: () => void;
-    onNext: () => void;
-}) {
-    return (
-        <div className="flex flex-col gap-3 border-t border-slate-200 px-1 py-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-500">
-                Page{" "}
-                <span className="font-medium text-slate-700">
-                    {page}
-                </span>{" "}
-                of{" "}
-                <span className="font-medium text-slate-700">
-                    {totalPages}
-                </span>
-            </p>
-
-            <div className="flex gap-2">
-                <button
-                    type="button"
-                    disabled={
-                        page <= 1
-                    }
-                    onClick={
-                        onPrevious
-                    }
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    Previous
-                </button>
-
-                <button
-                    type="button"
-                    disabled={
-                        page >=
-                        totalPages
-                    }
-                    onClick={onNext}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    Next
-                </button>
-            </div>
-        </div>
-    );
-}
-
-function TableHead({
-    children,
-    align = "left",
-}: {
-    children: React.ReactNode;
-    align?: "left" | "right";
-}) {
-    return (
-        <th
-            className={`px-5 py-4 text-${align} text-xs font-semibold uppercase tracking-wide text-slate-500`}
-        >
-            {children}
-        </th>
-    );
-}
-
-function SkeletonRow({
-    columns,
-}: {
-    columns: number;
-}) {
-    return (
-        <tr>
-            {Array.from({
-                length: columns,
-            }).map((_, index) => (
-                <td
-                    key={index}
-                    className="px-5 py-5"
-                >
-                    <div className="animate-pulse space-y-2">
-                        <div className="h-3 w-28 rounded bg-slate-200" />
-                        <div className="h-2.5 w-20 rounded bg-slate-100" />
-                    </div>
-                </td>
-            ))}
-        </tr>
-    );
-}
-
-function EmptyRow({
-    columns,
-    title,
-    description,
-}: {
-    columns: number;
-    title: string;
-    description: string;
-}) {
-    return (
-        <tr>
-            <td
-                colSpan={
-                    columns
-                }
-                className="px-5 py-16 text-center"
-            >
-                <div className="mx-auto flex max-w-sm flex-col items-center">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                        <svg
-                            className="h-6 w-6"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.7"
-                        >
-                            <rect
-                                x="3"
-                                y="4"
-                                width="18"
-                                height="17"
-                                rx="2"
-                            />
-                            <path d="M16 2v4M8 2v4M3 9h18" />
-                        </svg>
-                    </div>
-
-                    <h3 className="font-semibold text-slate-900">
-                        {title}
-                    </h3>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                        {description}
-                    </p>
-                </div>
-            </td>
-        </tr>
-    );
-}
-
-function ErrorBox({
-    message,
-}: {
-    message: string;
-}) {
-    return (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {message}
         </div>
     );
 }
@@ -3588,4 +3733,156 @@ function Field({
             {children}
         </label>
     );
+}
+
+function Pagination({
+    page,
+    totalPages,
+    onPage,
+}: {
+    page: number;
+    totalPages: number;
+    onPage: (page: number) => void;
+}) {
+    return (
+        <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-500">
+                Page{" "}
+                <span className="font-medium text-slate-700">
+                    {page}
+                </span>{" "}
+                of{" "}
+                <span className="font-medium text-slate-700">
+                    {totalPages}
+                </span>
+            </p>
+
+            <div className="flex gap-2">
+                <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() =>
+                        onPage(
+                            page - 1
+                        )
+                    }
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                    Previous
+                </button>
+
+                <button
+                    type="button"
+                    disabled={
+                        page >=
+                        totalPages
+                    }
+                    onClick={() =>
+                        onPage(
+                            page + 1
+                        )
+                    }
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                    Next
+                </button>
+            </div>
+        </div>
+    );
+}
+
+function SkeletonRow({
+    columns,
+}: {
+    columns: number;
+}) {
+    return (
+        <tr>
+            {Array.from({
+                length: columns,
+            }).map((_, index) => (
+                <td
+                    key={index}
+                    className="px-5 py-5"
+                >
+                    <div className="animate-pulse space-y-2">
+                        <div className="h-3 w-28 rounded bg-slate-200" />
+                        <div className="h-2.5 w-20 rounded bg-slate-100" />
+                    </div>
+                </td>
+            ))}
+        </tr>
+    );
+}
+
+function ListSkeleton() {
+    return (
+        <>
+            {Array.from({
+                length: 5,
+            }).map((_, index) => (
+                <div
+                    key={index}
+                    className="animate-pulse px-5 py-4"
+                >
+                    <div className="h-3 w-40 rounded bg-slate-200" />
+                    <div className="mt-2 h-2.5 w-28 rounded bg-slate-100" />
+                </div>
+            ))}
+        </>
+    );
+}
+
+function EmptyState({
+    text,
+}: {
+    text: string;
+}) {
+    return (
+        <div className="px-5 py-14 text-center">
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                ◫
+            </div>
+
+            <p className="mt-3 text-sm font-semibold text-slate-700">
+                {text}
+            </p>
+        </div>
+    );
+}
+
+function formatBudget(
+    budget: NonNullable<
+        Lead["budget"]
+    >
+) {
+    if (
+        budget.amount !==
+        undefined
+    ) {
+        return `${budget.currency || "USD"} ${budget.amount}`;
+    }
+
+    if (
+        budget.min !==
+        undefined ||
+        budget.max !==
+        undefined
+    ) {
+        const min =
+            budget.min !==
+                undefined
+                ? budget.min
+                : "—";
+
+        const max =
+            budget.max !==
+                undefined
+                ? budget.max
+                : "—";
+
+        return `${budget.currency || "USD"} ${min} – ${max}`;
+    }
+
+    return "—";
 }

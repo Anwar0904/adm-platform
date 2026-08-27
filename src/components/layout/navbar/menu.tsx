@@ -1,13 +1,32 @@
 import {
     Briefcase,
+    Smartphone,
+    BrainCircuit,
+    Palette,
     FolderKanban,
     Building2,
     Users,
     Newspaper,
     Phone,
+    LucideIcon,
 } from "lucide-react";
 
-export const navigation = [
+export type NavigationChild = {
+    title: string;
+    description: string;
+    href: string;
+    icon: LucideIcon;
+};
+
+export type NavigationItem = {
+    title: string;
+    href: string;
+    icon?: LucideIcon;
+    mega?: boolean;
+    items?: NavigationChild[];
+};
+
+export const navigation: NavigationItem[] = [
     {
         title: "Home",
         href: "/",
@@ -15,40 +34,36 @@ export const navigation = [
 
     {
         title: "Services",
-        mega: true,
         href: "/services",
-
+        mega: true,
         items: [
             {
                 title: "Web Development",
                 description:
-                    "Modern scalable websites",
+                    "Modern, scalable websites and web applications",
                 href: "/services/web-development",
                 icon: Briefcase,
             },
-
             {
                 title: "Mobile Apps",
                 description:
-                    "Android & iOS solutions",
+                    "High-quality Android and iOS applications",
                 href: "/services/mobile-apps",
-                icon: Briefcase,
+                icon: Smartphone,
             },
-
             {
                 title: "AI Solutions",
                 description:
-                    "AI powered business tools",
+                    "AI-powered tools for modern businesses",
                 href: "/services/ai-solutions",
-                icon: Briefcase,
+                icon: BrainCircuit,
             },
-
             {
                 title: "UI / UX Design",
                 description:
-                    "Beautiful user experiences",
+                    "Beautiful and intuitive digital experiences",
                 href: "/services/ui-ux",
-                icon: Briefcase,
+                icon: Palette,
             },
         ],
     },

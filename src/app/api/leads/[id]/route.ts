@@ -1,18 +1,29 @@
 import { NextRequest } from "next/server";
 
-import LeadService from "@/services/lead.service";
+import { connectDB } from "@/lib/db";
 
-import { UpdateLeadSchema } from "@/validators/lead.validator";
+import {
+    UpdateLeadSchema,
+} from "@/validators/lead.validator";
 
-import { ApiResponse } from "@/lib/api/api-response";
-import { handleApiError } from "@/lib/api/error-handler";
+import {
+    ApiResponse,
+} from "@/lib/api/api-response";
+
+import {
+    handleApiError,
+} from "@/lib/api/error-handler";
 
 import {
     requireAuth,
     requirePermission,
 } from "@/lib/auth/require-auth";
 
-import { PERMISSIONS } from "@/constants/permissions";
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
+
+import leadService from "@/services/lead.service";
 
 type RouteParams = {
     params: Promise<{
@@ -25,6 +36,8 @@ export async function GET(
     { params }: RouteParams
 ) {
     try {
+        await connectDB();
+
         await requirePermission(
             request,
             PERMISSIONS.LEAD_READ
@@ -34,7 +47,7 @@ export async function GET(
             await params;
 
         const lead =
-            await LeadService.getLeadById(
+            await leadService.getLeadById(
                 id
             );
 
@@ -52,10 +65,10 @@ export async function PATCH(
     { params }: RouteParams
 ) {
     try {
+        await connectDB();
+
         const user =
-            await requireAuth(
-                request
-            );
+            await requireAuth(request);
 
         await requirePermission(
             request,
@@ -74,7 +87,7 @@ export async function PATCH(
             );
 
         const lead =
-            await LeadService.updateLead(
+            await leadService.updateLead(
                 id,
                 data,
                 user._id.toString()
@@ -94,6 +107,8 @@ export async function DELETE(
     { params }: RouteParams
 ) {
     try {
+        await connectDB();
+
         await requirePermission(
             request,
             PERMISSIONS.LEAD_DELETE
@@ -102,7 +117,7 @@ export async function DELETE(
         const { id } =
             await params;
 
-        await LeadService.deleteLead(
+        await leadService.deleteLead(
             id
         );
 

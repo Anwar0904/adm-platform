@@ -10,23 +10,19 @@ import {
 import { ApiResponse } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/error-handler";
 
-import {
-    requireAuth,
-    requirePermission,
-} from "@/lib/auth/require-auth";
+import { requireAuth, requirePermission } from "@/lib/auth/require-auth";
 
 import { PERMISSIONS } from "@/constants/permissions";
 import leadService from "@/services/lead.service";
 
-
-export async function GET(
-    request: NextRequest
-) {
+export async function GET(request: NextRequest) {
     try {
         await requirePermission(
             request,
             PERMISSIONS.LEAD_READ
         );
+
+        await connectDB();
 
         const query =
             LeadQuerySchema.parse(
@@ -36,9 +32,7 @@ export async function GET(
             );
 
         const result =
-            await leadService.getLeads(
-                query
-            );
+            await leadService.getLeads(query);
 
         return ApiResponse.success(
             result,
@@ -49,11 +43,17 @@ export async function GET(
     }
 }
 
-export async function POST(
-    request: NextRequest
-) {
+export async function POST(request: NextRequest) {
     try {
         await connectDB();
+
+        const user =
+            await requireAuth(request);
+
+        await requirePermission(
+            request,
+            PERMISSIONS.LEAD_CREATE
+        );
 
         const contentType =
             request.headers.get(
@@ -74,68 +74,108 @@ export async function POST(
                 string,
                 unknown
             > = {
-                attachments: [] as string[],
+                attachments: [],
             };
 
             formData.forEach(
                 (value, key) => {
-                    if (key === "attachments") {
-                        const attachments =
+                    if (
+                        key === "attachments"
+                    ) {
+                        const current =
                             Array.isArray(
                                 parsedBody.attachments
                             )
-                                ? (parsedBody.attachments as string[])
+                                ? parsedBody.attachments
                                 : [];
 
-                        parsedBody.attachments = [
-                            ...attachments,
-                            value instanceof File
-                                ? value.name
-                                : String(value),
-                        ];
-                    } else {
-                        parsedBody[key] =
-                            value instanceof File
-                                ? value.name
-                                : String(value);
+                        parsedBody.attachments =
+                            [
+                                ...current,
+                                value instanceof File
+                                    ? value.name
+                                    : String(value),
+                            ];
+
+                        return;
                     }
+
+                    parsedBody[key] =
+                        value instanceof File
+                            ? value.name
+                            : String(value);
                 }
             );
 
-            const budgetValue =
-                parsedBody.budget;
-
             if (
-                typeof budgetValue === "string" &&
-                budgetValue.trim() !== ""
+                typeof parsedBody.interestedServices ===
+                "string"
             ) {
-                parsedBody.budget = {
-                    amount: 0,
-                    currency: "USD",
-                    type: "fixed",
-                };
-            } else if (
-                budgetValue === undefined ||
-                budgetValue === null ||
-                budgetValue === ""
-            ) {
-                parsedBody.budget = null;
+                try {
+                    parsedBody.interestedServices =
+                        JSON.parse(
+                            parsedBody.interestedServices
+                        );
+                } catch {
+                    parsedBody.interestedServices =
+                        String(
+                            parsedBody.interestedServices
+                        )
+                            .split(",")
+                            .map((item) =>
+                                item.trim()
+                            )
+                            .filter(Boolean);
+                }
             }
 
-            data = CreateLeadSchema.parse(
-                parsedBody
-            );
+            if (
+                typeof parsedBody.budget ===
+                "string"
+            ) {
+                try {
+                    parsedBody.budget =
+                        JSON.parse(
+                            parsedBody.budget
+                        );
+                } catch {
+                    parsedBody.budget = null;
+                }
+            }
+
+            if (
+                typeof parsedBody.notes ===
+                "string"
+            ) {
+                try {
+                    parsedBody.notes =
+                        JSON.parse(
+                            parsedBody.notes
+                        );
+                } catch {
+                    parsedBody.notes = [];
+                }
+            }
+
+            data =
+                CreateLeadSchema.parse(
+                    parsedBody
+                );
         } else {
             const body =
                 await request.json();
 
-            data = CreateLeadSchema.parse(
-                body
-            );
+            data =
+                CreateLeadSchema.parse(
+                    body
+                );
         }
 
         const lead =
-            await leadService.createLead(data);
+            await leadService.createLead(
+                data,
+                user._id.toString()
+            );
 
         return ApiResponse.created(
             lead,
