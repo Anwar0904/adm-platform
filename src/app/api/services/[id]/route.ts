@@ -1,14 +1,13 @@
+// src/app/api/services/[id]/route.ts
+
 import { NextRequest } from "next/server";
 
 import { connectDB } from "@/lib/db";
-
 import { ApiResponse } from "@/lib/api/api-response";
 import { ApiErrorHandler } from "@/lib/api/api-error";
-
 import serviceService from "@/services/service.service";
 
 import { UpdateServiceSchema } from "@/validators/service.validator";
-
 import { requirePermission } from "@/middleware/auth.middleware";
 
 import { PERMISSIONS } from "@/constants/permissions";
@@ -18,6 +17,50 @@ interface Params {
     params: Promise<{
         id: string;
     }>;
+}
+
+function slugify(value: string) {
+    return value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+}
+
+function normalizeUpdatePayload(
+    body: Record<string, unknown>
+) {
+    const normalized = { ...body };
+
+    if (
+        typeof normalized.title === "string" &&
+        !normalized.slug
+    ) {
+        normalized.slug = slugify(
+            normalized.title
+        );
+    }
+
+    if (
+        typeof normalized.content === "string" &&
+        !normalized.description
+    ) {
+        normalized.description =
+            normalized.content;
+    }
+
+    if (
+        typeof normalized.featuredImage ===
+        "string" &&
+        !normalized.banner
+    ) {
+        normalized.banner =
+            normalized.featuredImage;
+    }
+
+    return normalized;
 }
 
 export async function GET(
@@ -32,8 +75,7 @@ export async function GET(
             PERMISSIONS.SERVICE_READ
         );
 
-        const { id } =
-            await params;
+        const { id } = await params;
 
         const service =
             await serviceService.getServiceById(
@@ -62,15 +104,14 @@ export async function PATCH(
                 PERMISSIONS.SERVICE_UPDATE
             );
 
-        const { id } =
-            await params;
+        const { id } = await params;
 
         const body =
             await request.json();
 
         const data =
             UpdateServiceSchema.parse(
-                body
+                normalizeUpdatePayload(body)
             );
 
         const service =
@@ -101,8 +142,7 @@ export async function DELETE(
             PERMISSIONS.SERVICE_DELETE
         );
 
-        const { id } =
-            await params;
+        const { id } = await params;
 
         await serviceService.deleteService(
             id

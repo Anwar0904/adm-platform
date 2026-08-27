@@ -1,6 +1,8 @@
 export interface ServiceItem {
-    id: number;
+    id?: string;
+    _id?: string;
     title: string;
+    slug: string;
     description: string;
     image: string;
     icon: string;

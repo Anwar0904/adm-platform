@@ -20,16 +20,16 @@ export const features = [
   {
     title: "AI First",
     description:
-      "Every solution is designed with intelligent automation in mind.",
+      "We look for practical opportunities to integrate intelligent automation into every digital solution.",
   },
   {
     title: "Scalable",
     description:
-      "Enterprise architecture capable of handling millions of users.",
+      "Our solutions are built on modern architecture that can grow alongside your users and business.",
   },
   {
     title: "Secure",
     description:
-      "Modern security practices following industry standards.",
+      "Security is considered from the foundation, with modern development practices and reliable infrastructure.",
   },
 ];
