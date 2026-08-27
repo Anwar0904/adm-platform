@@ -9,18 +9,24 @@ import { IUser } from "@/types/user.types";
 class UserRepository {
   async findById(id: string) {
     return User.findById(id)
-      .select("-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires")
+      .select(
+        "-password " +
+        "-passwordResetToken " +
+        "-passwordResetExpires " +
+        "-emailVerificationToken " +
+        "-emailVerificationExpires"
+      )
       .populate(
         "role",
         "name description permissions status"
       )
       .populate(
         "createdBy",
-        "name email"
+        "firstName lastName email"
       )
       .populate(
         "updatedBy",
-        "name email"
+        "firstName lastName email"
       );
   }
 
@@ -33,6 +39,7 @@ class UserRepository {
   async findByEmail(email: string) {
     return User.findOne({
       email: email.toLowerCase(),
+      isDeleted: false,
     });
   }
 
@@ -48,7 +55,10 @@ class UserRepository {
       isDeleted: false,
     };
 
-    if (excludeId) {
+    if (
+      excludeId &&
+      Types.ObjectId.isValid(excludeId)
+    ) {
       filter._id = {
         $ne: new Types.ObjectId(
           excludeId
@@ -73,7 +83,11 @@ class UserRepository {
   ) {
     return User.find(filter)
       .select(
-        "-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires"
+        "-password " +
+        "-passwordResetToken " +
+        "-passwordResetExpires " +
+        "-emailVerificationToken " +
+        "-emailVerificationExpires"
       )
       .populate(
         "role",
@@ -106,7 +120,11 @@ class UserRepository {
       }
     )
       .select(
-        "-password -passwordResetToken -passwordResetExpires -emailVerificationToken -emailVerificationExpires"
+        "-password " +
+        "-passwordResetToken " +
+        "-passwordResetExpires " +
+        "-emailVerificationToken " +
+        "-emailVerificationExpires"
       )
       .populate(
         "role",

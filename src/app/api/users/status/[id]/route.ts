@@ -2,22 +2,41 @@ import { NextRequest } from "next/server";
 
 import { connectDB } from "@/lib/db";
 
-import { ApiResponse } from "@/lib/api/api-response";
-import { ApiErrorHandler } from "@/lib/api/api-error";
+import {
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
 
-import { requirePermission } from "@/middleware/auth.middleware";
+import {
+    ApiResponse,
+} from "@/lib/api/api-response";
 
-import { PERMISSIONS } from "@/constants/permissions";
+import {
+    requirePermission,
+} from "@/middleware/auth.middleware";
+
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
 
 import UserService from "@/services/user/user.service";
 
-import { UpdateUserStatusSchema } from "@/validators/user.validator";
+import {
+    ChangeUserStatusSchema,
+} from "@/validators/user.validator";
+
+import {
+    UserStatus,
+} from "@/enums";
 
 interface RouteContext {
     params: Promise<{
         id: string;
     }>;
 }
+
+/* ----------------------------------------
+   PATCH /api/users/:id/status
+----------------------------------------- */
 
 export async function PATCH(
     request: NextRequest,
@@ -26,25 +45,34 @@ export async function PATCH(
     try {
         await connectDB();
 
-        await requirePermission(
-            request,
-            PERMISSIONS.USER_WRITE
-        );
+        const auth =
+            await requirePermission(
+                request,
+                PERMISSIONS.USER_UPDATE
+            );
+
+        const { id } =
+            await params;
 
         const body =
             await request.json();
 
-        const data =
-            UpdateUserStatusSchema.parse(
+        const parsedData =
+            ChangeUserStatusSchema.parse(
                 body
             );
 
-        const { id } = await params;
+        const status =
+            parsedData.status as UserStatus;
+
+        const currentUserId =
+            auth._id.toString();
 
         const user =
             await UserService.changeStatus(
                 id,
-                data.status
+                status,
+                currentUserId
             );
 
         return ApiResponse.success(
@@ -52,6 +80,8 @@ export async function PATCH(
             "Status updated successfully."
         );
     } catch (error) {
-        return ApiErrorHandler.handle(error);
+        return ApiErrorHandler.handle(
+            error
+        );
     }
 }

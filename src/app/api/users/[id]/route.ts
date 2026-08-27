@@ -2,14 +2,21 @@ import { NextRequest } from "next/server";
 
 import { connectDB } from "@/lib/db";
 
-import { ApiResponse } from "@/lib/api/api-response";
-import { ApiErrorHandler } from "@/lib/api/api-error";
+import {
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
+
+import {
+    ApiResponse,
+} from "@/lib/api/api-response";
 
 import {
     requirePermission,
 } from "@/middleware/auth.middleware";
 
-import { PERMISSIONS } from "@/constants/permissions";
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
 
 import UserService from "@/services/user/user.service";
 
@@ -17,7 +24,11 @@ import {
     UpdateUserSchema,
 } from "@/validators/user.validator";
 
-interface RouteParams {
+import {
+    UserStatus,
+} from "@/enums";
+
+interface RouteContext {
     params: Promise<{
         id: string;
     }>;
@@ -29,7 +40,7 @@ interface RouteParams {
 
 export async function GET(
     request: NextRequest,
-    { params }: RouteParams
+    { params }: RouteContext
 ) {
     try {
         await connectDB();
@@ -39,17 +50,22 @@ export async function GET(
             PERMISSIONS.USER_READ
         );
 
-        const { id } = await params;
+        const { id } =
+            await params;
 
         const user =
-            await UserService.getUserById(id);
+            await UserService.getUserById(
+                id
+            );
 
         return ApiResponse.success(
             user,
             "User fetched successfully."
         );
     } catch (error) {
-        return ApiErrorHandler.handle(error);
+        return ApiErrorHandler.handle(
+            error
+        );
     }
 }
 
@@ -59,28 +75,45 @@ export async function GET(
 
 export async function PATCH(
     request: NextRequest,
-    { params }: RouteParams
+    { params }: RouteContext
 ) {
     try {
         await connectDB();
 
-        await requirePermission(
-            request,
-            PERMISSIONS.USER_UPDATE
-        );
+        const auth =
+            await requirePermission(
+                request,
+                PERMISSIONS.USER_UPDATE
+            );
+
+        const { id } =
+            await params;
 
         const body =
             await request.json();
 
-        const data =
-            UpdateUserSchema.parse(body);
+        const parsedData =
+            UpdateUserSchema.parse(
+                body
+            );
 
-        const { id } = await params;
+        const data = {
+            ...parsedData,
+
+            status:
+                parsedData.status as
+                | UserStatus
+                | undefined,
+        };
+
+        const currentUserId =
+            auth._id.toString();
 
         const user =
             await UserService.updateUser(
                 id,
-                data
+                data,
+                currentUserId
             );
 
         return ApiResponse.success(
@@ -88,26 +121,38 @@ export async function PATCH(
             "User updated successfully."
         );
     } catch (error) {
-        return ApiErrorHandler.handle(error);
+        return ApiErrorHandler.handle(
+            error
+        );
     }
 }
 
+/* ----------------------------------------
+   DELETE /api/users/:id
+----------------------------------------- */
+
 export async function DELETE(
     request: NextRequest,
-    { params }: RouteParams
+    { params }: RouteContext
 ) {
     try {
         await connectDB();
 
-        await requirePermission(
-            request,
-            PERMISSIONS.USER_DELETE
-        );
+        const auth =
+            await requirePermission(
+                request,
+                PERMISSIONS.USER_DELETE
+            );
 
-        const { id } = await params;
+        const { id } =
+            await params;
+
+        const currentUserId =
+            auth._id.toString();
 
         await UserService.deleteUser(
-            id
+            id,
+            currentUserId
         );
 
         return ApiResponse.success(
@@ -115,6 +160,8 @@ export async function DELETE(
             "User deleted successfully."
         );
     } catch (error) {
-        return ApiErrorHandler.handle(error);
+        return ApiErrorHandler.handle(
+            error
+        );
     }
 }

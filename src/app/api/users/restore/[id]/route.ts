@@ -2,33 +2,40 @@ import { NextRequest } from "next/server";
 
 import { connectDB } from "@/lib/db";
 
-import { ApiResponse } from "@/lib/api/api-response";
-import { ApiErrorHandler } from "@/lib/api/api-error";
+import {
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
+
+import {
+    ApiResponse,
+} from "@/lib/api/api-response";
+
+import {
+    requirePermission,
+} from "@/middleware/auth.middleware";
+
+import {
+    PERMISSIONS,
+} from "@/constants/permissions";
 
 import UserService from "@/services/user/user.service";
 
-import { requirePermission } from "@/middleware/auth.middleware";
-
-import { PERMISSIONS } from "@/constants/permissions";
+interface RouteContext {
+    params: Promise<{
+        id: string;
+    }>;
+}
 
 export async function PATCH(
     request: NextRequest,
-    {
-        params,
-    }: {
-        params: Promise<{
-            id: string;
-        }>;
-    }
+    { params }: RouteContext
 ) {
-
     try {
-
         await connectDB();
 
         await requirePermission(
             request,
-            PERMISSIONS.USER_WRITE
+            PERMISSIONS.USER_UPDATE
         );
 
         const { id } =
@@ -43,8 +50,9 @@ export async function PATCH(
             user,
             "User restored successfully."
         );
-
     } catch (error) {
-        return ApiErrorHandler.handle(error);
+        return ApiErrorHandler.handle(
+            error
+        );
     }
 }

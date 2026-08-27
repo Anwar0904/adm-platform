@@ -9,10 +9,8 @@ import { IImage } from "./image.types";
 import { RoleDocument } from "./role.types";
 
 export interface IUser {
-  /** Legacy authentication field retained for existing accounts. */
-  name?: string;
 
-  firstName?: string;
+  firstName: string;
 
   lastName?: string;
 
@@ -30,7 +28,9 @@ export interface IUser {
 
   passwordResetExpires?: Date | null;
 
-  /** Legacy verification field retained for existing accounts. */
+  /**
+   * Legacy verification field.
+   */
   emailVerified?: boolean;
 
   isEmailVerified?: boolean;
@@ -54,14 +54,22 @@ export interface IUser {
   isDeleted: boolean;
 
   deletedAt?: Date | null;
+
+  createdAt?: Date;
+
+  updatedAt?: Date;
 }
 
 export interface UserMethods {
-  comparePassword(candidatePassword: string): Promise<boolean>;
+  comparePassword(
+    candidatePassword: string
+  ): Promise<boolean>;
 }
 
 export interface UserStatics {
-  findByEmail(email: string): Promise<UserDocument | null>;
+  findByEmail(
+    email: string
+  ): Promise<UserDocument | null>;
 }
 
 export type UserDocument =
@@ -70,17 +78,3 @@ export type UserDocument =
 export type UserModel =
   Model<IUser, object, UserMethods> &
   UserStatics;
-
-
-
-export interface UpdateUserInput {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  role?: string;
-  status?: UserStatus;
-  phone?: string | null;
-  jobTitle?: string | null;
-  avatar?: IImage | string | null;
-  isEmailVerified?: boolean;
-}

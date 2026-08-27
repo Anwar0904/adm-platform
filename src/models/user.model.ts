@@ -15,12 +15,20 @@ import { ImageSchema } from "@/schemas/image.schema";
 
 const UserSchema = new Schema<IUser, UserModel>(
   {
-    name: {
+
+    firstName: {
       type: String,
-      required: [true, "Name is required"],
+      required: [true, "First name is required"],
       trim: true,
       minlength: 2,
-      maxlength: 100,
+      maxlength: 80,
+    },
+
+    lastName: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 80,
     },
 
     email: {
@@ -30,7 +38,6 @@ const UserSchema = new Schema<IUser, UserModel>(
       trim: true,
       lowercase: true,
       maxlength: 255,
-      index: true,
     },
 
     password: {
@@ -40,6 +47,26 @@ const UserSchema = new Schema<IUser, UserModel>(
       select: false,
     },
 
+    avatar: {
+      type: ImageSchema,
+      default: null,
+    },
+
+    role: {
+      type: Schema.Types.ObjectId,
+      ref: "Role",
+      required: [true, "Role is required"],
+    },
+
+    status: {
+      type: String,
+      enum: Object.values(USER_STATUS),
+      default: USER_STATUS.ACTIVE,
+    },
+
+    /*
+     * Password reset
+     */
     passwordResetToken: {
       type: String,
       default: null,
@@ -49,41 +76,66 @@ const UserSchema = new Schema<IUser, UserModel>(
       type: Date,
       default: null,
     },
+
+    /*
+     * Legacy email verification
+     */
     emailVerified: {
       type: Boolean,
       default: false,
     },
+
+    /*
+     * Current email verification field
+     */
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
     emailVerificationToken: {
       type: String,
       default: null,
     },
+
     emailVerificationExpires: {
       type: Date,
       default: null,
     },
-    avatar: {
-      type: ImageSchema,
-      default: null,
-    },
 
-    role: {
-      type: Schema.Types.ObjectId,
-      ref: "Role",
-      required: true,
-      index: true,
-    },
-
-    status: {
-      type: String,
-      enum: Object.values(USER_STATUS),
-      default: USER_STATUS.ACTIVE,
-    },
-
+    /*
+     * Login information
+     */
     lastLogin: {
       type: Date,
       default: null,
     },
 
+    passwordChangedAt: {
+      type: Date,
+      default: null,
+    },
+
+    /*
+     * Contact / employment
+     */
+    phone: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: 30,
+    },
+
+    jobTitle: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: 120,
+    },
+
+    /*
+     * Audit fields
+     */
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -96,9 +148,13 @@ const UserSchema = new Schema<IUser, UserModel>(
       default: null,
     },
 
+    /*
+     * Soft delete
+     */
     isDeleted: {
       type: Boolean,
       default: false,
+      index: true,
     },
 
     deletedAt: {
@@ -123,42 +179,72 @@ const UserSchema = new Schema<IUser, UserModel>(
   }
 );
 
+/*
+ * Indexes
+ *
+ * Do not add index: true to the same fields
+ * unnecessarily, otherwise Mongoose can produce
+ * duplicate-index warnings.
+ */
+UserSchema.index(
+  { email: 1 },
+  { unique: true }
+);
+
+UserSchema.index({
+  role: 1,
+});
 
 UserSchema.index({
   status: 1,
 });
 
+UserSchema.index({
+  isDeleted: 1,
+});
+
+UserSchema.index({
+  createdAt: -1,
+});
+
+/*
+ * Hide sensitive fields from API responses.
+ */
+const sanitizeUser = (
+  _doc: unknown,
+  ret: any
+) => {
+  delete ret.password;
+  delete ret.passwordResetToken;
+  delete ret.passwordResetExpires;
+  delete ret.emailVerificationToken;
+  delete ret.emailVerificationExpires;
+  delete ret.__v;
+
+  return ret;
+};
+
 UserSchema.set("toJSON", {
   virtuals: true,
-  transform: (_, ret: any) => {
-    delete ret.password;
-    delete ret.passwordResetToken;
-    delete ret.passwordResetExpires;
-    delete ret.emailVerificationToken;
-    delete ret.emailVerificationExpires;
-    delete ret.__v;
-
-    return ret;
-  },
+  transform: sanitizeUser,
 });
 
 UserSchema.set("toObject", {
   virtuals: true,
-  transform: (_, ret: any) => {
-    delete ret.password;
-    delete ret.passwordResetToken;
-    delete ret.passwordResetExpires;
-    delete ret.emailVerificationToken;
-    delete ret.emailVerificationExpires;
-    delete ret.__v;
-
-    return ret;
-  },
+  transform: sanitizeUser,
 });
 
+
+
+/*
+ * Prevent model recompilation during Next.js
+ * development / hot reload.
+ */
 export const User =
   (models.User as UserModel) ||
   model<IUser, UserModel>(
     "User",
     UserSchema
   );
+
+export default User;
