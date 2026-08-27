@@ -1,5 +1,3 @@
-// src/models/team-member.model.ts
-
 import {
     Schema,
     model,
@@ -43,177 +41,185 @@ const SkillSchema = new Schema(
     }
 );
 
-const SocialLinksSchema =
-    new Schema(
-        {
-            facebook: String,
+const SocialLinksSchema = new Schema(
+    {
+        facebook: String,
+        linkedin: String,
+        twitter: String,
+        instagram: String,
+        github: String,
+        website: String,
+    },
+    {
+        _id: false,
+        versionKey: false,
+    }
+);
 
-            linkedin: String,
-
-            twitter: String,
-
-            instagram: String,
-
-            github: String,
-
-            website: String,
+const TeamMemberSchema = new Schema<
+    ITeamMember,
+    TeamMemberModel
+>(
+    {
+        name: {
+            type: String,
+            required: true,
+            trim: true,
+            minlength: 2,
+            maxlength: 100,
         },
-        {
-            _id: false,
-            versionKey: false,
-        }
-    );
 
-const TeamMemberSchema =
-    new Schema<
-        ITeamMember,
-        TeamMemberModel
-    >(
-        {
-            name: {
-                type: String,
-                required: true,
-                trim: true,
-                minlength: 2,
-                maxlength: 100,
-            },
+        slug: {
+            type: String,
+            trim: true,
+            lowercase: true,
+        },
 
-            slug: {
-                type: String,
-                trim: true,
-                lowercase: true,
-            },
+        designation: {
+            type: String,
+            required: true,
+            trim: true,
+            maxlength: 150,
+        },
 
-            designation: {
-                type: String,
-                required: true,
-                trim: true,
-                maxlength: 150,
-            },
+        shortBio: {
+            type: String,
+            default: "",
+            maxlength: 500,
+        },
 
-            shortBio: {
-                type: String,
-                default: "",
-                maxlength: 300,
-            },
+        biography: {
+            type: String,
+            default: "",
+        },
 
-            biography: {
-                type: String,
-                default: "",
-            },
+        email: {
+            type: String,
+            default: "",
+            lowercase: true,
+            trim: true,
+        },
 
-            email: {
-                type: String,
-                default: "",
-                lowercase: true,
-                trim: true,
-            },
+        phone: {
+            type: String,
+            default: "",
+            trim: true,
+        },
 
-            phone: {
-                type: String,
-                default: "",
-                trim: true,
-            },
+        avatar: {
+            type: Schema.Types.ObjectId,
+            ref: "Media",
+            default: null,
+        },
 
-            avatar: {
+        gallery: [
+            {
                 type: Schema.Types.ObjectId,
                 ref: "Media",
-                default: null,
             },
+        ],
 
-            gallery: [
-                {
-                    type: Schema.Types.ObjectId,
-                    ref: "Media",
-                },
-            ],
-
-            skills: {
-                type: [SkillSchema],
-                default: [],
-            },
-
-            experience: {
-                type: Number,
-                default: 0,
-                min: 0,
-            },
-
-            socialLinks: {
-                type: SocialLinksSchema,
-                default: () => ({}),
-            },
-
-            seo: {
-                type: SeoSchema,
-                required: true,
-            },
-
-            featured: {
-                type: Boolean,
-                default: false,
-            },
-
-            status: {
-                type: String,
-                enum: Object.values(
-                    CONTENT_STATUS
-                ),
-                default:
-                    CONTENT_STATUS.DRAFT,
-            },
-
-            sortOrder: {
-                type: Number,
-                default: 0,
-                min: 0,
-            },
-
-            author: {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-                required: true,
-            },
-
-            createdBy: {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-                default: null,
-            },
-
-            updatedBy: {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-                default: null,
-            },
-
-            isDeleted: {
-                type: Boolean,
-                default: false,
-            },
-
-            deletedAt: {
-                type: Date,
-                default: null,
-            },
+        skills: {
+            type: [SkillSchema],
+            default: [],
         },
-        {
-            timestamps: true,
 
-            versionKey: false,
+        experience: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
 
-            collection:
-                "team_members",
+        socialLinks: {
+            type: SocialLinksSchema,
+            default: () => ({}),
+        },
 
-            toJSON: {
-                virtuals: true,
-            },
+        seo: {
+            type: SeoSchema,
+            required: true,
+        },
 
-            toObject: {
-                virtuals: true,
-            },
-        }
-    );
+        featured: {
+            type: Boolean,
+            default: false,
+        },
+
+        /*
+         * Content / publishing status
+         */
+        status: {
+            type: String,
+            enum: Object.values(
+                CONTENT_STATUS
+            ),
+            default:
+                CONTENT_STATUS.DRAFT,
+        },
+
+        /*
+         * Employment status
+         */
+        employmentStatus: {
+            type: String,
+            enum: [
+                "active",
+                "inactive",
+            ],
+            default: "active",
+            index: true,
+        },
+
+        sortOrder: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+
+        author: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+
+        createdBy: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
+
+        updatedBy: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
+
+        isDeleted: {
+            type: Boolean,
+            default: false,
+        },
+
+        deletedAt: {
+            type: Date,
+            default: null,
+        },
+    },
+    {
+        timestamps: true,
+
+        versionKey: false,
+
+        collection: "team_members",
+
+        toJSON: {
+            virtuals: true,
+        },
+
+        toObject: {
+            virtuals: true,
+        },
+    }
+);
 
 TeamMemberSchema.index(
     {
@@ -229,6 +235,10 @@ TeamMemberSchema.index(
 
 TeamMemberSchema.index({
     status: 1,
+});
+
+TeamMemberSchema.index({
+    employmentStatus: 1,
 });
 
 TeamMemberSchema.index({
@@ -269,6 +279,10 @@ TeamMemberSchema.pre(
             );
         }
 
+        if (!doc.employmentStatus) {
+            doc.employmentStatus =
+                "active";
+        }
     }
 );
 

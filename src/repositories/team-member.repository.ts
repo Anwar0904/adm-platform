@@ -80,12 +80,13 @@ class TeamMemberRepository {
         >
     ) {
         return TeamMember.find(filter)
+            .populate("avatar")
             .populate(
-                "avatar"
+                "gallery"
             )
             .populate(
                 "author",
-                "name"
+                "name email avatar"
             )
             .sort(sort)
             .skip(
@@ -119,9 +120,7 @@ class TeamMemberRepository {
         );
     }
 
-    async delete(
-        id: string
-    ) {
+    async delete(id: string) {
         return TeamMember.findByIdAndUpdate(
             id,
             {
@@ -134,9 +133,7 @@ class TeamMemberRepository {
         );
     }
 
-    async restore(
-        id: string
-    ) {
+    async restore(id: string) {
         return TeamMember.findByIdAndUpdate(
             id,
             {
@@ -160,6 +157,25 @@ class TeamMemberRepository {
             },
             {
                 new: true,
+                runValidators: true,
+            }
+        );
+    }
+
+    async changeEmploymentStatus(
+        id: string,
+        employmentStatus:
+            | "active"
+            | "inactive"
+    ) {
+        return TeamMember.findByIdAndUpdate(
+            id,
+            {
+                employmentStatus,
+            },
+            {
+                new: true,
+                runValidators: true,
             }
         );
     }
@@ -175,6 +191,7 @@ class TeamMemberRepository {
             },
             {
                 new: true,
+                runValidators: true,
             }
         );
     }

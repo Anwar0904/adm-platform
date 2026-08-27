@@ -50,13 +50,11 @@ export async function PATCH(
     { params }: Params
 ) {
     try {
-        await requirePermission(
-            request,
-            PERMISSIONS.TEAM_MEMBER_UPDATE
-        );
-
         const user =
-            await requireAuth(request);
+            await requirePermission(
+                request,
+                PERMISSIONS.TEAM_MEMBER_UPDATE
+            );
 
         const { id } = await params;
 
@@ -64,9 +62,7 @@ export async function PATCH(
             await request.json();
 
         const data =
-            UpdateTeamMemberSchema.parse(
-                body
-            );
+            UpdateTeamMemberSchema.parse(body);
 
         const teamMember =
             await TeamMemberService.updateTeamMember(

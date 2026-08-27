@@ -5,12 +5,19 @@ import {
     TEAM_MEMBER_TEMPLATES,
 } from "@/enums";
 
-import { ImageSchema } from "./image.validator";
 import { SeoSchema } from "./seo.validator";
-
 import { SocialLinkSchema } from "./social-link.validator";
 import { SkillSchema } from "./skill.validator";
 
+export const TEAM_MEMBER_EMPLOYMENT_STATUS = {
+    ACTIVE: "active",
+    INACTIVE: "inactive",
+} as const;
+
+export type TeamMemberEmploymentStatus =
+    typeof TEAM_MEMBER_EMPLOYMENT_STATUS[
+    keyof typeof TEAM_MEMBER_EMPLOYMENT_STATUS
+    ];
 
 export const CreateTeamMemberSchema =
     z.object({
@@ -22,7 +29,8 @@ export const CreateTeamMemberSchema =
         designation: z
             .string()
             .min(2)
-            .max(120),
+            .max(120)
+            .default("Team Member"),
 
         slug: z
             .string()
@@ -30,12 +38,11 @@ export const CreateTeamMemberSchema =
 
         shortBio: z
             .string()
-            .min(10)
-            .max(500),
+            .max(500)
+            .default(""),
 
         biography: z
             .string()
-            .optional()
             .default(""),
 
         avatar: z
@@ -50,42 +57,67 @@ export const CreateTeamMemberSchema =
         email: z
             .string()
             .email()
-            .optional(),
+            .optional()
+            .or(z.literal("")),
 
         phone: z
             .string()
-            .optional(),
+            .default(""),
 
         experience: z
+            .coerce
             .number()
             .min(0)
-            .optional(),
+            .default(0),
 
         skills: z
             .array(SkillSchema)
             .default([]),
 
-        socialLinks: SocialLinkSchema
-            .default({}),
+        socialLinks:
+            SocialLinkSchema.default({}),
 
-        seo: SeoSchema,
+        seo:
+            SeoSchema.default({
+                metaTitle: "Team Member",
+                metaDescription:
+                    "Team Member profile and biography.",
+                keywords: [],
+            }),
 
         template: z
             .enum(TEAM_MEMBER_TEMPLATES)
             .optional(),
 
+        /*
+         * Publishing status
+         */
         status: z
             .enum(CONTENT_STATUS)
-            .optional(),
+            .default(
+                CONTENT_STATUS.DRAFT
+            ),
+
+        /*
+         * Employment status
+         */
+        employmentStatus: z
+            .enum(
+                TEAM_MEMBER_EMPLOYMENT_STATUS
+            )
+            .default(
+                TEAM_MEMBER_EMPLOYMENT_STATUS.ACTIVE
+            ),
 
         featured: z
             .boolean()
-            .optional(),
+            .default(false),
 
         sortOrder: z
+            .coerce
             .number()
             .min(0)
-            .optional(),
+            .default(0),
     });
 
 export const UpdateTeamMemberSchema =
@@ -114,6 +146,12 @@ export const TeamMemberQuerySchema =
 
         status: z
             .enum(CONTENT_STATUS)
+            .optional(),
+
+        employmentStatus: z
+            .enum(
+                TEAM_MEMBER_EMPLOYMENT_STATUS
+            )
             .optional(),
 
         author: z

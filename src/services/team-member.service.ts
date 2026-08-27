@@ -3,7 +3,9 @@ import {
     Types,
 } from "mongoose";
 
-import { TeamMember } from "@/models/team-member.model";
+import {
+    TeamMember,
+} from "@/models/team-member.model";
 
 import TeamMemberRepository from "@/repositories/team-member.repository";
 
@@ -24,13 +26,11 @@ class TeamMemberService {
     async getTeamMembers(
         query: TeamMemberQuery
     ) {
-        const page = Number(
-            query.page ?? 1
-        );
+        const page =
+            Number(query.page ?? 1);
 
-        const limit = Number(
-            query.limit ?? 10
-        );
+        const limit =
+            Number(query.limit ?? 10);
 
         const filter: Record<
             string,
@@ -39,17 +39,37 @@ class TeamMemberService {
             isDeleted: false,
         };
 
-        if (query.search) {
+        if (query.search?.trim()) {
             filter.$text = {
-                $search: query.search,
+                $search:
+                    query.search.trim(),
             };
         }
 
         if (query.status) {
-            filter.status = query.status;
+            filter.status =
+                query.status;
+        }
+
+        if (
+            query.employmentStatus
+        ) {
+            filter.employmentStatus =
+                query.employmentStatus;
         }
 
         if (query.author) {
+            if (
+                !Types.ObjectId.isValid(
+                    query.author
+                )
+            ) {
+                throw new ApiError(
+                    400,
+                    "Invalid author ID."
+                );
+            }
+
             filter.author =
                 new Types.ObjectId(
                     query.author
@@ -57,7 +77,8 @@ class TeamMemberService {
         }
 
         if (
-            query.featured !== undefined
+            query.featured !==
+            undefined
         ) {
             filter.featured =
                 query.featured;
@@ -72,7 +93,9 @@ class TeamMemberService {
 
         if (query.sort) {
             const field =
-                query.sort.replace("-", "");
+                query.sort.startsWith("-")
+                    ? query.sort.substring(1)
+                    : query.sort;
 
             sort = {
                 [field]:
@@ -100,16 +123,14 @@ class TeamMemberService {
 
         return {
             teamMembers,
-
             pagination: {
                 page,
-
                 limit,
-
                 total,
-
                 totalPages:
-                    Math.ceil(total / limit),
+                    Math.ceil(
+                        total / limit
+                    ),
             },
         };
     }
@@ -117,6 +138,15 @@ class TeamMemberService {
     async getTeamMemberById(
         id: string
     ) {
+        if (
+            !Types.ObjectId.isValid(id)
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid team member ID."
+            );
+        }
+
         const teamMember =
             await TeamMemberRepository.findById(
                 id
@@ -139,7 +169,9 @@ class TeamMemberService {
         data: CreateTeamMemberInput,
         userId: string
     ) {
-        if ("slug" in data && data.slug) {
+        if (
+            data.slug
+        ) {
             const exists =
                 await TeamMemberRepository.slugExists(
                     data.slug
@@ -153,50 +185,61 @@ class TeamMemberService {
             }
         }
 
-        return TeamMemberRepository.create({
-            ...data,
+        return TeamMemberRepository.create(
+            {
+                ...data,
 
-            author:
-                new Types.ObjectId(
-                    userId
-                ),
+                author:
+                    new Types.ObjectId(
+                        userId
+                    ),
 
-            avatar: data.avatar
-                ? new Types.ObjectId(
+                avatar:
                     data.avatar
-                )
-                : null,
+                        ? new Types.ObjectId(
+                            data.avatar
+                        )
+                        : null,
 
-            gallery:
-                data.gallery?.map(
-                    (id) =>
-                        new Types.ObjectId(id)
-                ) ?? [],
+                gallery:
+                    data.gallery?.map(
+                        (id) =>
+                            new Types.ObjectId(
+                                id
+                            )
+                    ) ?? [],
 
-            createdBy:
-                new Types.ObjectId(
-                    userId
-                ),
+                createdBy:
+                    new Types.ObjectId(
+                        userId
+                    ),
 
-            updatedBy:
-                new Types.ObjectId(
-                    userId
-                ),
+                updatedBy:
+                    new Types.ObjectId(
+                        userId
+                    ),
 
-            status:
-                (data.status ??
-                    CONTENT_STATUS.DRAFT) as ContentStatus,
+                status:
+                    data.status ??
+                    CONTENT_STATUS.DRAFT,
 
-            featured:
-                data.featured ?? false,
+                employmentStatus:
+                    data.employmentStatus ??
+                    "active",
 
-            sortOrder:
-                data.sortOrder ?? 0,
+                featured:
+                    data.featured ??
+                    false,
 
-            isDeleted: false,
+                sortOrder:
+                    data.sortOrder ??
+                    0,
 
-            deletedAt: null,
-        });
+                isDeleted: false,
+
+                deletedAt: null,
+            }
+        );
     }
 
     async updateTeamMember(
@@ -204,6 +247,15 @@ class TeamMemberService {
         data: UpdateTeamMemberInput,
         userId: string
     ) {
+        if (
+            !Types.ObjectId.isValid(id)
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid team member ID."
+            );
+        }
+
         const teamMember =
             await TeamMember.findById(id);
 
@@ -218,9 +270,9 @@ class TeamMemberService {
         }
 
         if (
-            "slug" in data &&
             data.slug &&
-            data.slug !== teamMember.slug
+            data.slug !==
+            teamMember.slug
         ) {
             const exists =
                 await TeamMemberRepository.slugExists(
@@ -236,13 +288,9 @@ class TeamMemberService {
             }
         }
 
-        Object.assign(
-            teamMember,
-            data
-        );
-
         if (
-            data.avatar !== undefined
+            data.avatar !==
+            undefined
         ) {
             teamMember.avatar =
                 data.avatar
@@ -252,7 +300,10 @@ class TeamMemberService {
                     : null;
         }
 
-        if (data.gallery) {
+        if (
+            data.gallery !==
+            undefined
+        ) {
             teamMember.gallery =
                 data.gallery.map(
                     (id) =>
@@ -261,6 +312,17 @@ class TeamMemberService {
                         )
                 );
         }
+
+        const {
+            avatar,
+            gallery,
+            ...rest
+        } = data;
+
+        Object.assign(
+            teamMember,
+            rest
+        );
 
         teamMember.updatedBy =
             new Types.ObjectId(
@@ -295,7 +357,6 @@ class TeamMemberService {
         }
 
         teamMember.isDeleted = true;
-
         teamMember.deletedAt =
             new Date();
 
@@ -318,7 +379,6 @@ class TeamMemberService {
         }
 
         teamMember.isDeleted = false;
-
         teamMember.deletedAt = null;
 
         await teamMember.save();
@@ -330,6 +390,15 @@ class TeamMemberService {
         id: string,
         status: ContentStatus
     ) {
+        if (
+            !Types.ObjectId.isValid(id)
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid team member ID."
+            );
+        }
+
         const teamMember =
             await TeamMember.findById(id);
 
@@ -347,10 +416,52 @@ class TeamMemberService {
         return teamMember;
     }
 
+    async changeEmploymentStatus(
+        id: string,
+        employmentStatus:
+            | "active"
+            | "inactive"
+    ) {
+        if (
+            !Types.ObjectId.isValid(id)
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid team member ID."
+            );
+        }
+
+        const teamMember =
+            await TeamMember.findById(id);
+
+        if (!teamMember) {
+            throw new ApiError(
+                404,
+                "Team member not found."
+            );
+        }
+
+        teamMember.employmentStatus =
+            employmentStatus;
+
+        await teamMember.save();
+
+        return teamMember;
+    }
+
     async toggleFeatured(
         id: string,
         featured: boolean
     ) {
+        if (
+            !Types.ObjectId.isValid(id)
+        ) {
+            throw new ApiError(
+                400,
+                "Invalid team member ID."
+            );
+        }
+
         const teamMember =
             await TeamMember.findById(id);
 
@@ -369,8 +480,5 @@ class TeamMemberService {
         return teamMember;
     }
 }
-
-
-
 
 export default new TeamMemberService();

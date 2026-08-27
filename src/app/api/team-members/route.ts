@@ -5,10 +5,7 @@ import TeamMemberService from "@/services/team-member.service";
 import { ApiResponse } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/error-handler";
 
-import {
-    requireAuth,
-    requirePermission,
-} from "@/lib/auth/require-auth";
+import { requirePermission } from "@/lib/auth/require-auth";
 
 import { PERMISSIONS } from "@/constants/permissions";
 
@@ -38,9 +35,7 @@ export async function GET(
                 query
             );
 
-        return ApiResponse.success(
-            result
-        );
+        return ApiResponse.success(result);
     } catch (error) {
         return handleApiError(error);
     }
@@ -50,21 +45,17 @@ export async function POST(
     request: NextRequest
 ) {
     try {
-        await requirePermission(
-            request,
-            PERMISSIONS.TEAM_MEMBER_CREATE
-        );
-
         const user =
-            await requireAuth(request);
+            await requirePermission(
+                request,
+                PERMISSIONS.TEAM_MEMBER_CREATE
+            );
 
         const body =
             await request.json();
 
         const data =
-            CreateTeamMemberSchema.parse(
-                body
-            );
+            CreateTeamMemberSchema.parse(body);
 
         const teamMember =
             await TeamMemberService.createTeamMember(

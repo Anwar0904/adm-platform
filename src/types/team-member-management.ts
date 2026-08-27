@@ -1,13 +1,22 @@
-import { CreateTeamMemberSchema, TeamMemberQuerySchema, UpdateTeamMemberSchema } from "@/validators/team-member.validator";
 import { z } from "zod";
 
-
+import {
+    CreateTeamMemberSchema,
+    TeamMemberQuerySchema,
+    UpdateTeamMemberSchema,
+} from "@/validators/team-member.validator";
 
 export type CreateTeamMemberInput =
-    z.infer<typeof CreateTeamMemberSchema>;
+    z.infer<
+        typeof CreateTeamMemberSchema
+    >;
 
 export type UpdateTeamMemberInput =
-    z.infer<typeof UpdateTeamMemberSchema>;
+    z.infer<
+        typeof UpdateTeamMemberSchema
+    >;
 
 export type TeamMemberQuery =
-    z.infer<typeof TeamMemberQuerySchema>;
+    z.infer<
+        typeof TeamMemberQuerySchema
+    >;

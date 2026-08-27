@@ -1,5 +1,3 @@
-// src/types/team-member.types.ts
-
 import {
     HydratedDocument,
     Model,
@@ -8,6 +6,9 @@ import {
 
 import { ContentStatus } from "@/enums";
 import { ISeo } from "./seo.types";
+
+export type TeamMemberEmploymentStatus =
+    "active" | "inactive";
 
 export interface ISocialLinks {
     facebook?: string;
@@ -53,6 +54,9 @@ export interface ITeamMember {
     featured: boolean;
 
     status: ContentStatus;
+
+    employmentStatus:
+    TeamMemberEmploymentStatus;
 
     sortOrder: number;
 
