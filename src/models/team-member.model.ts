@@ -167,7 +167,6 @@ const TeamMemberSchema = new Schema<
                 "inactive",
             ],
             default: "active",
-            index: true,
         },
 
         sortOrder: {

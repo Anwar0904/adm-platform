@@ -112,7 +112,7 @@ const CategorySchema =
   );
 
 
-  CategorySchema.index(
+CategorySchema.index(
   { slug: 1 },
   { unique: true }
 );

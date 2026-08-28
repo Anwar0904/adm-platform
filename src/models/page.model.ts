@@ -18,147 +18,147 @@ import { SeoSchema } from "@/schemas/seo.schema";
 import { generateSlug } from "@/utils/slugify";
 
 const PageSchema =
-new Schema<IPage,PageModel>(
+    new Schema<IPage, PageModel>(
 
-{
+        {
 
-title:{
-    type:String,
-    required:true,
-    trim:true,
-    minlength:2,
-    maxlength:200,
-},
+            title: {
+                type: String,
+                required: true,
+                trim: true,
+                minlength: 2,
+                maxlength: 200,
+            },
 
-slug:{
-    type:String,
-    unique:true,
-    lowercase:true,
-    trim:true,
-},
+            slug: {
+                type: String,
+                unique: true,
+                lowercase: true,
+                trim: true,
+            },
 
-excerpt:{
-    type:String,
-    default:"",
-    maxlength:500,
-},
+            excerpt: {
+                type: String,
+                default: "",
+                maxlength: 500,
+            },
 
-content:{
-    type:String,
-    default:"",
-},
+            content: {
+                type: String,
+                default: "",
+            },
 
-featuredImage:{
-    type:Schema.Types.ObjectId,
-    ref:"Media",
-    default:null,
-},
+            featuredImage: {
+                type: Schema.Types.ObjectId,
+                ref: "Media",
+                default: null,
+            },
 
-seo:{
-    type:SeoSchema,
-    required:true,
-},
+            seo: {
+                type: SeoSchema,
+                required: true,
+            },
 
-status:{
-    type:String,
-    enum:Object.values(CONTENT_STATUS),
-    default:CONTENT_STATUS.DRAFT,
-},
+            status: {
+                type: String,
+                enum: Object.values(CONTENT_STATUS),
+                default: CONTENT_STATUS.DRAFT,
+            },
 
-isHomePage:{
-    type:Boolean,
-    default:false,
-},
+            isHomePage: {
+                type: Boolean,
+                default: false,
+            },
 
-template:{
-    type:String,
-    default:"default",
-},
+            template: {
+                type: String,
+                default: "default",
+            },
 
-author:{
-    type:Schema.Types.ObjectId,
-    ref:"User",
-    required:true,
-},
+            author: {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+                required: true,
+            },
 
-publishedAt:{
-    type:Date,
-    default:null,
-},
+            publishedAt: {
+                type: Date,
+                default: null,
+            },
 
-createdBy:{
-    type:Schema.Types.ObjectId,
-    ref:"User",
-    default:null,
-},
+            createdBy: {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+                default: null,
+            },
 
-updatedBy:{
-    type:Schema.Types.ObjectId,
-    ref:"User",
-    default:null,
-},
+            updatedBy: {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+                default: null,
+            },
 
-isDeleted:{
-    type:Boolean,
-    default:false,
-},
+            isDeleted: {
+                type: Boolean,
+                default: false,
+            },
 
-deletedAt:{
-    type:Date,
-    default:null,
-}
+            deletedAt: {
+                type: Date,
+                default: null,
+            }
 
-},
+        },
 
-{
+        {
 
-timestamps:true,
+            timestamps: true,
 
-versionKey:false,
+            versionKey: false,
 
-collection:"pages",
+            collection: "pages",
 
-toJSON:{virtuals:true},
+            toJSON: { virtuals: true },
 
-toObject:{virtuals:true}
+            toObject: { virtuals: true }
 
-}
+        }
 
-);
+    );
 
 PageSchema.index(
     {
-        slug:1
+        slug: 1
     },
     {
-        unique:true,
-        partialFilterExpression:{
-            isDeleted:false
+        unique: true,
+        partialFilterExpression: {
+            isDeleted: false
         }
     }
 );
 
 PageSchema.index({
-    status:1
+    status: 1
 });
 
 PageSchema.index({
-    author:1
+    author: 1
 });
 
 PageSchema.index({
-    publishedAt:-1
+    publishedAt: -1
 });
 
 PageSchema.index({
-    title:"text",
-    excerpt:"text",
-    content:"text"
+    title: "text",
+    excerpt: "text",
+    content: "text"
 });
 
-PageSchema.pre("validate",function(){
+PageSchema.pre("validate", function () {
 
-    if(this.isModified("title") || !this.slug){
+    if (this.isModified("title") || !this.slug) {
 
         this.slug = generateSlug(this.title);
 
@@ -167,62 +167,62 @@ PageSchema.pre("validate",function(){
 });
 
 PageSchema.static(
-"findBySlug",
+    "findBySlug",
 
-function(slug:string){
+    function (slug: string) {
 
-    return this.findOne({
-        slug,
-        isDeleted:false,
-    });
+        return this.findOne({
+            slug,
+            isDeleted: false,
+        });
 
-}
-
-);
-
-PageSchema.static(
-"findPublished",
-
-function(){
-
-    return this.find({
-
-        status:CONTENT_STATUS.PUBLISHED,
-
-        isDeleted:false,
-
-    });
-
-}
+    }
 
 );
 
 PageSchema.static(
-"getHomePage",
+    "findPublished",
 
-function(){
+    function () {
 
-    return this.findOne({
+        return this.find({
 
-        isHomePage:true,
+            status: CONTENT_STATUS.PUBLISHED,
 
-        status:CONTENT_STATUS.PUBLISHED,
+            isDeleted: false,
 
-        isDeleted:false,
+        });
 
-    });
+    }
 
-}
+);
+
+PageSchema.static(
+    "getHomePage",
+
+    function () {
+
+        return this.findOne({
+
+            isHomePage: true,
+
+            status: CONTENT_STATUS.PUBLISHED,
+
+            isDeleted: false,
+
+        });
+
+    }
 
 );
 
 export const Page =
-(models.Page as PageModel) ||
+    (models.Page as PageModel) ||
 
-model<IPage,PageModel>(
+    model<IPage, PageModel>(
 
-"Page",
+        "Page",
 
-PageSchema
+        PageSchema
 
-);
+    );

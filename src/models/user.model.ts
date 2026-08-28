@@ -154,7 +154,6 @@ const UserSchema = new Schema<IUser, UserModel>(
     isDeleted: {
       type: Boolean,
       default: false,
-      index: true,
     },
 
     deletedAt: {
