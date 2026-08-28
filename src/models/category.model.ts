@@ -32,7 +32,6 @@ const CategorySchema =
 
       slug: {
         type: String,
-        unique: true,
         trim: true,
         lowercase: true,
       },

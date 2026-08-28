@@ -65,10 +65,6 @@ SessionSchema.index({
 });
 
 SessionSchema.index({
-  expiresAt: 1,
-});
-
-SessionSchema.index({
   refreshToken: 1,
 });
 

@@ -29,7 +29,6 @@ const PortfolioSchema =
 
       slug: {
         type: String,
-        unique: true,
         trim: true,
         lowercase: true,
       },

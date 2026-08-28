@@ -13,7 +13,6 @@ const RoleSchema = new Schema<IRole, RoleModel>(
       minlength: 2,
       maxlength: 50,
       lowercase: true,
-      unique: true,
     },
 
     description: {
