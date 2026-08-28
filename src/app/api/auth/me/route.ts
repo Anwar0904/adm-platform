@@ -24,10 +24,10 @@ export async function GET(
         return ApiResponse.success(
             {
                 _id: user._id.toString(),
-                name: user.name,
+                name: `${user.firstName} ${user.lastName}`.trim(),
                 email: user.email,
                 avatar,
-                jobTitle: null,
+                jobTitle: user.jobTitle ?? null,
             },
             "Current user fetched successfully."
         );

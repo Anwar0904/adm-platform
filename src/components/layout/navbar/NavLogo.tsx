@@ -24,13 +24,6 @@ export default function NavLogo() {
                         Arazi{" "}
                         <span className="text-blue-600">Digital Media</span>
                     </h1>
-                    \\\
-
-
-
-
-
-                    ]]]
                     <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">
                         Intelligent Digital Solutions
                     </p>

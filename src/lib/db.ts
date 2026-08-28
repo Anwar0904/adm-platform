@@ -49,11 +49,9 @@ export async function connectDB(): Promise<typeof mongoose> {
             connectTimeoutMS: 5000,
           });
 
-          console.log(`MongoDB connected using ${uri}`);
           return connection;
         } catch (error) {
           lastError = error;
-          console.warn(`MongoDB connection failed for ${uri}`, error);
         }
       }
 
@@ -69,7 +67,6 @@ export async function connectDB(): Promise<typeof mongoose> {
     return globalCache.conn;
   } catch (error) {
     globalCache.promise = null;
-    console.error("MongoDB connection failed");
     throw error;
   }
 }

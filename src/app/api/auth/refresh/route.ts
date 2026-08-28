@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
             await AuthService.refresh(
                 data.refreshToken
             );
-        console.log(result)
         return ApiResponse.success(
             result,
             "Token refreshed successfully."

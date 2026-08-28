@@ -113,6 +113,18 @@ export const CreateBlogSchema =
 export const UpdateBlogSchema =
     CreateBlogSchema.partial();
 
+export const ChangeBlogStatusSchema =
+    z.object({
+        status: z.enum(
+            Object.values(
+                CONTENT_STATUS
+            ) as [
+                string,
+                ...string[]
+            ]
+        ),
+    });
+
 export const BlogQuerySchema =
     z.object({
         page: z.coerce

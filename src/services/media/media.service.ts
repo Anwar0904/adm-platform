@@ -9,7 +9,7 @@ import { ApiError } from "@/lib/api/api-error";
 
 import MediaRepository from "@/repositories/media.repository";
 
-import { CONTENT_STATUS, ContentStatus } from "@/enums";
+import { ContentStatus } from "@/enums";
 
 import { IMedia } from "@/types/media.types";
 
@@ -142,12 +142,6 @@ class MediaService {
 
             uploadedBy:
                 new Types.ObjectId(userId),
-
-            createdBy:
-                new Types.ObjectId(userId),
-
-            status:
-                CONTENT_STATUS.PUBLISHED,
 
             isDeleted: false,
 

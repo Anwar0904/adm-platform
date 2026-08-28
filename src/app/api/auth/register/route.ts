@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
 
     // Register user
     const user = await AuthService.register(data);
-    console.log(user)
     // Return success response
     return ApiResponse.created(
       user,

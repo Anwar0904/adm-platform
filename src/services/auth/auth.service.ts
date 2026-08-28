@@ -23,8 +23,10 @@ export function clearEmailVerificationFields(user: {
 class AuthService {
     async register(data: RegisterInput) {
         const { name, email, password } = data;
+        const nameParts = name.trim().split(/\s+/);
+        const firstName = nameParts[0] ?? name;
+        const lastName = nameParts.slice(1).join(" ");
 
-        console.log("Connection readyState:", mongoose.connection.readyState);
         // Check if email already exists
         const existingUser = await User.findOne({
             email: email.toLowerCase(),
@@ -70,7 +72,8 @@ class AuthService {
 
         // Create user
         const user = await User.create({
-            name,
+            firstName,
+            lastName,
             email: email.toLowerCase(),
             password: hashedPassword,
             role: defaultRole._id,
@@ -85,8 +88,6 @@ class AuthService {
         const createdUser = await User.findById(user._id).select(
             "email emailVerificationToken emailVerificationExpires emailVerified"
         );
-
-        console.log(createdUser);
 
         return {
             user,
@@ -506,26 +507,14 @@ class AuthService {
 
     async verifyEmail(token: string) {
 
-        console.log("Incoming Token:", token);
         // Hash incoming token
         const hashedToken =
             ResetTokenService.hash(token);
 
-        console.log("Hashed Incoming:", hashedToken);
-
-        console.log("Current Time:", new Date());
-
-        const users = await User.find().select(
-            "email emailVerificationToken emailVerificationExpires"
-        );
-
-        console.log(users);
         // Find matching user
         const user = await User.findOne({
             emailVerificationToken: hashedToken,
         });
-
-        console.log("Matched User:", user);
 
         if (!user) {
             throw new ApiError(

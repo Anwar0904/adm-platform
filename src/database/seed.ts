@@ -20,7 +20,6 @@ async function seed() {
     await mongoose.connect(uri, {
       dbName: env.MONGODB_DB,
     });
-    console.log("✅ MongoDB Connected");
 
     // Remove old roles
     await Role.deleteMany({});
@@ -49,8 +48,6 @@ async function seed() {
         "status": "active"
       },
     ]);
-
-    console.log("✅ Roles Seeded Successfully");
 
     process.exit(0);
   } catch (error) {

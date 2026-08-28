@@ -16,7 +16,7 @@ export class UserDto {
   constructor(user: UserDocument) {
     this.id = user._id.toString();
 
-    this.name = user.name;
+    this.name = `${user.firstName} ${user.lastName}`.trim();
 
     this.email = user.email;
 
