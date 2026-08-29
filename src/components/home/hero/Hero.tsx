@@ -48,48 +48,48 @@ export default function Hero() {
       <div className="relative z-10 mx-auto grid max-w-7xl gap-14 px-4 pb-24 pt-8 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-6 lg:pb-32 lg:pt-14 lg:px-8">
         {/* ---------------- LEFT: copy ---------------- */}
         <div className="relative z-10">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300 sm:text-[11px]">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+          <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-300">
+            <span className="h-2 w-2 rounded-full bg-blue-500" />
             Digital solutions that drive real growth
           </div>
 
-          <h1 className="max-w-xl text-[1.9rem] font-extrabold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+          <h1 className="max-w-xl text-[2.5rem] font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
             We Build Digital Products That Drive{" "}
             <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
               Business Forward
             </span>
           </h1>
 
-          <p className="mt-5 max-w-lg text-sm leading-6 text-slate-400 sm:text-base sm:leading-7">
+          <p className="mt-6 max-w-lg text-base leading-7 text-slate-400 sm:text-lg">
             From powerful websites to <span className="font-semibold text-slate-200">AI automation</span> and{" "}
             <span className="font-semibold text-slate-200">custom software</span>, we help brands scale smarter
             with technology.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
             <Link
               href="/services"
-              className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-5 py-3 text-[13px] font-semibold text-white shadow-lg shadow-blue-600/25 transition-transform duration-200 hover:-translate-y-0.5 sm:text-sm"
+              className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-transform duration-200 hover:-translate-y-0.5"
             >
               Explore Our Services
-              <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
+              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
 
             <Link
               href="/work"
-              className="inline-flex items-center justify-center rounded-xl border border-white/20 px-5 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-white/5 sm:text-sm"
+              className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/5"
             >
               See Our Work
             </Link>
           </div>
 
-          <div className="mt-12">
-            <p className="mb-3 text-[10px] font-medium text-slate-500 sm:text-[11px]">Trusted by growing brands</p>
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2.5">
+          <div className="mt-14">
+            <p className="mb-4 text-xs font-medium text-slate-500">Trusted by growing brands</p>
+            <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
               {TRUSTED_BY.map((brand) => (
                 <span
                   key={brand.name}
-                  className="flex items-center gap-1.5 text-xs font-medium text-slate-500"
+                  className="flex items-center gap-1.5 text-sm font-medium text-slate-500"
                 >
                   <TrustedIcon type={brand.icon} />
                   {brand.name}
@@ -164,7 +164,7 @@ export default function Hero() {
           {/* floating card — AI Automation */}
           <FloatingCard
             className="left-[2%] top-[2%] w-[58%] sm:w-[52%]"
-            icon={<Sparkles size={16} />}
+            icon={<Sparkles size={18} />}
             title="AI Automation"
             subtitle="Smarter Workflows"
           />
@@ -172,7 +172,7 @@ export default function Hero() {
           {/* floating card — 98% Client Satisfaction */}
           <FloatingCard
             className="right-[-4%] top-[44%] w-[56%] sm:w-[50%]"
-            icon={<BarChart3 size={16} />}
+            icon={<BarChart3 size={18} />}
             title="98%"
             titleClassName="text-emerald-500"
             subtitle="Client Satisfaction"
@@ -181,7 +181,7 @@ export default function Hero() {
           {/* floating card — Custom Software */}
           <FloatingCard
             className="bottom-[-2%] left-[26%] w-[58%] sm:w-[52%]"
-            icon={<Code2 size={16} />}
+            icon={<Code2 size={18} />}
             title="Custom Software"
             subtitle="Built for Scale"
           />
@@ -210,26 +210,26 @@ function FloatingCard({
 }) {
   return (
     <div
-      className={`absolute z-20 flex items-center gap-2.5 rounded-2xl bg-white px-3.5 py-3 shadow-xl shadow-black/20 ${className}`}
+      className={`absolute z-20 flex items-center gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-xl shadow-black/20 ${className}`}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
         {icon}
       </span>
       <span className="min-w-0">
-        <span className={`block text-sm font-bold leading-tight ${titleClassName}`}>
+        <span className={`block text-base font-bold leading-tight ${titleClassName}`}>
           {title}
         </span>
-        <span className="block text-[11px] font-medium text-slate-500">{subtitle}</span>
+        <span className="block text-xs font-medium text-slate-500">{subtitle}</span>
       </span>
     </div>
   );
 }
 
 function TrustedIcon({ type }: { type: string }) {
-  const common = "h-3.5 w-3.5 shrink-0 text-slate-500";
+  const common = "h-4 w-4 shrink-0 text-slate-500";
   switch (type) {
     case "u":
-      return <span className={`${common} flex items-center justify-center rounded-full border border-slate-500 text-[9px]`}>U</span>;
+      return <span className={`${common} flex items-center justify-center rounded-full border border-slate-500 text-[10px]`}>U</span>;
     case "cactus":
       return <span className={common}>🌵</span>;
     case "cloud":
