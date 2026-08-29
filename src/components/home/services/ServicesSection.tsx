@@ -101,16 +101,16 @@ export default function ServicesSection() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-white py-20 sm:py-24 lg:py-32">
+    <section className="relative overflow-hidden bg-white py-16 sm:py-20 md:py-24 lg:py-32">
       <div className="pointer-events-none absolute left-1/2 top-0 h-80 w-80 -translate-x-1/2 rounded-full bg-blue-500/5 blur-3xl" />
 
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16 lg:mb-20">
-          <span className="inline-flex rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-blue-700 sm:text-sm">
+        <div className="mx-auto mb-10 max-w-3xl text-center sm:mb-14 md:mb-16 lg:mb-20">
+          <span className="inline-flex rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-blue-700 sm:px-4 sm:py-2 sm:text-sm">
             What We Do
           </span>
 
-          <h2 className="mt-5 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl lg:mt-6 lg:text-5xl">
+          <h2 className="mt-4 text-2xl font-black tracking-tight text-slate-950 sm:mt-5 sm:text-3xl md:text-4xl lg:mt-6 lg:text-5xl">
             Digital Services Built For Growth
           </h2>
 

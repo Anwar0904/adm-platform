@@ -24,20 +24,20 @@ export default function CallToActionSection() {
           </span>
 
           {/* Heading */}
-          <h2 className="mt-6 text-4xl font-black leading-[1.08] tracking-tight text-white sm:mt-8 sm:text-5xl md:text-6xl lg:text-7xl">
+          <h2 className="mt-4 text-2xl font-black leading-[1.08] tracking-tight text-white sm:mt-6 sm:text-3xl md:text-4xl lg:mt-8 lg:text-5xl xl:text-6xl">
             Ready To Transform
             <br className="hidden sm:block" /> Your Business?
           </h2>
 
           {/* Description */}
-          <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-blue-100 sm:mt-8 sm:text-lg sm:leading-8 lg:text-xl lg:leading-9">
+          <p className="mx-auto mt-4 max-w-3xl text-sm leading-6 text-blue-100 sm:mt-6 sm:text-base sm:leading-7 md:text-lg md:leading-8 lg:text-xl lg:leading-9">
             Whether you're launching a startup, modernizing an enterprise, or
             integrating Artificial Intelligence into your business, ADM is
             ready to turn your vision into reality.
           </p>
 
           {/* Stats */}
-          <div className="mt-10 grid grid-cols-2 overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl sm:mt-16 sm:grid-cols-4 sm:rounded-3xl">
+          <div className="mt-8 grid grid-cols-2 overflow-hidden rounded-xl border border-white/10 bg-white/10 backdrop-blur-xl sm:mt-12 sm:grid-cols-4 sm:rounded-2xl md:mt-16 lg:rounded-3xl">
             <Stat value="50+" label="Projects" />
             <Stat value="98%" label="Client Satisfaction" />
             <Stat value="24/7" label="Support" />
@@ -45,7 +45,7 @@ export default function CallToActionSection() {
           </div>
 
           {/* Buttons */}
-          <div className="mt-10 flex flex-col justify-center gap-4 sm:mt-16 sm:flex-row sm:gap-5">
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:mt-12 sm:flex-row sm:gap-4 md:gap-5 lg:mt-16">
             <Link
               href="/consultation"
               className="group inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 text-base font-bold text-blue-700 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:w-auto sm:px-8 sm:py-5 sm:text-lg lg:px-10"
@@ -66,7 +66,7 @@ export default function CallToActionSection() {
           </div>
 
           {/* Bottom Benefits */}
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 text-sm text-blue-100 sm:mt-16 sm:flex-row sm:flex-wrap sm:gap-x-8 sm:gap-y-3">
+          <div className="mt-8 flex flex-col items-center justify-center gap-2 text-xs text-blue-100 sm:mt-12 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2 md:mt-14 lg:mt-16 lg:text-sm lg:gap-x-8">
             <Benefit>Free Discovery Call</Benefit>
             <Benefit>No Hidden Charges</Benefit>
             <Benefit>AI-First Solutions</Benefit>

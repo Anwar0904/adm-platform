@@ -89,15 +89,15 @@ export default function Footer() {
 
                 <section className="border-b border-white/10">
 
-                    <div className="container mx-auto flex flex-col items-center justify-between gap-8 px-6 py-16 lg:flex-row">
+                    <div className="container mx-auto flex flex-col items-center justify-between gap-6 px-4 py-12 sm:gap-8 sm:px-6 sm:py-16 lg:flex-row lg:py-20">
 
                         <div>
 
-                            <p className="mb-3 text-blue-400 font-semibold">
+                            <p className="mb-3 text-xs font-semibold text-blue-400 sm:text-sm">
                                 READY TO BUILD SOMETHING AMAZING?
                             </p>
 
-                            <h2 className="max-w-2xl text-3xl font-bold leading-tight md:text-5xl">
+                            <h2 className="max-w-2xl text-2xl font-bold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
 
                                 Let's create digital experiences your customers will love.
 
@@ -107,11 +107,11 @@ export default function Footer() {
 
                         <Link
                             href="/consultation"
-                            className="inline-flex items-center gap-3 rounded-2xl bg-blue-600 px-8 py-4 font-semibold transition-all duration-300 hover:scale-105 hover:bg-blue-700"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold transition-all duration-300 hover:bg-blue-700 sm:w-auto sm:gap-3 sm:rounded-2xl sm:px-8 sm:py-4 sm:text-base"
                         >
                             Book Consultation
 
-                            <ArrowUpRight size={18} />
+                            <ArrowUpRight size={16} className="sm:h-[18px] sm:w-[18px]" />
 
                         </Link>
 
@@ -121,9 +121,9 @@ export default function Footer() {
 
                 {/* Footer */}
 
-                <section className="container mx-auto px-6 py-20">
+                <section className="container mx-auto px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
 
-                    <div className="grid gap-14 lg:grid-cols-[2fr_1fr_1fr_1.3fr]">
+                    <div className="grid gap-8 sm:gap-10 lg:gap-14 lg:grid-cols-[2fr_1fr_1fr_1.3fr]">
 
                         {/* Brand */}
 
@@ -131,10 +131,10 @@ export default function Footer() {
 
                             <Link
                                 href="/"
-                                className="mb-8 flex items-center gap-4"
+                                className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4"
                             >
 
-                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-bold">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold sm:h-14 sm:w-14 sm:rounded-2xl sm:text-2xl">
 
                                     A
 
@@ -142,7 +142,7 @@ export default function Footer() {
 
                                 <div>
 
-                                    <h2 className="text-2xl font-bold">
+                                    <h2 className="text-lg font-bold sm:text-2xl">
 
                                         ADM
 
@@ -194,7 +194,7 @@ export default function Footer() {
 
                         <div>
 
-                            <h3 className="mb-8 text-lg font-semibold">
+                            <h3 className="mb-6 text-base font-semibold sm:mb-8 sm:text-lg">
 
                                 Services
 
@@ -228,7 +228,7 @@ export default function Footer() {
 
                         <div>
 
-                            <h3 className="mb-8 text-lg font-semibold">
+                            <h3 className="mb-6 text-base font-semibold sm:mb-8 sm:text-lg">
 
                                 Company
 
@@ -262,7 +262,7 @@ export default function Footer() {
 
                         <div>
 
-                            <h3 className="mb-8 text-lg font-semibold">
+                            <h3 className="mb-6 text-base font-semibold sm:mb-8 sm:text-lg">
 
                                 Contact
 
@@ -348,7 +348,7 @@ export default function Footer() {
 
                 <section className="border-t border-white/10">
 
-                    <div className="container mx-auto flex flex-col items-center justify-between gap-6 px-6 py-8 text-sm text-slate-400 md:flex-row">
+                    <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 py-6 text-xs text-slate-400 sm:gap-6 sm:px-6 sm:py-8 sm:text-sm md:flex-row">
 
                         <p>
 

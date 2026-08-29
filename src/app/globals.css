@@ -1,5 +1,41 @@
 @import "tailwindcss";
 
+/* =========================================================
+   Global Base
+   ========================================================= */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    overflow-x: hidden;
+    background: white;
+    color: rgb(15 23 42);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Prevent media from accidentally overflowing */
+img,
+video,
+svg,
+canvas {
+    max-width: 100%;
+}
+
+/* =========================================================
+   Admin Form Input
+   ========================================================= */
+
 .input {
     width: 100%;
     height: 2.75rem;
@@ -10,7 +46,10 @@
     font-size: 0.875rem;
     color: rgb(15 23 42);
     outline: none;
-    transition: all 150ms ease;
+    transition:
+        border-color 150ms ease,
+        background-color 150ms ease,
+        box-shadow 150ms ease;
 }
 
 .input:focus {
@@ -19,15 +58,9 @@
     box-shadow: 0 0 0 4px rgb(59 130 246 / 0.1);
 }
 
-/* @keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-} */
+/* =========================================================
+   Marquee
+   ========================================================= */
 
 @keyframes marquee {
     from {
@@ -36,5 +69,20 @@
 
     to {
         transform: translateX(-33.333333%);
+    }
+}
+
+/* Respect users who disable animations */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

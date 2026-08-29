@@ -42,8 +42,7 @@ export default function Hero() {
           MAIN CONTAINER
       ========================================================== */}
 
-      <div className="mx-auto grid min-h-[calc(100svh-5rem)] w-full max-w-[80%] items-center gap-14 px-4 py-16 sm:px-6 sm:py-20 md:gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:px-8 lg:py-24 xl:gap-20">
-        {/* =======================================================
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-14 sm:gap-12 sm:px-6 sm:py-16 md:gap-14 lg:min-h-[calc(100svh-5rem)] lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:px-8 lg:py-20 xl:gap-16 xl:py-24">  {/* =======================================================
             LEFT CONTENT
         ======================================================== */}
 
@@ -68,7 +67,7 @@ export default function Hero() {
 
           {/* Heading */}
 
-          <h1 className="max-w-4xl text-[2.7rem] font-black leading-[1.02] tracking-[-0.055em] text-slate-950 sm:text-5xl md:text-6xl lg:text-[4rem] xl:text-[4.7rem]">
+          <h1 className="max-w-4xl text-2xl font-black leading-[1.02] tracking-[-0.055em] text-slate-950 sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl">
             We Build
             <span className="block bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 bg-clip-text text-transparent">
               Intelligent
@@ -78,7 +77,7 @@ export default function Hero() {
 
           {/* Description */}
 
-          <p className="mt-7 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+          <p className="mt-6 max-w-xl text-base leading-7 sm:mt-7 sm:text-lg sm:leading-8">
             ADM combines artificial intelligence, software engineering,
             automation, and modern design to build digital products that
             help ambitious businesses move faster.
@@ -86,7 +85,7 @@ export default function Hero() {
 
           {/* CTA */}
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <div className="mt-8 sm:mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/consultation"
               className="
@@ -197,7 +196,7 @@ export default function Hero() {
 
           <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-4 border-t border-slate-200 pt-7">
             <div>
-              <p className="text-2xl font-black text-slate-900">
+              <p className="text-xl font-black text-slate-900 sm:text-2xl">
                 50+
               </p>
 
@@ -209,7 +208,7 @@ export default function Hero() {
             <div className="h-9 w-px bg-slate-200" />
 
             <div>
-              <p className="text-2xl font-black text-slate-900">
+              <p className="text-xl font-black text-slate-900 sm:text-2xl">
                 98%
               </p>
 
