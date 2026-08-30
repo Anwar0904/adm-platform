@@ -6,21 +6,21 @@ import FeatureCard from "./FeatureCard";
 
 export default function StatsSection() {
   return (
-    <section className="flex justify-center bg-slate-50 px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
-      <div className="container w-full">
+    <section className="section-shell light-panel">
+      <div className="section-content">
         <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16 xl:gap-24">
 
           {/* Content */}
           <div className="min-w-0">
-            <span className="inline-flex rounded-full bg-blue-100 px-4 py-2 text-xs font-semibold text-blue-700 sm:px-5 sm:text-sm">
+            <span className="section-kicker">
               Why ADM
             </span>
 
-            <h2 className="mt-5 max-w-2xl text-3xl font-black leading-tight tracking-tight text-slate-900 sm:mt-6 sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-6xl">
+            <h2 className="section-title max-w-2xl">
               Precision Engineering Meets Creative Innovation
             </h2>
 
-            <p className="mt-6 max-w-2xl text-base leading-7 text-slate-600 sm:mt-8 sm:text-lg sm:leading-8">
+            <p className="section-copy max-w-2xl">
               We build AI-powered digital products that are scalable,
               secure, and designed for long-term business growth.
             </p>

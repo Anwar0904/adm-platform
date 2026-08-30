@@ -478,16 +478,8 @@ export default function ServicesSection() {
 
           <h2
             className="
-              mt-4
-              text-3xl
-              font-black
-              leading-tight
-              tracking-tight
-              text-slate-950
-              sm:mt-5
-              sm:text-4xl
-              md:text-5xl
-              lg:mt-6
+              section-title
+              max-w-2xl
             "
           >
             Digital Services Built
@@ -500,15 +492,17 @@ export default function ServicesSection() {
           <p
             className="
               mx-auto
-              mt-4
+              mt-2
               max-w-2xl
               text-sm
               leading-6
               text-slate-600
-              sm:mt-6
+              sm:mt-4
               sm:text-base
               sm:leading-7
               md:text-lg
+              lg:mt-2
+              lg:text-lg
               md:leading-8
             "
           >

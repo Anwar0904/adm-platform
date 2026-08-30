@@ -134,22 +134,22 @@ export default function LatestBlogsSection() {
   }, []);
 
   return (
-    <section className="flex justify-center bg-slate-50 py-16 sm:py-20 md:py-24 lg:py-32">
+    <section className="section-shell light-panel">
       <div className="container px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
-        <div className="mb-10 flex flex-col gap-4 sm:mb-14 md:mb-16 lg:mb-20 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-8 flex flex-col gap-4 sm:mb-14 md:mb-16 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
 
           <div className="max-w-3xl">
-            <span className="inline-flex rounded-full bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 sm:px-4 sm:py-2 sm:text-sm">
+            <span className="section-kicker">
               Latest Insights
             </span>
 
-            <h2 className="mt-4 text-2xl font-black tracking-tight text-slate-900 sm:mt-5 sm:text-3xl md:text-4xl lg:text-5xl">
+            <h2 className="section-title mt-2 sm:mt-4">
               Insights & Resources
             </h2>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:mt-4 sm:text-base sm:leading-7 md:text-lg md:leading-8">
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-text-muted sm:mt-2 sm:text-base sm:leading-7 md:text-lg md:leading-8">
               Stay updated with technology trends, AI innovations,
               software engineering and digital transformation.
             </p>
@@ -157,7 +157,7 @@ export default function LatestBlogsSection() {
 
           <Link
             href="/blogs"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold transition hover:shadow-lg sm:w-fit sm:gap-3 sm:rounded-xl sm:px-6 sm:py-3 sm:text-sm md:text-base"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-[8] font-semibold transition hover:shadow-lg sm:w-fit sm:gap-3 sm:rounded-xl sm:px-6 sm:py-3 sm:text-sm md:text-base"
           >
             View All Articles
             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -205,7 +205,7 @@ export default function LatestBlogsSection() {
         {/* Blog cards */}
         {
           !loading && !error && blogs.length > 0 && (
-            <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
+            <div className="grid gap-6 sm:gap-7 lg:grid-cols-3">
               {blogs.map((blog) => {
                 const image = getImageUrl(blog.featuredImage);
                 const category = getCategory(blog.category);
@@ -223,13 +223,13 @@ export default function LatestBlogsSection() {
                       href={`/blogs/${blog.slug}`}
                       className="block"
                     >
-                      <div className="relative h-56 overflow-hidden sm:h-64 lg:h-72">
+                      <div className="relative h-44 overflow-hidden sm:h-48 lg:h-52">
                         <Image
                           src={image}
                           alt={blog.title}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-cover transition duration-700 group-hover:scale-110"
+                          className="object-cover transition duration-700 group-hover:scale-105"
                         />
 
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
@@ -237,42 +237,42 @@ export default function LatestBlogsSection() {
                     </Link>
 
                     {/* Content */}
-                    <div className="flex flex-1 flex-col space-y-5 p-6 sm:p-8">
+                    <div className="flex flex-1 flex-col space-y-4 p-5 sm:p-6">
 
                       {/* Meta */}
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 sm:px-4 sm:text-sm">
+                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-600 sm:px-3 sm:text-xs">
                           {category}
                         </span>
 
-                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground sm:text-sm">
-                          <CalendarDays className="h-4 w-4 shrink-0" />
+                        <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground sm:text-xs">
+                          <CalendarDays className="h-3.5 w-3.5 shrink-0" />
                           {date}
                         </span>
                       </div>
 
                       {/* Title */}
                       <Link href={`/blogs/${blog.slug}`}>
-                        <h3 className="text-xl font-bold leading-snug text-slate-900 transition group-hover:text-blue-600 sm:text-2xl">
+                        <h3 className="text-lg font-bold leading-snug text-slate-900 transition group-hover:text-blue-600 sm:text-xl">
                           {blog.title}
                         </h3>
                       </Link>
 
                       {/* Excerpt */}
                       {blog.excerpt && (
-                        <p className="line-clamp-3 text-sm leading-7 text-muted-foreground sm:text-base">
+                        <p className="line-clamp-3 text-sm leading-6 text-muted-foreground sm:text-[15px]">
                           {blog.excerpt}
                         </p>
                       )}
 
                       {/* Read more */}
-                      <div className="mt-auto pt-2">
+                      <div className="mt-auto pt-1">
                         <Link
                           href={`/blogs/${blog.slug}`}
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition-all group-hover:gap-4 sm:text-base"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition-all group-hover:gap-3 sm:text-sm"
                         >
                           Read Article
-                          <ArrowRight className="h-5 w-5" />
+                          <ArrowRight className="h-4 w-4" />
                         </Link>
                       </div>
 

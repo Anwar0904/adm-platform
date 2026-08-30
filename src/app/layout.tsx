@@ -26,7 +26,7 @@ export default function RootLayout({
             lang="en"
             suppressHydrationWarning
         >
-            <body>
+            <body className="app-shell">
                 <QueryClientProviderWrapper>
                     {children}
                 </QueryClientProviderWrapper>

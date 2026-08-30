@@ -9,10 +9,10 @@ const companies = [
 
 export default function TrustedCompanies() {
   return (
-    <section className="overflow-hidden border-y border-slate-200 bg-slate-50 py-12 sm:py-14 lg:py-16">
+    <section className="overflow-hidden border-y border-border bg-surface-alt py-12 sm:py-14 lg:py-16">
       {/* Heading */}
       <div className="mx-auto mb-8 w-full max-w-7xl px-4 sm:mb-10 sm:px-6 lg:px-8">
-        <p className="text-center text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500 sm:text-xs sm:tracking-[0.3em]">
+        <p className="text-center text-[11px] font-bold uppercase tracking-[0.22em] text-text-soft sm:text-xs sm:tracking-[0.3em]">
           Trusted by innovative companies
         </p>
       </div>

@@ -1,21 +1,70 @@
 @import "tailwindcss";
 
+@theme {
+    --color-brand-50: #eff6ff;
+    --color-brand-100: #dbeafe;
+    --color-brand-200: #bfdbfe;
+    --color-brand-300: #93c5fd;
+    --color-brand-400: #60a5fa;
+    --color-brand-500: #3b82f6;
+    --color-brand-600: #2563eb;
+    --color-brand-700: #1d4ed8;
+    --color-brand-800: #1e3a8a;
+    --color-brand-900: #0f172a;
+    --color-surface: #ffffff;
+    --color-surface-alt: #f8fafc;
+    --color-surface-muted: #f1f5f9;
+    --color-border: #e2e8f0;
+    --color-text: #0f172a;
+    --color-text-muted: #475569;
+    --color-text-soft: #64748b;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.08);
+    --shadow-brand: 0 18px 45px rgba(37, 99, 235, 0.22);
+    --radius-card: 1rem;
+    --radius-panel: 1.5rem;
+}
+
 /* =========================================================
    Global Base
    ========================================================= */
 
+:root {
+    color-scheme: light;
+    --page-bg: #ffffff;
+    --page-text: #0f172a;
+    --page-text-soft: #475569;
+    --font-size-root: 14px;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.8125rem;
+    --font-size-base: 0.9375rem;
+    --font-size-lg: 1.0625rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 2rem;
+    --font-size-3xl: 2.5rem;
+    --font-size-4xl: 3rem;
+    --line-height-base: 1.6;
+    font-size: var(--font-size-root);
+}
+
 html {
     scroll-behavior: smooth;
+    font-size: var(--font-size-root);
 }
 
 body {
     margin: 0;
     min-width: 320px;
     overflow-x: hidden;
-    background: white;
-    color: rgb(15 23 42);
+    background: var(--page-bg);
+    color: var(--page-text);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
 }
 
 *,
@@ -24,12 +73,137 @@ body {
     box-sizing: border-box;
 }
 
-/* Prevent media from accidentally overflowing */
 img,
 video,
 svg,
 canvas {
     max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* =========================================================
+   Shared Theme Tokens
+   ========================================================= */
+
+@layer components {
+    .app-shell {
+        @apply bg-surface text-text;
+    }
+
+    .site-shell {
+        @apply bg-surface text-text;
+    }
+
+    .surface-card {
+        @apply rounded-2xl border border-border bg-surface shadow-soft;
+    }
+
+    .surface-muted {
+        @apply bg-surface-alt text-text-muted;
+    }
+
+    .brand-gradient {
+        background: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-500) 45%, #22d3ee 100%);
+    }
+
+    .brand-soft {
+        @apply bg-brand-100 text-brand-700;
+    }
+
+    .section-heading {
+        @apply text-text;
+    }
+
+    .label-muted {
+        @apply text-text-muted;
+    }
+
+    .text-body {
+        @apply text-[0.9375rem] leading-6 text-text-muted;
+    }
+
+    .text-label {
+        @apply text-[0.75rem] font-medium uppercase tracking-[0.18em] text-text-soft;
+    }
+
+    .site-nav {
+        @apply border-b border-border bg-white/95 backdrop-blur-md;
+    }
+
+    .site-nav-link {
+        @apply whitespace-nowrap text-sm font-medium text-text-muted transition hover:text-brand-600;
+    }
+
+    .site-button-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-brand transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
+    }
+
+    .site-button-secondary {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text transition hover:bg-surface-alt;
+    }
+
+    .site-section-surface {
+        @apply bg-surface-alt;
+    }
+
+    .hero-kicker {
+        @apply inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-300;
+    }
+
+    .hero-title {
+        @apply max-w-xl text-[clamp(2.2rem,4vw,3.4rem)] font-extrabold leading-[1.08] tracking-tight text-white;
+    }
+
+    .hero-subtitle {
+        @apply mt-6 max-w-lg text-base leading-7 text-slate-400;
+    }
+
+    .section-shell {
+        @apply flex justify-center px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-32;
+    }
+
+    .section-content {
+        @apply container w-full;
+    }
+
+    .section-kicker {
+        @apply inline-flex rounded-full bg-brand-100 px-4 py-2 text-xs font-semibold text-brand-700 sm:px-5 sm:text-sm;
+    }
+
+    .section-title {
+        @apply mt-5 text-[clamp(2rem,3vw,3rem)] font-black leading-[1.08] tracking-tight text-text sm:mt-6;
+    }
+
+    .section-copy {
+        @apply mt-5 text-base leading-7 text-text-muted sm:mt-6 sm:text-lg sm:leading-8;
+    }
+
+    .card-surface {
+        @apply rounded-2xl border border-border bg-surface shadow-soft transition-all duration-300;
+    }
+
+    .card-surface-hover {
+        @apply rounded-2xl border border-border bg-surface shadow-soft transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-brand sm:rounded-3xl;
+    }
+
+    .brand-link {
+        @apply inline-flex items-center gap-2 text-sm font-semibold text-brand-600 transition-all hover:text-brand-700 sm:text-base;
+    }
+
+    .light-panel {
+        @apply bg-surface-alt;
+    }
 }
 
 /* =========================================================
@@ -40,11 +214,11 @@ canvas {
     width: 100%;
     height: 2.75rem;
     border-radius: 0.75rem;
-    border: 1px solid rgb(226 232 240);
-    background: rgb(248 250 252);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-alt);
     padding: 0 1rem;
     font-size: 0.875rem;
-    color: rgb(15 23 42);
+    color: var(--color-text);
     outline: none;
     transition:
         border-color 150ms ease,
@@ -53,9 +227,9 @@ canvas {
 }
 
 .input:focus {
-    border-color: rgb(59 130 246);
-    background: white;
-    box-shadow: 0 0 0 4px rgb(59 130 246 / 0.1);
+    border-color: var(--color-brand-500);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
 /* =========================================================

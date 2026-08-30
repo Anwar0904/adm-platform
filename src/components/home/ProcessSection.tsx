@@ -41,19 +41,19 @@ const steps = [
 
 export default function ProcessSection() {
   return (
-    <section className="flex justify-center px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
-      <div className="container w-full">
+    <section className="section-shell">
+      <div className="section-content">
         {/* Heading */}
         <div className="mx-auto mb-14 max-w-3xl text-center sm:mb-16 lg:mb-20">
-          <span className="inline-flex rounded-full bg-blue-100 px-4 py-2 text-xs font-semibold text-blue-700 sm:px-5 sm:text-sm">
+          <span className="section-kicker">
             Our Process
           </span>
 
-          <h2 className="mt-5 text-3xl font-black leading-tight tracking-tight text-slate-900 sm:mt-6 sm:text-4xl md:text-5xl lg:text-6xl">
+          <h2 className="section-title">
             Our Execution Blueprint
           </h2>
 
-          <p className="mt-5 text-base leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8">
+          <p className="section-copy">
             Every successful digital product follows a structured process.
             Here&apos;s how ADM transforms ideas into intelligent solutions.
           </p>
