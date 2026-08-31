@@ -24,7 +24,7 @@ export default function TrendingArticlesSection() {
     const trendingPosts = [...blogPosts].sort((a, b) => b.views - a.views).slice(0, 3);
 
     return (
-        <section className="relative overflow-hidden py-24 lg:py-32">
+        <section className="relative overflow-hidden bg-slate-950 py-24 lg:py-32">
             <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-500/5 blur-[140px]" />
 
             <div className="container relative mx-auto px-4 lg:px-8">
@@ -32,27 +32,26 @@ export default function TrendingArticlesSection() {
 
                 <div className="mb-16 flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
                     <div className="max-w-2xl">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-5 py-2 text-sm font-semibold text-orange-700">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/10 px-5 py-2 text-sm font-semibold text-orange-200">
                             <Flame size={15} />
                             Trending This Week
                         </span>
 
-                        <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                        <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                             Most Popular
-                            <span className="block bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+                            <span className="block bg-gradient-to-r from-orange-300 to-red-300 bg-clip-text text-transparent">
                                 Articles
                             </span>
                         </h2>
 
-                        <p className="mt-6 text-lg leading-9 text-slate-600">
-                            The most-read insights from developers, founders,
-                            designers and business leaders.
+                        <p className="mt-6 text-lg leading-9 text-slate-300">
+                            The most-read insights from developers, founders, designers and business leaders.
                         </p>
                     </div>
 
                     <Link
                         href="/blogs"
-                        className="group inline-flex items-center font-semibold text-blue-600"
+                        className="group inline-flex items-center font-semibold text-blue-300"
                     >
                         Explore All
 
@@ -86,7 +85,7 @@ export default function TrendingArticlesSection() {
                             whileHover={{
                                 y: -10,
                             }}
-                            className="group overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm transition-all hover:shadow-2xl"
+                            className="group overflow-hidden rounded-[30px] border border-slate-800 bg-slate-900/80 shadow-sm transition-all hover:shadow-2xl"
                         >
                             {/* Image */}
 
@@ -116,13 +115,11 @@ export default function TrendingArticlesSection() {
                                     {article.category}
                                 </span>
 
-                                <h3 className="line-clamp-2 text-2xl font-black leading-tight text-slate-900 transition group-hover:text-blue-600">
+                                <h3 className="line-clamp-2 text-2xl font-black leading-tight text-white transition group-hover:text-blue-300">
                                     {article.title}
                                 </h3>
 
-                                <p className="line-clamp-3 leading-8 text-slate-600">
-                                    {article.excerpt}
-                                </p>
+                                <p className="line-clamp-3 leading-8 text-slate-300">{article.excerpt}</p>
 
                                 {/* Stats */}
 
@@ -151,13 +148,8 @@ export default function TrendingArticlesSection() {
                                         />
 
                                         <div>
-                                            <h5 className="text-sm font-semibold text-slate-900">
-                                                {article.author.name}
-                                            </h5>
-
-                                            <p className="text-xs text-slate-500">
-                                                {article.author.role}
-                                            </p>
+                                            <h5 className="text-sm font-semibold text-white">{article.author.name}</h5>
+                                            <p className="text-xs text-slate-400">{article.author.role}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -186,7 +178,7 @@ export default function TrendingArticlesSection() {
                     viewport={{ once: true }}
                     className="mt-16 overflow-hidden rounded-[30px] bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-700 p-[1px]"
                 >
-                    <div className="flex flex-col items-center justify-between gap-8 rounded-[29px] bg-white px-8 py-8 text-center lg:flex-row lg:text-left">
+                    <div className="flex flex-col items-center justify-between gap-8 rounded-[29px] bg-slate-950 px-8 py-8 text-center lg:flex-row lg:text-left">
                         <div className="flex items-center gap-5">
                             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100">
                                 <TrendingUp
@@ -196,13 +188,8 @@ export default function TrendingArticlesSection() {
                             </div>
 
                             <div>
-                                <h3 className="text-2xl font-black text-slate-900">
-                                    Stay Ahead of Technology
-                                </h3>
-
-                                <p className="mt-2 text-slate-600">
-                                    Fresh insights published every week by ADM experts.
-                                </p>
+                                <h3 className="text-2xl font-black text-white">Stay Ahead of Technology</h3>
+                                <p className="mt-2 text-slate-300">Fresh insights published every week by ADM experts.</p>
                             </div>
                         </div>
 

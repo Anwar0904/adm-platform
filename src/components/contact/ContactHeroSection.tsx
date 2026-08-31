@@ -143,48 +143,32 @@ export default function ContactHeroSection() {
                         className="relative"
                     >
                         <div className="rounded-[36px] border border-white/10 bg-white/10 p-8 backdrop-blur-2xl shadow-[0_40px_100px_rgba(0,0,0,.35)]">
-                            {/* Meeting Card */}
-
-                            <div className="rounded-3xl bg-white p-8 shadow-xl">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100">
-                                    <CalendarCheck2
-                                        size={32}
-                                        className="text-blue-600"
-                                    />
+                            <div className="rounded-3xl border border-slate-700 bg-slate-950 p-8 shadow-xl">
+                                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/15">
+                                    <CalendarCheck2 size={32} className="text-cyan-300" />
                                 </div>
 
-                                <h3 className="mt-6 text-3xl font-black text-slate-900">
-                                    Free Strategy Call
-                                </h3>
+                                <h3 className="mt-6 text-3xl font-black text-white">Free Strategy Call</h3>
 
-                                <p className="mt-4 leading-8 text-slate-600">
-                                    Schedule a free consultation with our
-                                    experts to discuss your business goals,
+                                <p className="mt-4 leading-8 text-slate-300">
+                                    Schedule a free consultation with our experts to discuss your business goals,
                                     technical challenges and project vision.
                                 </p>
 
-                                <div className="mt-8 rounded-2xl bg-slate-50 p-6">
+                                <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-900 p-6">
                                     <div className="flex items-center gap-4">
                                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white">
                                             <MessageSquare size={22} />
                                         </div>
 
                                         <div>
-                                            <h4 className="font-bold text-slate-900">
-                                                Average Response Time
-                                            </h4>
-
-                                            <p className="text-sm text-slate-500">
-                                                Less than 24 hours
-                                            </p>
+                                            <h4 className="font-bold text-white">Average Response Time</h4>
+                                            <p className="text-sm text-slate-400">Less than 24 hours</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <Link
-                                    href="#contact-form"
-                                    className="mt-8 flex w-full items-center justify-center rounded-2xl bg-blue-600 py-4 font-semibold text-white transition hover:bg-blue-700"
-                                >
+                                <Link href="#contact-form" className="mt-8 flex w-full items-center justify-center rounded-2xl bg-blue-600 py-4 font-semibold text-white transition hover:bg-blue-500">
                                     Book Consultation
                                 </Link>
                             </div>

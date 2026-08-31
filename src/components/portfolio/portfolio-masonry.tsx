@@ -63,27 +63,25 @@ const projects = [
 
 export default function PortfolioMasonry() {
   return (
-    <section className="py-24">
+    <section className="bg-slate-950 py-24 text-white">
       <div className="container mx-auto px-5">
-
-        <div className="max-w-3xl mb-14">
-          <span className="inline-flex rounded-full bg-blue-100 px-4 py-1 text-sm font-semibold text-blue-700">
+        <div className="mb-14 max-w-3xl">
+          <span className="inline-flex rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-sm font-semibold text-blue-200">
             Complete Portfolio
           </span>
 
-          <h2 className="mt-5 text-4xl md:text-5xl font-black tracking-tight">
+          <h2 className="mt-5 text-4xl font-black tracking-tight text-white md:text-5xl">
             Every Project Has A Story.
           </h2>
 
-          <p className="mt-5 text-lg text-muted-foreground leading-8">
+          <p className="mt-5 text-lg leading-8 text-slate-300">
             Explore real digital products, AI platforms, enterprise systems,
             SaaS applications and business solutions designed and developed by
             ADM.
           </p>
         </div>
 
-        <div className="columns-1 md:columns-2 xl:columns-3 gap-7 space-y-7">
-
+        <div className="columns-1 gap-7 space-y-7 md:columns-2 xl:columns-3">
           {projects.map((project) => (
             <Link
               href={`/portfolio/${project.slug}`}
@@ -91,7 +89,7 @@ export default function PortfolioMasonry() {
               className="group block break-inside-avoid"
             >
               <article
-                className={`relative overflow-hidden rounded-3xl ${project.height}`}
+                className={`relative overflow-hidden rounded-3xl border border-white/10 ${project.height}`}
               >
                 <Image
                   src={project.image}
@@ -101,33 +99,23 @@ export default function PortfolioMasonry() {
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-blue-600/20 backdrop-blur-sm transition duration-500" />
+                <div className="absolute inset-0 bg-blue-600/20 opacity-0 backdrop-blur-sm transition duration-500 group-hover:opacity-100" />
 
                 <div className="absolute bottom-0 left-0 right-0 p-8">
-
-                  <span className="inline-flex rounded-full bg-white/15 backdrop-blur-xl px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white">
+                  <span className="inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white backdrop-blur-xl">
                     {project.category}
                   </span>
 
                   <div className="mt-5 flex items-end justify-between gap-4">
-
                     <div>
-                      <h3 className="text-2xl font-bold text-white">
-                        {project.title}
-                      </h3>
-
-                      <p className="mt-3 text-white/80">
-                        View complete case study
-                      </p>
+                      <h3 className="text-2xl font-bold text-white">{project.title}</h3>
+                      <p className="mt-3 text-white/80">View complete case study</p>
                     </div>
 
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:bg-blue-600 group-hover:text-white">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:bg-blue-600 group-hover:text-white">
                       <ArrowUpRight className="h-6 w-6" />
                     </div>
-
                   </div>
-
                 </div>
               </article>
             </Link>
@@ -135,11 +123,10 @@ export default function PortfolioMasonry() {
         </div>
 
         <div className="mt-20 flex justify-center">
-          <button className="rounded-full bg-blue-600 px-10 py-4 font-semibold text-white transition hover:scale-105 hover:bg-blue-700">
+          <button className="rounded-full bg-blue-600 px-10 py-4 font-semibold text-white transition hover:scale-105 hover:bg-blue-500">
             Load More Projects
           </button>
         </div>
-
       </div>
     </section>
   );

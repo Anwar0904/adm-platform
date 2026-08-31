@@ -27,7 +27,7 @@ export default function FeaturedArticlesSection() {
     return (
         <section
             id="featured"
-            className="relative overflow-hidden bg-white py-24 lg:py-32"
+            className="relative overflow-hidden bg-slate-950 py-24 lg:py-32"
         >
             <div className="absolute inset-0">
                 <div className="absolute right-0 top-20 h-[500px] w-[500px] rounded-full bg-blue-500/5 blur-[140px]" />
@@ -39,28 +39,27 @@ export default function FeaturedArticlesSection() {
 
                 <div className="mb-16 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-3xl">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                             <Sparkles size={15} />
                             Editor&apos;s Choice
                         </span>
 
-                        <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                        <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                             Featured
-                            <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                            <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                                 Stories
                             </span>
                         </h2>
 
-                        <p className="mt-6 max-w-2xl text-lg leading-9 text-slate-600">
-                            Carefully selected articles that showcase the latest
-                            technologies, strategies and insights shaping the digital
-                            future.
+                        <p className="mt-6 max-w-2xl text-lg leading-9 text-slate-300">
+                            Carefully selected articles that showcase the latest technologies,
+                            strategies and insights shaping the digital future.
                         </p>
                     </div>
 
                     <Link
                         href="/blogs"
-                        className="group inline-flex items-center font-semibold text-blue-600"
+                        className="group inline-flex items-center font-semibold text-blue-300"
                     >
                         View all articles
 
@@ -82,7 +81,7 @@ export default function FeaturedArticlesSection() {
                             <motion.article
                                 key={article.id}
                                 whileHover={{ y: -8 }}
-                                className="group overflow-hidden rounded-[34px] border border-slate-200 bg-white shadow-sm transition-all hover:shadow-2xl"
+                                className="group overflow-hidden rounded-[34px] border border-slate-800 bg-slate-900/80 shadow-sm transition-all hover:shadow-2xl"
                             >
                                 <div className="relative aspect-[16/9] overflow-hidden">
 
@@ -102,9 +101,8 @@ export default function FeaturedArticlesSection() {
 
                                 <div className="p-8 lg:p-10">
 
-                                    <div className="flex flex-wrap items-center gap-5 text-sm text-slate-500">
-
-                                        <span className="rounded-full bg-blue-100 px-3 py-1 font-semibold text-blue-700">
+                                    <div className="flex flex-wrap items-center gap-5 text-sm text-slate-400">
+                                        <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 font-semibold text-blue-200">
                                             {article.category}
                                         </span>
 
@@ -125,11 +123,11 @@ export default function FeaturedArticlesSection() {
 
                                     </div>
 
-                                    <h3 className="mt-7 text-3xl font-black leading-tight text-slate-900 lg:text-5xl">
+                                    <h3 className="mt-7 text-3xl font-black leading-tight text-white lg:text-5xl">
                                         {article.title}
                                     </h3>
 
-                                    <p className="mt-7 max-w-3xl text-lg leading-9 text-slate-600">
+                                    <p className="mt-7 max-w-3xl text-lg leading-9 text-slate-300">
                                         {article.excerpt}
                                     </p>
 
@@ -146,13 +144,8 @@ export default function FeaturedArticlesSection() {
                                             />
 
                                             <div>
-                                                <h4 className="font-bold text-slate-900">
-                                                    {article.author.name}
-                                                </h4>
-
-                                                <p className="text-sm text-slate-500">
-                                                    {article.author.role}
-                                                </p>
+                                                <h4 className="font-bold text-white">{article.author.name}</h4>
+                                                <p className="text-sm text-slate-400">{article.author.role}</p>
                                             </div>
 
                                         </div>

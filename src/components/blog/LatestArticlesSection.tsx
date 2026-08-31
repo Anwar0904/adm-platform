@@ -39,7 +39,7 @@ export default function LatestArticlesSection() {
     return (
         <section
             id="latest"
-            className="relative overflow-hidden py-24 lg:py-32"
+            className="relative overflow-hidden bg-slate-950 py-24 lg:py-32"
         >
             <div className="absolute inset-0 -z-10">
                 <div className="absolute left-0 bottom-0 h-[450px] w-[450px] rounded-full bg-blue-500/5 blur-[140px]" />
@@ -50,27 +50,26 @@ export default function LatestArticlesSection() {
 
                 <div className="mb-16 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-3xl">
-                        <span className="rounded-full bg-slate-100 px-5 py-2 text-sm font-semibold text-slate-700">
+                        <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                             Latest Insights
                         </span>
 
-                        <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                        <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                             Fresh Articles &
-                            <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                            <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                                 Industry Insights
                             </span>
                         </h2>
 
-                        <p className="mt-6 text-lg leading-9 text-slate-600">
-                            Weekly content covering Artificial Intelligence,
-                            Web Development, Cloud, UI/UX, Blockchain,
-                            Business and Digital Transformation.
+                        <p className="mt-6 text-lg leading-9 text-slate-300">
+                            Weekly content covering Artificial Intelligence, Web Development,
+                            Cloud, UI/UX, Blockchain, Business and Digital Transformation.
                         </p>
                     </div>
 
                     <Link
                         href="/blogs"
-                        className="group inline-flex items-center font-semibold text-blue-600"
+                        className="group inline-flex items-center font-semibold text-blue-300"
                     >
                         Browse Archive
 
@@ -104,7 +103,7 @@ export default function LatestArticlesSection() {
                             whileHover={{
                                 y: -8,
                             }}
-                            className="group overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm transition-all hover:shadow-2xl"
+                            className="group overflow-hidden rounded-[30px] border border-slate-800 bg-slate-900/80 shadow-sm transition-all hover:shadow-2xl"
                         >
                             {/* Image */}
 
@@ -137,11 +136,11 @@ export default function LatestArticlesSection() {
                                     ))}
                                 </div>
 
-                                <h3 className="line-clamp-2 text-2xl font-black leading-tight text-slate-900 transition group-hover:text-blue-600">
+                                <h3 className="line-clamp-2 text-2xl font-black leading-tight text-white transition group-hover:text-blue-300">
                                     {article.title}
                                 </h3>
 
-                                <p className="mt-5 line-clamp-3 leading-8 text-slate-600">
+                                <p className="mt-5 line-clamp-3 leading-8 text-slate-300">
                                     {article.excerpt}
                                 </p>
 
@@ -182,13 +181,8 @@ export default function LatestArticlesSection() {
                                         />
 
                                         <div>
-                                            <h5 className="text-sm font-bold text-slate-900">
-                                                {article.author.name}
-                                            </h5>
-
-                                            <p className="text-xs text-slate-500">
-                                                {article.author.role}
-                                            </p>
+                                            <h5 className="text-sm font-bold text-white">{article.author.name}</h5>
+                                            <p className="text-xs text-slate-400">{article.author.role}</p>
                                         </div>
                                     </div>
 

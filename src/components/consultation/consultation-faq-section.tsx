@@ -41,7 +41,7 @@ export default function ConsultationFaqSection() {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section className="relative overflow-hidden bg-slate-50 py-24 lg:py-32">
+        <section className="relative overflow-hidden bg-slate-950 py-24 lg:py-32">
             <div className="container mx-auto px-4 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 25 }}
@@ -49,15 +49,15 @@ export default function ConsultationFaqSection() {
                     viewport={{ once: true }}
                     className="mx-auto max-w-3xl text-center"
                 >
-                    <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         Frequently Asked Questions
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                         Everything You Need To Know
                     </h2>
 
-                    <p className="mt-6 text-lg leading-9 text-slate-600">
+                    <p className="mt-6 text-lg leading-9 text-slate-300">
                         Answers to common questions before scheduling your consultation.
                     </p>
                 </motion.div>
@@ -73,7 +73,7 @@ export default function ConsultationFaqSection() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.05 }}
-                                className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl"
+                                className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-sm transition-all duration-300 hover:shadow-xl"
                             >
                                 <button
                                     onClick={() =>
@@ -81,16 +81,10 @@ export default function ConsultationFaqSection() {
                                     }
                                     className="flex w-full items-center justify-between gap-5 px-8 py-7 text-left"
                                 >
-                                    <h3 className="text-lg font-bold text-slate-900 lg:text-xl">
-                                        {faq.question}
-                                    </h3>
+                                    <h3 className="text-lg font-bold text-white lg:text-xl">{faq.question}</h3>
 
-                                    <motion.div
-                                        animate={{
-                                            rotate: open ? 180 : 0,
-                                        }}
-                                    >
-                                        <ChevronDown className="text-blue-600" />
+                                    <motion.div animate={{ rotate: open ? 180 : 0 }}>
+                                        <ChevronDown className="text-blue-300" />
                                     </motion.div>
                                 </button>
 
@@ -113,10 +107,8 @@ export default function ConsultationFaqSection() {
                                                 duration: 0.25,
                                             }}
                                         >
-                                            <div className="border-t border-slate-100 px-8 pb-8 pt-6">
-                                                <p className="leading-8 text-slate-600">
-                                                    {faq.answer}
-                                                </p>
+                                            <div className="border-t border-slate-800 px-8 pb-8 pt-6">
+                                                <p className="leading-8 text-slate-300">{faq.answer}</p>
                                             </div>
                                         </motion.div>
                                     )}

@@ -84,7 +84,7 @@ const topics = [
 
 export default function ReadingTopicsSection() {
     return (
-        <section className="relative overflow-hidden py-24 lg:py-32">
+        <section className="relative overflow-hidden bg-slate-950 py-24 lg:py-32">
             <div className="absolute inset-0 -z-10">
                 <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-blue-500/5 blur-[160px]" />
 
@@ -95,20 +95,19 @@ export default function ReadingTopicsSection() {
                 {/* Heading */}
 
                 <div className="mx-auto mb-20 max-w-3xl text-center">
-                    <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         Explore by Category
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                         Reading
-                        <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                             Topics
                         </span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-9 text-slate-600">
-                        Discover articles grouped by technologies and
-                        industries you&apos;re interested in.
+                    <p className="mt-6 text-lg leading-9 text-slate-300">
+                        Discover articles grouped by technologies and industries you&apos;re interested in.
                     </p>
                 </div>
 
@@ -141,7 +140,7 @@ export default function ReadingTopicsSection() {
                             >
                                 <Link
                                     href={`/blogs?topic=${topic.title}`}
-                                    className="group relative flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white p-8 shadow-sm transition-all duration-500 hover:border-blue-200 hover:shadow-2xl"
+                                    className="group relative flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-800 bg-slate-900/80 p-8 shadow-sm transition-all duration-500 hover:border-blue-400/50 hover:shadow-2xl"
                                 >
                                     {/* Glow */}
 
@@ -161,15 +160,15 @@ export default function ReadingTopicsSection() {
                                             />
                                         </div>
 
-                                        <h3 className="mt-8 text-2xl font-black text-slate-900 transition group-hover:text-white">
+                                        <h3 className="mt-8 text-2xl font-black text-white transition group-hover:text-white">
                                             {topic.title}
                                         </h3>
 
-                                        <p className="mt-3 text-slate-500 transition group-hover:text-white/90">
+                                        <p className="mt-3 text-slate-300 transition group-hover:text-white/90">
                                             {topic.articles} Articles
                                         </p>
 
-                                        <div className="mt-10 inline-flex items-center font-semibold text-blue-600 transition group-hover:text-white">
+                                        <div className="mt-10 inline-flex items-center font-semibold text-blue-300 transition group-hover:text-white">
                                             Explore
 
                                             <ArrowRight
@@ -190,7 +189,7 @@ export default function ReadingTopicsSection() {
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    className="mt-20 rounded-[32px] border border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50 p-10 lg:p-14"
+                    className="mt-20 rounded-[32px] border border-slate-800 bg-gradient-to-r from-slate-900 to-blue-950 p-10 lg:p-14"
                 >
                     <div className="flex flex-col items-center justify-between gap-8 lg:flex-row">
                         <div className="flex items-center gap-5">
@@ -199,14 +198,8 @@ export default function ReadingTopicsSection() {
                             </div>
 
                             <div>
-                                <h3 className="text-3xl font-black text-slate-900">
-                                    300+ Expert Articles
-                                </h3>
-
-                                <p className="mt-2 text-slate-600">
-                                    New tutorials, guides and case studies every
-                                    single week.
-                                </p>
+                                <h3 className="text-3xl font-black text-white">300+ Expert Articles</h3>
+                                <p className="mt-2 text-slate-300">New tutorials, guides and case studies every single week.</p>
                             </div>
                         </div>
 

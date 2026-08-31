@@ -33,11 +33,9 @@ export default function OfficeLocationSection() {
     return (
         <section
             id="location"
-            className="relative overflow-hidden py-24 lg:py-32"
+            className="relative overflow-hidden bg-slate-950 py-24 lg:py-32"
         >
-            {/* Background */}
-
-            <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-50 to-white" />
+            <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-950 to-slate-900" />
 
             <div className="container mx-auto px-4 lg:px-8">
                 {/* Heading */}
@@ -56,21 +54,19 @@ export default function OfficeLocationSection() {
                     }}
                     className="mx-auto mb-20 max-w-3xl text-center"
                 >
-                    <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         Visit Our Office
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                         Meet Us In
-                        <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                             Chakdara
                         </span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-9 text-slate-600">
-                        Whether you want a face-to-face consultation or
-                        simply wish to learn more about ADM, you're always
-                        welcome.
+                    <p className="mt-6 text-lg leading-9 text-slate-300">
+                        Whether you want a face-to-face consultation or simply wish to learn more about ADM, you're always welcome.
                     </p>
                 </motion.div>
 
@@ -89,19 +85,14 @@ export default function OfficeLocationSection() {
                         viewport={{
                             once: true,
                         }}
-                        className="rounded-[36px] border border-slate-200 bg-white p-10 shadow-xl"
+                        className="rounded-[36px] border border-slate-800 bg-slate-900/80 p-10 shadow-xl"
                     >
                         <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-600 text-white">
                             <MapPin size={38} />
                         </div>
 
-                        <h3 className="mt-8 text-3xl font-black text-slate-900">
-                            ADM Headquarters
-                        </h3>
-
-                        <p className="mt-3 text-blue-600 font-semibold">
-                            {officeInfo.city}, {officeInfo.region}
-                        </p>
+                        <h3 className="mt-8 text-3xl font-black text-white">ADM Headquarters</h3>
+                        <p className="mt-3 font-semibold text-blue-300">{officeInfo.city}, {officeInfo.region}</p>
 
                         <div className="mt-10 space-y-8">
                             {/* Address */}
@@ -113,13 +104,8 @@ export default function OfficeLocationSection() {
                                 />
 
                                 <div>
-                                    <h4 className="font-bold text-slate-900">
-                                        Address
-                                    </h4>
-
-                                    <p className="mt-2 leading-8 text-slate-600">
-                                        {officeInfo.address}
-                                    </p>
+                                    <h4 className="font-bold text-white">Address</h4>
+                                    <p className="mt-2 leading-8 text-slate-300">{officeInfo.address}</p>
                                 </div>
                             </div>
 
@@ -132,14 +118,8 @@ export default function OfficeLocationSection() {
                                 />
 
                                 <div>
-                                    <h4 className="font-bold text-slate-900">
-                                        Phone
-                                    </h4>
-
-                                    <Link
-                                        href={`tel:${officeInfo.phone}`}
-                                        className="mt-2 block text-slate-600 hover:text-blue-600"
-                                    >
+                                    <h4 className="font-bold text-white">Phone</h4>
+                                    <Link href={`tel:${officeInfo.phone}`} className="mt-2 block text-slate-300 hover:text-blue-300">
                                         {officeInfo.phone}
                                     </Link>
                                 </div>
@@ -154,14 +134,8 @@ export default function OfficeLocationSection() {
                                 />
 
                                 <div>
-                                    <h4 className="font-bold text-slate-900">
-                                        Email
-                                    </h4>
-
-                                    <Link
-                                        href={`mailto:${officeInfo.email}`}
-                                        className="mt-2 block text-slate-600 hover:text-blue-600"
-                                    >
+                                    <h4 className="font-bold text-white">Email</h4>
+                                    <Link href={`mailto:${officeInfo.email}`} className="mt-2 block text-slate-300 hover:text-blue-300">
                                         {officeInfo.email}
                                     </Link>
                                 </div>
@@ -176,15 +150,8 @@ export default function OfficeLocationSection() {
                                 />
 
                                 <div>
-                                    <h4 className="font-bold text-slate-900">
-                                        Working Hours
-                                    </h4>
-
-                                    <p className="mt-2 leading-8 text-slate-600">
-                                        {officeInfo.hours[0]}
-                                        <br />
-                                        {officeInfo.hours[1]}
-                                    </p>
+                                    <h4 className="font-bold text-white">Working Hours</h4>
+                                    <p className="mt-2 leading-8 text-slate-300">{officeInfo.hours[0]}<br />{officeInfo.hours[1]}</p>
                                 </div>
                             </div>
                         </div>
@@ -243,19 +210,12 @@ export default function OfficeLocationSection() {
                     viewport={{
                         once: true,
                     }}
-                    className="mt-16 rounded-[32px] border border-blue-100 bg-gradient-to-r from-blue-50 to-cyan-50 p-10"
+                    className="mt-16 rounded-[32px] border border-blue-500/20 bg-gradient-to-r from-blue-950/80 to-slate-900 p-10"
                 >
                     <div className="flex flex-col items-center justify-between gap-8 lg:flex-row">
                         <div>
-                            <h3 className="text-3xl font-black text-slate-900">
-                                Prefer an Online Meeting?
-                            </h3>
-
-                            <p className="mt-4 max-w-2xl leading-8 text-slate-600">
-                                We work with clients worldwide. If visiting our
-                                office isn't convenient, schedule a free video
-                                consultation with our experts.
-                            </p>
+                            <h3 className="text-3xl font-black text-white">Prefer an Online Meeting?</h3>
+                            <p className="mt-4 max-w-2xl leading-8 text-slate-300">We work with clients worldwide. If visiting our office isn't convenient, schedule a free video consultation with our experts.</p>
                         </div>
 
                         <Link

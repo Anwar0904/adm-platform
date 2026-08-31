@@ -85,37 +85,33 @@ const steps = [
 
 export default function ProjectProcess() {
     return (
-        <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 py-24">
+        <section className="relative overflow-hidden bg-slate-950 py-24 text-white">
             <div className="absolute left-1/2 top-0 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-blue-500/10 blur-[160px]" />
 
             <div className="container relative mx-auto px-4 lg:px-8">
-                {/* Header */}
-
                 <motion.div
                     initial={{ opacity: 0, y: 35 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     className="mx-auto mb-20 max-w-3xl text-center"
                 >
-                    <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                    <span className="inline-flex rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200">
                         Our Workflow
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
+                    <h2 className="mt-6 text-4xl font-black tracking-tight text-white md:text-5xl">
                         Every Successful Product
-                        <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="block bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
                             Starts With The Right Process
                         </span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-8 text-slate-600">
+                    <p className="mt-6 text-lg leading-8 text-slate-300">
                         We combine strategy, design, engineering and continuous improvement
                         into one streamlined workflow that minimizes risk and maximizes
                         product quality.
                     </p>
                 </motion.div>
-
-                {/* Timeline */}
 
                 <div className="relative">
                     <div className="absolute left-8 top-0 hidden h-full w-[3px] rounded-full bg-gradient-to-b from-blue-600 to-cyan-400 lg:block" />
@@ -134,9 +130,7 @@ export default function ProjectProcess() {
                                     className="group relative"
                                 >
                                     <div className="grid items-center gap-8 lg:grid-cols-[110px_1fr]">
-                                        {/* Timeline */}
-
-                                        <div className="relative hidden lg:flex justify-center">
+                                        <div className="relative hidden justify-center lg:flex">
                                             <div
                                                 className={`z-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${step.color} text-white shadow-xl transition-all duration-500 group-hover:scale-110`}
                                             >
@@ -144,49 +138,25 @@ export default function ProjectProcess() {
                                             </div>
                                         </div>
 
-                                        {/* Card */}
-
-                                        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl">
+                                        <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl">
                                             <div className="grid lg:grid-cols-[220px_1fr]">
-                                                {/* Left */}
-
-                                                <div
-                                                    className={`bg-gradient-to-br ${step.color} p-8 text-white`}
-                                                >
-                                                    <p className="text-sm uppercase tracking-[0.3em] opacity-80">
-                                                        Step
-                                                    </p>
-
-                                                    <h3 className="mt-3 text-6xl font-black">
-                                                        {step.id}
-                                                    </h3>
-
-                                                    <h4 className="mt-6 text-2xl font-bold">
-                                                        {step.title}
-                                                    </h4>
+                                                <div className={`bg-gradient-to-br ${step.color} p-8 text-white`}>
+                                                    <p className="text-sm uppercase tracking-[0.3em] opacity-80">Step</p>
+                                                    <h3 className="mt-3 text-6xl font-black">{step.id}</h3>
+                                                    <h4 className="mt-6 text-2xl font-bold">{step.title}</h4>
                                                 </div>
 
-                                                {/* Right */}
-
                                                 <div className="p-8 lg:p-10">
-                                                    <p className="text-lg leading-8 text-slate-600">
-                                                        {step.description}
-                                                    </p>
+                                                    <p className="text-lg leading-8 text-slate-300">{step.description}</p>
 
                                                     <div className="mt-8 grid gap-3 sm:grid-cols-2">
                                                         {step.deliverables.map((item) => (
                                                             <div
                                                                 key={item}
-                                                                className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3"
+                                                                className="flex items-center gap-3 rounded-xl bg-slate-800/80 px-4 py-3"
                                                             >
-                                                                <ArrowRight
-                                                                    size={16}
-                                                                    className="text-blue-600"
-                                                                />
-
-                                                                <span className="font-medium text-slate-700">
-                                                                    {item}
-                                                                </span>
+                                                                <ArrowRight size={16} className="text-blue-300" />
+                                                                <span className="font-medium text-slate-200">{item}</span>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -199,8 +169,6 @@ export default function ProjectProcess() {
                         })}
                     </div>
                 </div>
-
-                {/* Bottom */}
 
                 <motion.div
                     initial={{ opacity: 0, y: 35 }}
@@ -243,6 +211,5 @@ export default function ProjectProcess() {
                 </motion.div>
             </div>
         </section>
-
-    )
+    );
 }

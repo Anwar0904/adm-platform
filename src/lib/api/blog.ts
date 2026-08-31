@@ -1,7 +1,8 @@
 import type { Author, BlogPost, TableOfContentsItem } from "@/lib/dummy/blog";
 
 type PopulatedValue = {
-    _id?: string;
+    _id?: string | { toString(): string };
+    id?: string | { toString(): string };
     name?: string;
     slug?: string;
     url?: string;
@@ -10,6 +11,19 @@ type PopulatedValue = {
     role?: string;
     bio?: string;
 };
+
+function toPlainString(value: unknown): string {
+    if (typeof value === "string") return value;
+    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    if (value && typeof value === "object") {
+        const documentValue = value as { toString?: () => string };
+        if (typeof documentValue.toString === "function") {
+            const result = documentValue.toString();
+            if (result && result !== "[object Object]") return result;
+        }
+    }
+    return "";
+}
 
 export type ApiBlog = {
     _id?: string;
@@ -35,7 +49,11 @@ export type ApiBlog = {
 };
 
 function valueId(value: PopulatedValue | string | null | undefined) {
-    return typeof value === "string" ? value : value?._id ?? "";
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object") {
+        return toPlainString((value as PopulatedValue)._id ?? (value as PopulatedValue).id ?? "");
+    }
+    return "";
 }
 
 function valueName(value: PopulatedValue | string | null | undefined, fallback: string) {
@@ -78,7 +96,7 @@ export function normalizeBlog(input: ApiBlog): BlogPost {
     const publishedAt = input.publishedAt ? new Date(input.publishedAt).toISOString() : new Date().toISOString();
 
     return {
-        id: input._id ?? input.id ?? input.slug,
+        id: toPlainString(input._id ?? input.id ?? input.slug),
         slug: input.slug,
         title: input.title,
         seoTitle: input.seo?.metaTitle ?? input.title,

@@ -58,20 +58,19 @@ export default function ContactMethodsSection() {
                 {/* Heading */}
 
                 <div className="mx-auto mb-20 max-w-3xl text-center">
-                    <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         Contact Information
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                         Multiple Ways
-                        <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                             To Reach Us
                         </span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-9 text-slate-600">
-                        Choose the communication method that works best for
-                        you. We're always happy to help.
+                    <p className="mt-6 text-lg leading-9 text-slate-300">
+                        Choose the communication method that works best for you. We're always happy to help.
                     </p>
                 </div>
 
@@ -104,41 +103,22 @@ export default function ContactMethodsSection() {
                             >
                                 <Link
                                     href={item.href}
-                                    className="group relative flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white p-8 shadow-sm transition-all duration-500 hover:border-blue-200 hover:shadow-2xl"
+                                    className="group relative flex h-full flex-col overflow-hidden rounded-[30px] border border-slate-800 bg-slate-900/70 p-8 shadow-sm transition-all duration-500 hover:border-blue-400/50 hover:shadow-2xl"
                                 >
-                                    {/* Hover Background */}
-
-                                    <div
-                                        className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 transition duration-500 group-hover:opacity-100`}
-                                    />
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 transition duration-500 group-hover:opacity-100`} />
 
                                     <div className="relative z-10">
-                                        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-100 transition-all duration-500 group-hover:bg-white">
-                                            <Icon
-                                                size={36}
-                                                className="text-blue-600"
-                                            />
+                                        <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-slate-700 bg-slate-800 transition-all duration-500 group-hover:bg-white">
+                                            <Icon size={36} className="text-blue-300" />
                                         </div>
 
-                                        <h3 className="mt-8 text-2xl font-black text-slate-900 transition group-hover:text-white">
-                                            {item.title}
-                                        </h3>
+                                        <h3 className="mt-8 text-2xl font-black text-white transition group-hover:text-white">{item.title}</h3>
+                                        <p className="mt-4 font-semibold text-blue-300 transition group-hover:text-cyan-200">{item.value}</p>
+                                        <p className="mt-4 leading-8 text-slate-300 transition group-hover:text-white/90">{item.description}</p>
 
-                                        <p className="mt-4 font-semibold text-blue-600 transition group-hover:text-cyan-200">
-                                            {item.value}
-                                        </p>
-
-                                        <p className="mt-4 leading-8 text-slate-600 transition group-hover:text-white/90">
-                                            {item.description}
-                                        </p>
-
-                                        <div className="mt-8 inline-flex items-center font-semibold text-blue-600 transition group-hover:text-white">
+                                        <div className="mt-8 inline-flex items-center font-semibold text-blue-300 transition group-hover:text-white">
                                             Contact
-
-                                            <ArrowRight
-                                                size={18}
-                                                className="ml-2 transition group-hover:translate-x-1"
-                                            />
+                                            <ArrowRight size={18} className="ml-2 transition group-hover:translate-x-1" />
                                         </div>
                                     </div>
                                 </Link>
@@ -150,18 +130,10 @@ export default function ContactMethodsSection() {
                 {/* Bottom Info */}
 
                 <motion.div
-                    initial={{
-                        opacity: 0,
-                        y: 40,
-                    }}
-                    whileInView={{
-                        opacity: 1,
-                        y: 0,
-                    }}
-                    viewport={{
-                        once: true,
-                    }}
-                    className="mt-20 rounded-[32px] border border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50 p-10 lg:p-14"
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="mt-20 rounded-[32px] border border-slate-800 bg-gradient-to-r from-slate-900 to-blue-950 p-10 lg:p-14"
                 >
                     <div className="grid gap-10 md:grid-cols-2">
                         <div className="flex items-start gap-5">
@@ -170,15 +142,8 @@ export default function ContactMethodsSection() {
                             </div>
 
                             <div>
-                                <h3 className="text-2xl font-black text-slate-900">
-                                    Business Hours
-                                </h3>
-
-                                <p className="mt-4 text-slate-600 leading-8">
-                                    Monday – Friday
-                                    <br />
-                                    9:00 AM – 6:00 PM (PKT)
-                                </p>
+                                <h3 className="text-2xl font-black text-white">Business Hours</h3>
+                                <p className="mt-4 leading-8 text-slate-300">Monday – Friday<br />9:00 AM – 6:00 PM (PKT)</p>
                             </div>
                         </div>
 
@@ -188,15 +153,8 @@ export default function ContactMethodsSection() {
                             </div>
 
                             <div>
-                                <h3 className="text-2xl font-black text-slate-900">
-                                    Headquarters
-                                </h3>
-
-                                <p className="mt-4 text-slate-600 leading-8">
-                                    Islamabad,
-                                    <br />
-                                    Pakistan
-                                </p>
+                                <h3 className="text-2xl font-black text-white">Headquarters</h3>
+                                <p className="mt-4 leading-8 text-slate-300">Islamabad,<br />Pakistan</p>
                             </div>
                         </div>
                     </div>

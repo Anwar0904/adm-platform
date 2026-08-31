@@ -66,11 +66,9 @@ const perks = [
 
 export default function TeamCultureSection() {
     return (
-        <section className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white py-28">
-            {/* Background */}
-
+        <section className="relative overflow-hidden bg-slate-950 py-28">
             <div className="absolute inset-0">
-                <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-blue-500/10 blur-[120px]" />
+                <div className="absolute left-0 top-0 h-96 w-96 rounded-full bg-blue-500/15 blur-[120px]" />
                 <div className="absolute bottom-0 right-0 h-[420px] w-[420px] rounded-full bg-cyan-400/10 blur-[140px]" />
             </div>
 
@@ -83,20 +81,19 @@ export default function TeamCultureSection() {
                     viewport={{ once: true }}
                     className="mx-auto mb-20 max-w-3xl text-center"
                 >
-                    <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         Life at ADM
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black leading-tight text-slate-900 lg:text-6xl">
+                    <h2 className="mt-6 text-4xl font-black leading-tight text-white lg:text-6xl">
                         More Than A Team.
-                        <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                             A Culture Of Excellence.
                         </span>
                     </h2>
 
-                    <p className="mt-8 text-lg leading-9 text-slate-600">
-                        We believe remarkable software comes from empowered people,
-                        fearless creativity and a culture where everyone keeps learning.
+                    <p className="mt-8 text-lg leading-9 text-slate-300">
+                        We believe remarkable software comes from empowered people, fearless creativity and a culture where everyone keeps learning.
                     </p>
                 </motion.div>
 
@@ -127,7 +124,7 @@ export default function TeamCultureSection() {
                                     whileHover={{
                                         y: -12,
                                     }}
-                                    className="group rounded-[30px] border border-slate-200 bg-white p-8 shadow-sm transition-all hover:shadow-2xl"
+                                    className="group rounded-[30px] border border-slate-800 bg-slate-900/80 p-8 shadow-sm transition-all hover:shadow-2xl"
                                 >
                                     <div
                                         className={`mb-7 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r ${item.color}`}
@@ -135,13 +132,8 @@ export default function TeamCultureSection() {
                                         <Icon className="h-8 w-8 text-white" />
                                     </div>
 
-                                    <h3 className="text-2xl font-black text-slate-900">
-                                        {item.title}
-                                    </h3>
-
-                                    <p className="mt-5 leading-8 text-slate-600">
-                                        {item.description}
-                                    </p>
+                                    <h3 className="text-2xl font-black text-white">{item.title}</h3>
+                                    <p className="mt-5 leading-8 text-slate-300">{item.description}</p>
                                 </motion.div>
                             );
                         })}
@@ -198,9 +190,7 @@ export default function TeamCultureSection() {
 
                         <div className="mt-14 rounded-3xl border border-cyan-400/20 bg-white/5 p-8 backdrop-blur-xl">
                             <p className="text-xl italic leading-9 text-slate-200">
-                                “Our mission isn't just building software—
-                                it's building an environment where extraordinary people
-                                can create extraordinary things.”
+                                “Our mission isn't just building software—it's building an environment where extraordinary people can create extraordinary things.”
                             </p>
 
                             <div className="mt-8 h-px w-full bg-white/10" />

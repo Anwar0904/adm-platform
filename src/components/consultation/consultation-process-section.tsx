@@ -50,8 +50,8 @@ const steps = [
 
 export default function ConsultationProcessSection() {
     return (
-        <section className="relative overflow-hidden py-24 lg:py-32 bg-white">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,.06),transparent_35%)]" />
+        <section className="relative overflow-hidden bg-slate-950 py-24 lg:py-32">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,.12),transparent_35%)]" />
 
             <div className="container mx-auto px-4 lg:px-8">
                 <motion.div
@@ -60,17 +60,16 @@ export default function ConsultationProcessSection() {
                     viewport={{ once: true }}
                     className="mx-auto max-w-3xl text-center"
                 >
-                    <span className="inline-flex rounded-full bg-blue-50 px-5 py-2 text-sm font-semibold text-blue-600">
+                    <span className="inline-flex rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         Simple & Transparent
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                         What Happens Next?
                     </h2>
 
-                    <p className="mt-6 text-lg leading-9 text-slate-600">
-                        From your first request to project kickoff, we keep the
-                        process simple, transparent and collaborative.
+                    <p className="mt-6 text-lg leading-9 text-slate-300">
+                        From your first request to project kickoff, we keep the process simple, transparent and collaborative.
                     </p>
                 </motion.div>
 
@@ -103,24 +102,16 @@ export default function ConsultationProcessSection() {
                                     className="relative group"
                                 >
                                     <div className="flex flex-col items-center text-center">
-                                        <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-full border border-blue-100 bg-white shadow-xl transition duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl">
-                                            <Icon
-                                                size={36}
-                                                className="text-blue-600"
-                                            />
+                                        <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-full border border-blue-400/30 bg-slate-900 shadow-xl transition duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl">
+                                            <Icon size={36} className="text-cyan-300" />
                                         </div>
 
                                         <div className="mt-6 rounded-full bg-blue-600 px-4 py-1 text-xs font-bold tracking-widest text-white">
                                             STEP {step.id}
                                         </div>
 
-                                        <h3 className="mt-5 text-xl font-bold text-slate-900">
-                                            {step.title}
-                                        </h3>
-
-                                        <p className="mt-4 text-sm leading-7 text-slate-500">
-                                            {step.description}
-                                        </p>
+                                        <h3 className="mt-5 text-xl font-bold text-white">{step.title}</h3>
+                                        <p className="mt-4 text-sm leading-7 text-slate-300">{step.description}</p>
 
                                         {index !== steps.length - 1 && (
                                             <ArrowRight className="mt-8 hidden text-blue-300 lg:block" />
@@ -140,7 +131,7 @@ export default function ConsultationProcessSection() {
                             return (
                                 <div
                                     key={step.id}
-                                    className="flex gap-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                                    className="flex gap-5 rounded-3xl border border-slate-800 bg-slate-900/80 p-5 shadow-sm"
                                 >
                                     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white">
                                         <Icon size={22} />
@@ -151,13 +142,8 @@ export default function ConsultationProcessSection() {
                                             STEP {step.id}
                                         </span>
 
-                                        <h4 className="mt-2 font-bold text-slate-900">
-                                            {step.title}
-                                        </h4>
-
-                                        <p className="mt-2 text-sm leading-6 text-slate-500">
-                                            {step.description}
-                                        </p>
+                                        <h4 className="mt-2 font-bold text-white">{step.title}</h4>
+                                        <p className="mt-2 text-sm leading-6 text-slate-300">{step.description}</p>
                                     </div>
                                 </div>
                             );

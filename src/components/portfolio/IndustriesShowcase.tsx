@@ -65,7 +65,7 @@ const industries = [
 
 export default function IndustriesShowcase() {
   return (
-    <section className="py-24">
+    <section className="bg-slate-950 py-24 text-white">
       <div className="container mx-auto px-4 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -73,18 +73,18 @@ export default function IndustriesShowcase() {
           viewport={{ once: true }}
           className="mx-auto mb-16 max-w-3xl text-center"
         >
-          <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-4 py-1 text-sm font-semibold text-blue-700">
+          <span className="inline-flex rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-sm font-semibold text-blue-200">
             Industries We Empower
           </span>
 
-          <h2 className="mt-6 text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
+          <h2 className="mt-6 text-4xl font-black tracking-tight text-white md:text-5xl">
             Solutions Designed Around
-            <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+            <span className="block bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
               Real Business Domains
             </span>
           </h2>
 
-          <p className="mt-5 text-lg leading-8 text-slate-600">
+          <p className="mt-5 text-lg leading-8 text-slate-300">
             Every industry has unique challenges. We build digital products that
             solve industry-specific problems while maintaining enterprise-grade
             performance and exceptional user experience.
@@ -103,7 +103,7 @@ export default function IndustriesShowcase() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
                 whileHover={{ y: -8 }}
-                className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-500 hover:border-blue-200 hover:shadow-2xl"
+                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/80 p-8 shadow-sm transition-all duration-500 hover:border-blue-400/40 hover:shadow-2xl"
               >
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${industry.color} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
@@ -114,22 +114,18 @@ export default function IndustriesShowcase() {
                     <Icon size={30} />
                   </div>
 
-                  <h3 className="mt-8 text-2xl font-bold text-slate-900">
-                    {industry.title}
-                  </h3>
+                  <h3 className="mt-8 text-2xl font-bold text-white">{industry.title}</h3>
 
-                  <p className="mt-4 leading-7 text-slate-600">
-                    {industry.description}
-                  </p>
+                  <p className="mt-4 leading-7 text-slate-300">{industry.description}</p>
 
                   <div className="mt-8 flex items-center justify-between">
-                    <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
+                    <span className="rounded-full bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200">
                       {industry.projects}
                     </span>
 
                     <Link
                       href="/industries"
-                      className="flex items-center gap-2 font-semibold text-blue-600 transition-all group-hover:gap-3"
+                      className="flex items-center gap-2 font-semibold text-blue-300 transition-all group-hover:gap-3"
                     >
                       Explore
                       <ArrowRight size={18} />
@@ -149,9 +145,7 @@ export default function IndustriesShowcase() {
         >
           <div className="flex flex-col items-center justify-between gap-10 lg:flex-row">
             <div>
-              <h3 className="text-3xl font-black">
-                Need a solution for your industry?
-              </h3>
+              <h3 className="text-3xl font-black">Need a solution for your industry?</h3>
 
               <p className="mt-4 max-w-2xl text-blue-100">
                 Our team researches your business domain before writing a single

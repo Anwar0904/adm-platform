@@ -67,28 +67,27 @@ export default function ContactFAQSection() {
     }, [search]);
 
     return (
-        <section className="relative overflow-hidden py-24 lg:py-32">
-            <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-slate-50 to-white" />
+        <section className="relative overflow-hidden bg-slate-950 py-24 lg:py-32">
+            <div className="absolute inset-0 -z-10 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950" />
 
             <div className="container mx-auto px-4 lg:px-8">
                 {/* Heading */}
 
                 <div className="mx-auto max-w-3xl text-center">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         <HelpCircle size={16} />
                         Frequently Asked Questions
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-6xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                         Questions?
-                        <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                             We've Got Answers
                         </span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-9 text-slate-600">
-                        Find quick answers about our process,
-                        pricing and collaboration.
+                    <p className="mt-6 text-lg leading-9 text-slate-300">
+                        Find quick answers about our process, pricing and collaboration.
                     </p>
                 </div>
 
@@ -103,11 +102,9 @@ export default function ContactFAQSection() {
 
                         <input
                             value={search}
-                            onChange={(e) =>
-                                setSearch(e.target.value)
-                            }
+                            onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search questions..."
-                            className="h-16 w-full rounded-2xl border border-slate-200 bg-white pl-14 pr-5 shadow-sm outline-none transition focus:border-blue-500"
+                            className="h-16 w-full rounded-2xl border border-slate-700 bg-slate-900/80 pl-14 pr-5 text-white shadow-sm outline-none transition focus:border-blue-400"
                         />
                     </div>
                 </div>
@@ -122,7 +119,7 @@ export default function ContactFAQSection() {
                             <motion.div
                                 key={faq.question}
                                 layout
-                                className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
+                                className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/70 shadow-sm"
                             >
                                 <button
                                     onClick={() =>
@@ -133,13 +130,11 @@ export default function ContactFAQSection() {
                                     className="flex w-full items-center justify-between gap-6 p-8 text-left"
                                 >
                                     <div>
-                                        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                                        <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-200">
                                             {faq.category}
                                         </span>
 
-                                        <h3 className="mt-4 text-xl font-bold text-slate-900">
-                                            {faq.question}
-                                        </h3>
+                                        <h3 className="mt-4 text-xl font-bold text-white">{faq.question}</h3>
                                     </div>
 
                                     <motion.div
@@ -172,7 +167,7 @@ export default function ContactFAQSection() {
                                                 duration: 0.25,
                                             }}
                                         >
-                                            <div className="border-t border-slate-100 px-8 pb-8 pt-6 text-slate-600 leading-8">
+                                            <div className="border-t border-slate-800 px-8 pb-8 pt-6 leading-8 text-slate-300">
                                                 {faq.answer}
                                             </div>
                                         </motion.div>

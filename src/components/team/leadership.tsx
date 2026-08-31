@@ -55,7 +55,7 @@ const leadership = [
 
 export default function LeadershipSection() {
     return (
-        <section className="relative overflow-hidden bg-white py-24">
+        <section className="relative overflow-hidden bg-slate-950 py-24">
 
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#2563eb08,transparent_35%),radial-gradient(circle_at_bottom_left,#38bdf808,transparent_35%)]" />
 
@@ -69,21 +69,19 @@ export default function LeadershipSection() {
                     viewport={{ once: true }}
                     className="mx-auto mb-20 max-w-3xl text-center"
                 >
-                    <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         Leadership
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-5xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-5xl">
                         Meet The People
-                        <span className="block text-blue-600">
+                        <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                             Leading ADM
                         </span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-8 text-slate-600">
-                        Every successful product starts with exceptional leadership.
-                        Our executive team combines technology, creativity and
-                        business strategy to build remarkable digital experiences.
+                    <p className="mt-6 text-lg leading-8 text-slate-300">
+                        Every successful product starts with exceptional leadership. Our executive team combines technology, creativity and business strategy to build remarkable digital experiences.
                     </p>
                 </motion.div>
 
@@ -149,17 +147,12 @@ export default function LeadershipSection() {
 
                             <div>
 
-                                <span className="font-semibold uppercase tracking-[0.3em] text-blue-600">
+                                <span className="font-semibold uppercase tracking-[0.3em] text-blue-300">
                                     {member.role}
                                 </span>
 
-                                <h3 className="mt-5 text-5xl font-black text-slate-900">
-                                    {member.name}
-                                </h3>
-
-                                <p className="mt-8 text-lg leading-9 text-slate-600">
-                                    {member.short}
-                                </p>
+                                <h3 className="mt-5 text-5xl font-black text-white">{member.name}</h3>
+                                <p className="mt-8 text-lg leading-9 text-slate-300">{member.short}</p>
 
                                 <div className="mt-10 flex flex-wrap gap-3">
 
@@ -167,7 +160,7 @@ export default function LeadershipSection() {
 
                                         <span
                                             key={skill}
-                                            className="rounded-full bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-blue-600 hover:text-white"
+                                            className="rounded-full border border-slate-700 bg-slate-800 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-blue-400 hover:bg-blue-500/10 hover:text-blue-200"
                                         >
                                             {skill}
                                         </span>
@@ -176,21 +169,14 @@ export default function LeadershipSection() {
 
                                 </div>
 
-                                <div className="mt-12 rounded-3xl border border-slate-200 bg-slate-50 p-8">
-
-                                    <h4 className="text-xl font-bold text-slate-900">
-                                        Leadership Philosophy
-                                    </h4>
-
-                                    <p className="mt-5 leading-8 text-slate-600">
-                                        "Technology should solve real business problems,
-                                        create meaningful experiences and empower people—
-                                        not complicate their lives."
+                                <div className="mt-12 rounded-3xl border border-slate-800 bg-slate-900/80 p-8">
+                                    <h4 className="text-xl font-bold text-white">Leadership Philosophy</h4>
+                                    <p className="mt-5 leading-8 text-slate-300">
+                                        "Technology should solve real business problems, create meaningful experiences and empower people—not complicate their lives."
                                     </p>
-
                                 </div>
 
-                                <button className="group mt-10 inline-flex items-center font-semibold text-blue-600">
+                                <button className="group mt-10 inline-flex items-center font-semibold text-blue-300">
 
                                     View Full Profile
 

@@ -45,36 +45,32 @@ const testimonials = [
 
 export default function PortfolioTestimonials() {
     return (
-        <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 py-24">
+        <section className="relative overflow-hidden bg-slate-950 py-24 text-white">
             <div className="absolute left-0 top-0 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[140px]" />
-            <div className="absolute right-0 bottom-0 h-[500px] w-[500px] rounded-full bg-cyan-400/10 blur-[140px]" />
+            <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full bg-cyan-400/10 blur-[140px]" />
 
             <div className="container relative mx-auto px-4 lg:px-8">
-                {/* Header */}
-
                 <motion.div
                     initial={{ opacity: 0, y: 35 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     className="mx-auto mb-20 max-w-3xl text-center"
                 >
-                    <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
+                    <span className="inline-flex rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200">
                         Client Testimonials
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
+                    <h2 className="mt-6 text-4xl font-black tracking-tight text-white md:text-5xl">
                         Trusted By
-                        <span className="block bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                        <span className="block bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
                             Visionary Businesses
                         </span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-8 text-slate-600">
+                    <p className="mt-6 text-lg leading-8 text-slate-300">
                         Real partnerships. Real impact. Real business growth.
                     </p>
                 </motion.div>
-
-                {/* Cards */}
 
                 <div className="grid gap-8 lg:grid-cols-3">
                     {testimonials.map((item, index) => (
@@ -84,9 +80,9 @@ export default function PortfolioTestimonials() {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1 }}
                             viewport={{ once: true }}
-                            className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
+                            className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/80 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
                         >
-                            <div className="absolute right-8 top-8 text-blue-100 transition-all duration-500 group-hover:scale-125">
+                            <div className="absolute right-8 top-8 text-blue-400/30 transition-all duration-500 group-hover:scale-125">
                                 <Quote size={70} strokeWidth={1} />
                             </div>
 
@@ -101,46 +97,26 @@ export default function PortfolioTestimonials() {
                                     />
 
                                     <div>
-                                        <h3 className="text-xl font-bold text-slate-900">
-                                            {item.name}
-                                        </h3>
-
-                                        <p className="text-sm text-slate-500">
-                                            {item.role}
-                                        </p>
-
-                                        <p className="text-sm font-semibold text-blue-600">
-                                            {item.company}
-                                        </p>
+                                        <h3 className="text-xl font-bold text-white">{item.name}</h3>
+                                        <p className="text-sm text-slate-400">{item.role}</p>
+                                        <p className="text-sm font-semibold text-blue-300">{item.company}</p>
                                     </div>
                                 </div>
 
                                 <div className="mt-6 flex gap-1">
                                     {Array.from({ length: item.rating }).map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            size={18}
-                                            className="fill-yellow-400 text-yellow-400"
-                                        />
+                                        <Star key={i} size={18} className="fill-yellow-400 text-yellow-400" />
                                     ))}
                                 </div>
 
-                                <p className="mt-6 leading-8 text-slate-600">
-                                    "{item.quote}"
-                                </p>
+                                <p className="mt-6 leading-8 text-slate-300">"{item.quote}"</p>
 
                                 <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 p-5 text-white">
                                     <p className="text-sm opacity-80">Project</p>
-
-                                    <h4 className="mt-1 text-lg font-bold">
-                                        {item.project}
-                                    </h4>
+                                    <h4 className="mt-1 text-lg font-bold">{item.project}</h4>
 
                                     <div className="mt-4 flex items-center justify-between">
-                                        <span className="font-semibold">
-                                            {item.result}
-                                        </span>
-
+                                        <span className="font-semibold">{item.result}</span>
                                         <ArrowRight size={20} />
                                     </div>
                                 </div>
@@ -148,8 +124,6 @@ export default function PortfolioTestimonials() {
                         </motion.article>
                     ))}
                 </div>
-
-                {/* Bottom Stats */}
 
                 <motion.div
                     initial={{ opacity: 0, y: 35 }}
@@ -159,34 +133,25 @@ export default function PortfolioTestimonials() {
                 >
                     <div className="text-center">
                         <h3 className="text-5xl font-black">98%</h3>
-                        <p className="mt-3 text-blue-100">
-                            Client Satisfaction
-                        </p>
+                        <p className="mt-3 text-blue-100">Client Satisfaction</p>
                     </div>
 
                     <div className="text-center">
                         <h3 className="text-5xl font-black">50+</h3>
-                        <p className="mt-3 text-blue-100">
-                            Successful Projects
-                        </p>
+                        <p className="mt-3 text-blue-100">Successful Projects</p>
                     </div>
 
                     <div className="text-center">
                         <h3 className="text-5xl font-black">95%</h3>
-                        <p className="mt-3 text-blue-100">
-                            Repeat Clients
-                        </p>
+                        <p className="mt-3 text-blue-100">Repeat Clients</p>
                     </div>
 
                     <div className="text-center">
                         <h3 className="text-5xl font-black">24/7</h3>
-                        <p className="mt-3 text-blue-100">
-                            Dedicated Support
-                        </p>
+                        <p className="mt-3 text-blue-100">Dedicated Support</p>
                     </div>
                 </motion.div>
             </div>
         </section>
-
-    )
+    );
 }

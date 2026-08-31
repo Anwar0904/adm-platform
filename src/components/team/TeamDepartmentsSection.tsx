@@ -103,7 +103,7 @@ export default function TeamDepartmentsSection() {
     }, [active]);
 
     return (
-        <section className="relative overflow-hidden bg-slate-50 py-24">
+        <section className="relative overflow-hidden bg-slate-950 py-24">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,#2563eb12,transparent_35%),radial-gradient(circle_at_bottom_right,#38bdf810,transparent_35%)]" />
 
             <div className="container relative mx-auto px-4 lg:px-8">
@@ -115,21 +115,19 @@ export default function TeamDepartmentsSection() {
                     viewport={{ once: true }}
                     className="mx-auto max-w-3xl text-center"
                 >
-                    <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         Our Departments
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-5xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-5xl">
                         Specialists
-                        <span className="block text-blue-600">
+                        <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                             Across Every Discipline
                         </span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-8 text-slate-600">
-                        Cross-functional collaboration is the core of ADM.
-                        Every department works together to deliver exceptional
-                        digital products.
+                    <p className="mt-6 text-lg leading-8 text-slate-300">
+                        Cross-functional collaboration is the core of ADM. Every department works together to deliver exceptional digital products.
                     </p>
                 </motion.div>
 
@@ -141,8 +139,8 @@ export default function TeamDepartmentsSection() {
                             key={dept}
                             onClick={() => setActive(dept)}
                             className={`rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 ${active === dept
-                                    ? "bg-blue-600 text-white shadow-xl"
-                                    : "bg-white text-slate-700 hover:bg-blue-100"
+                                ? "bg-blue-600 text-white shadow-xl"
+                                : "border border-slate-700 bg-slate-900 text-slate-200 hover:border-blue-400 hover:text-blue-200"
                                 }`}
                         >
                             {dept}
@@ -177,7 +175,7 @@ export default function TeamDepartmentsSection() {
                                 whileHover={{
                                     y: -12,
                                 }}
-                                className="group overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm transition-all hover:shadow-2xl"
+                                className="group overflow-hidden rounded-[30px] border border-slate-800 bg-slate-900/80 shadow-sm transition-all hover:shadow-2xl"
                             >
                                 <div className="relative overflow-hidden">
 
@@ -208,19 +206,14 @@ export default function TeamDepartmentsSection() {
 
                                 <div className="p-7">
 
-                                    <span className="rounded-full bg-blue-100 px-4 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
+                                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-xs font-bold uppercase tracking-wider text-blue-200">
                                         {member.department}
                                     </span>
 
-                                    <h3 className="mt-5 text-2xl font-black text-slate-900">
-                                        {member.name}
-                                    </h3>
+                                    <h3 className="mt-5 text-2xl font-black text-white">{member.name}</h3>
+                                    <p className="mt-2 text-slate-300">{member.role}</p>
 
-                                    <p className="mt-2 text-slate-600">
-                                        {member.role}
-                                    </p>
-
-                                    <button className="group mt-7 inline-flex items-center font-semibold text-blue-600">
+                                    <button className="group mt-7 inline-flex items-center font-semibold text-blue-300">
                                         View Profile
 
                                         <ArrowUpRight

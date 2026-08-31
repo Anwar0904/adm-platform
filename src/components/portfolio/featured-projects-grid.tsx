@@ -72,21 +72,19 @@ const projects = [
 
 export default function FeaturedProjectsGrid() {
   return (
-    <section className="relative py-24">
+    <section className="relative bg-slate-950 py-24 text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-3xl text-center">
-          <span className="rounded-full border border-blue-200 bg-blue-50 px-4 py-1 text-sm font-semibold text-blue-700">
+          <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-1 text-sm font-semibold text-blue-200">
             Featured Work
           </span>
 
-          <h2 className="mt-5 text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
+          <h2 className="mt-5 text-4xl font-black tracking-tight text-white md:text-5xl">
             Projects That Delivered
-            <span className="block text-blue-600">
-              Real Business Results
-            </span>
+            <span className="block text-blue-400">Real Business Results</span>
           </h2>
 
-          <p className="mt-5 text-lg leading-8 text-slate-600">
+          <p className="mt-5 text-lg leading-8 text-slate-300">
             Every project is engineered for performance, scalability,
             usability and measurable growth.
           </p>
@@ -98,12 +96,10 @@ export default function FeaturedProjectsGrid() {
               key={project.id}
               href={`/portfolio/${project.slug}`}
               className={`
-                group relative overflow-hidden rounded-3xl
-
-                ${
-                  project.size === "large"
-                    ? "md:col-span-2 md:row-span-2"
-                    : project.size === "medium"
+                group relative overflow-hidden rounded-3xl border border-white/10
+                ${project.size === "large"
+                  ? "md:col-span-2 md:row-span-2"
+                  : project.size === "medium"
                     ? "xl:col-span-2"
                     : ""
                 }
@@ -116,17 +112,16 @@ export default function FeaturedProjectsGrid() {
                 className="object-cover transition duration-700 group-hover:scale-110"
               />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
               <div className="absolute inset-0 opacity-0 transition duration-500 group-hover:bg-blue-600/15 group-hover:opacity-100" />
 
               <div className="absolute left-0 right-0 top-0 flex items-center justify-between p-6">
-                <span className="rounded-full bg-white/90 px-4 py-1 text-xs font-bold uppercase tracking-wider text-blue-700 backdrop-blur">
+                <span className="rounded-full bg-white/10 px-4 py-1 text-xs font-bold uppercase tracking-wider text-blue-100 backdrop-blur">
                   {project.category}
                 </span>
 
-                <div className="rounded-full bg-white/90 p-2 backdrop-blur transition group-hover:rotate-45">
-                  <ExternalLink className="h-4 w-4 text-slate-900" />
+                <div className="rounded-full bg-white/10 p-2 backdrop-blur transition group-hover:rotate-45 group-hover:bg-blue-500/30">
+                  <ExternalLink className="h-4 w-4 text-white" />
                 </div>
               </div>
 
@@ -135,7 +130,7 @@ export default function FeaturedProjectsGrid() {
                   {project.tech.map((item) => (
                     <span
                       key={item}
-                      className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-white backdrop-blur"
+                      className="rounded-full border border-white/15 bg-slate-900/40 px-3 py-1 text-xs text-slate-100 backdrop-blur"
                     >
                       {item}
                     </span>
@@ -143,11 +138,8 @@ export default function FeaturedProjectsGrid() {
                 </div>
 
                 <h3
-                  className={`font-black text-white transition group-hover:text-blue-300 ${
-                    project.size === "large"
-                      ? "text-3xl"
-                      : "text-2xl"
-                  }`}
+                  className={`font-black text-white transition group-hover:text-blue-300 ${project.size === "large" ? "text-3xl" : "text-2xl"
+                    }`}
                 >
                   {project.title}
                 </h3>
@@ -166,5 +158,5 @@ export default function FeaturedProjectsGrid() {
         </div>
       </div>
     </section>
-);
+  );
 }

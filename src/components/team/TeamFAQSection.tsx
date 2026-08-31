@@ -31,7 +31,7 @@ export default function TeamFAQSection() {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section className="relative overflow-hidden bg-slate-50 py-24">
+        <section className="relative overflow-hidden bg-slate-950 py-24">
             <div className="container mx-auto px-4 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -39,16 +39,16 @@ export default function TeamFAQSection() {
                     viewport={{ once: true }}
                     className="mx-auto max-w-3xl text-center"
                 >
-                    <span className="rounded-full bg-blue-100 px-5 py-2 text-sm font-semibold text-blue-700">
+                    <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
                         People Questions
                     </span>
 
-                    <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-5xl">
+                    <h2 className="mt-6 text-4xl font-black text-white lg:text-5xl">
                         Common Questions
-                        <span className="block text-blue-600">about working at ADM</span>
+                        <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">about working at ADM</span>
                     </h2>
 
-                    <p className="mt-6 text-lg leading-8 text-slate-600">
+                    <p className="mt-6 text-lg leading-8 text-slate-300">
                         Learn how we support our teams, structure our hiring, and build a culture of growth.
                     </p>
                 </motion.div>
@@ -66,16 +66,14 @@ export default function TeamFAQSection() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.05 }}
-                                className="group w-full rounded-4xl border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:border-blue-300 hover:shadow-lg"
+                                className="group w-full rounded-4xl border border-slate-800 bg-slate-900/80 p-6 text-left shadow-sm transition hover:border-blue-400 hover:shadow-lg"
                             >
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
-                                        <h3 className="text-xl font-semibold text-slate-900">
-                                            {faq.question}
-                                        </h3>
+                                        <h3 className="text-xl font-semibold text-white">{faq.question}</h3>
                                     </div>
 
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 transition group-hover:bg-blue-100 group-hover:text-blue-700">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800 text-slate-200 transition group-hover:bg-blue-500/10 group-hover:text-blue-200">
                                         {isOpen ? (
                                             <ChevronUp className="h-5 w-5" />
                                         ) : (
@@ -85,9 +83,7 @@ export default function TeamFAQSection() {
                                 </div>
 
                                 {isOpen && (
-                                    <div className="mt-5 text-slate-600 leading-7">
-                                        {faq.answer}
-                                    </div>
+                                    <div className="mt-5 leading-7 text-slate-300">{faq.answer}</div>
                                 )}
                             </motion.button>
                         );
