@@ -35,7 +35,7 @@ const technologies = [
 
 export default function TechnologiesSection() {
   return (
-    <section className="bg-slate-50 py-24">
+    <section className="bg-slate-950 py-24 text-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -43,18 +43,18 @@ export default function TechnologiesSection() {
           viewport={{ once: true }}
           className="mx-auto mb-16 max-w-3xl text-center"
         >
-          <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
+          <span className="rounded-full border border-blue-500/40 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200">
             Technologies
           </span>
 
-          <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-5xl">
+          <h2 className="mt-6 text-4xl font-black text-white lg:text-5xl">
             Modern Technology
-            <span className="block text-blue-600">
+            <span className="block text-blue-400">
               Stack We Love
             </span>
           </h2>
 
-          <p className="mt-6 text-lg text-slate-600">
+          <p className="mt-6 text-lg text-slate-300">
             We carefully choose technologies that provide performance,
             maintainability and long-term scalability.
           </p>
@@ -71,11 +71,11 @@ export default function TechnologiesSection() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * .05 }}
-                className="group rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-blue-200 hover:shadow-xl"
+                className="group rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-blue-400/40 hover:shadow-xl"
               >
-                <Icon className="mx-auto text-5xl text-blue-600 transition group-hover:scale-110" />
+                <Icon className="mx-auto text-5xl text-blue-300 transition group-hover:scale-110" />
 
-                <p className="mt-6 text-center font-semibold text-slate-800">
+                <p className="mt-6 text-center font-semibold text-slate-100">
                   {tech.name}
                 </p>
               </motion.div>

@@ -1,8 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
 export default function Hero({ service }: { service: any }) {
   const title = service?.title || "Service";
@@ -15,6 +24,57 @@ export default function Hero({ service }: { service: any }) {
       { title: "Design & workflow" },
       { title: "Launch & support" },
     ];
+
+  const handleDownloadPdf = () => {
+    if (typeof window === "undefined") return;
+
+    const features = (Array.isArray(service?.featureList) ? service.featureList : [])
+      .slice(0, 6)
+      .map((item: any) => `<li>${escapeHtml(item.title || "Key deliverable")}</li>`)
+      .join("");
+
+    const printWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
+
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    const featureMarkup = features
+      ? `<ul>${features}</ul>`
+      : `<ul><li>Strategy & planning</li><li>Design & workflow</li><li>Launch & support</li></ul>`;
+
+    printWindow.document.write(`<!doctype html>
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <title>${escapeHtml(title)} | ADM</title>
+          <style>
+            body { font-family: Arial, sans-serif; background: #071425; color: #ecf7ff; margin: 0; padding: 32px; }
+            .wrap { max-width: 820px; margin: 0 auto; background: #0b1526; border: 1px solid rgba(148,163,184,0.25); border-radius: 22px; padding: 32px; }
+            h1 { margin: 0 0 12px; font-size: 32px; line-height: 1.2; }
+            .tag { display: inline-block; background: rgba(59,130,246,0.12); color: #bfdbfe; border: 1px solid rgba(96,165,250,0.35); border-radius: 9999px; padding: 8px 14px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
+            p { color: #c4d8f4; line-height: 1.8; }
+            ul { padding-left: 20px; color: #d7e9ff; line-height: 1.8; }
+            .meta { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(148,163,184,0.2); font-size: 13px; color: #a8c0df; }
+          </style>
+        </head>
+        <body>
+          <div class="wrap">
+            <div class="tag">ADM Digital Service</div>
+            <h1>${escapeHtml(title)}</h1>
+            <p>${escapeHtml(subtitle)}</p>
+            ${featureMarkup}
+            <div class="meta">Prepared for PDF export from ADM services library.</div>
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 400);
+  };
 
   return (
     <section className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.22),transparent_25%),linear-gradient(180deg,#020816_0%,#081a2d_40%,#081523_100%)]">
@@ -60,9 +120,14 @@ export default function Hero({ service }: { service: any }) {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
 
-              <Link href="/portfolio" className="inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-7 py-3.5 font-semibold text-slate-100 transition hover:bg-white/10">
-                View Case Studies
-              </Link>
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                className="inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-7 py-3.5 font-semibold text-slate-100 transition hover:bg-white/10"
+              >
+                <ArrowDownToLine className="mr-2 h-5 w-5" />
+                Download PDF
+              </button>
             </div>
 
             <div className="mt-12 grid gap-4 sm:grid-cols-3">

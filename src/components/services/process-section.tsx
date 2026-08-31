@@ -46,7 +46,7 @@ const steps = [
 
 export default function ProcessSection() {
   return (
-    <section className="bg-white py-24">
+    <section className="bg-slate-950 py-24 text-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 25 }}
@@ -54,26 +54,25 @@ export default function ProcessSection() {
           viewport={{ once: true }}
           className="mx-auto mb-20 max-w-3xl text-center"
         >
-          <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
+          <span className="rounded-full border border-blue-500/40 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200">
             Our Process
           </span>
 
-          <h2 className="mt-6 text-4xl font-black text-slate-900 lg:text-5xl">
+          <h2 className="mt-6 text-4xl font-black text-white lg:text-5xl">
             How We Transform
-            <span className="block text-blue-600">
+            <span className="block text-blue-400">
               Your Vision Into Reality
             </span>
           </h2>
 
-          <p className="mt-6 text-lg leading-8 text-slate-600">
+          <p className="mt-6 text-lg leading-8 text-slate-300">
             Every successful digital product follows a proven process that
             minimizes risk while maximizing business impact.
           </p>
         </motion.div>
 
         <div className="relative">
-          {/* Desktop Line */}
-          <div className="absolute left-1/2 top-0 hidden h-full w-1 -translate-x-1/2 rounded-full bg-slate-200 lg:block" />
+          <div className="absolute left-1/2 top-0 hidden h-full w-1 -translate-x-1/2 rounded-full bg-slate-800 lg:block" />
 
           <div className="space-y-14">
             {steps.map((step, index) => {
@@ -90,46 +89,36 @@ export default function ProcessSection() {
                     duration: 0.6,
                     delay: index * 0.1,
                   }}
-                  className={`grid items-center gap-10 lg:grid-cols-2 ${
-                    reverse ? "lg:[&>*:first-child]:order-2" : ""
-                  }`}
-                >
-                  {/* Card */}
-                  <div
-                    className={`rounded-3xl border border-slate-200 bg-white p-8 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
-                      reverse ? "lg:text-right" : ""
+                  className={`grid items-center gap-10 lg:grid-cols-2 ${reverse ? "lg:[&>*:first-child]:order-2" : ""
                     }`}
+                >
+                  <div
+                    className={`rounded-3xl border border-white/10 bg-slate-900/70 p-8 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:border-blue-400/40 hover:shadow-2xl ${reverse ? "lg:text-right" : ""
+                      }`}
                   >
                     <div
-                      className={`mb-6 flex ${
-                        reverse
-                          ? "justify-end"
-                          : "justify-start"
-                      }`}
+                      className={`mb-6 flex ${reverse ? "justify-end" : "justify-start"
+                        }`}
                     >
-                      <div className="rounded-2xl bg-blue-100 p-4">
-                        <Icon className="h-8 w-8 text-blue-600" />
+                      <div className="rounded-2xl bg-blue-500/10 p-4">
+                        <Icon className="h-8 w-8 text-blue-300" />
                       </div>
                     </div>
 
-                    <h3 className="text-3xl font-bold text-slate-900">
+                    <h3 className="text-3xl font-bold text-white">
                       {step.title}
                     </h3>
 
-                    <p className="mt-5 leading-8 text-slate-600">
+                    <p className="mt-5 leading-8 text-slate-300">
                       {step.description}
                     </p>
                   </div>
 
-                  {/* Timeline Node */}
                   <div
-                    className={`relative flex ${
-                      reverse
-                        ? "justify-start"
-                        : "justify-end"
-                    } lg:justify-center`}
+                    className={`relative flex ${reverse ? "justify-start" : "justify-end"
+                      } lg:justify-center`}
                   >
-                    <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-8 border-white bg-blue-600 text-2xl font-black text-white shadow-xl">
+                    <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-8 border-slate-950 bg-blue-600 text-2xl font-black text-white shadow-xl">
                       {index + 1}
                     </div>
                   </div>
