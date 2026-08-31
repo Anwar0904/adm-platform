@@ -120,8 +120,8 @@ export default function AdminLoginForm() {
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,.025)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,.025)_1px,transparent_1px)] bg-[size:48px_48px]" />
             </div>
 
-            <div className="relative flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-                <div className="grid w-full max-w-6xl overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_25px_80px_rgba(15,23,42,.12)] lg:grid-cols-[1.05fr_.95fr]">
+            <div className="relative flex min-h-screen items-center justify-center px-4 py-5 sm:px-6 lg:px-8">
+                <div className="grid w-full max-w-5xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,.10)] lg:grid-cols-[1fr_.95fr]">
                     {/* Brand panel */}
 
                     <motion.div
@@ -136,7 +136,7 @@ export default function AdminLoginForm() {
                         transition={{
                             duration: 0.6,
                         }}
-                        className="relative hidden overflow-hidden bg-slate-950 p-12 text-white lg:flex lg:min-h-[680px] lg:flex-col lg:justify-between"
+                        className="relative hidden overflow-hidden bg-slate-950 p-8 text-white lg:flex lg:min-h-[560px] lg:flex-col lg:justify-between"
                     >
                         <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-blue-600/30 blur-3xl" />
 
@@ -147,31 +147,31 @@ export default function AdminLoginForm() {
                                 href="/"
                                 className="inline-flex items-center gap-3"
                             >
-                                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 font-black text-white">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 font-black text-white">
                                     A
                                 </span>
 
                                 <div>
-                                    <span className="block text-lg font-black tracking-tight">
+                                    <span className="block text-base font-black tracking-tight">
                                         ADM
                                     </span>
 
-                                    <span className="block text-xs text-slate-400">
+                                    <span className="block text-[11px] text-slate-400">
                                         Arazi Digital Media
                                     </span>
                                 </div>
                             </Link>
 
-                            <div className="mt-24 max-w-lg">
-                                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-blue-300">
+                            <div className="mt-14 max-w-lg">
+                                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-blue-300">
                                     <Sparkles
-                                        size={15}
+                                        size={14}
                                     />
 
                                     ADM Control Center
                                 </div>
 
-                                <h1 className="text-5xl font-black leading-[1.05] tracking-tight xl:text-6xl">
+                                <h1 className="text-4xl font-black leading-[1.05] tracking-tight xl:text-5xl">
                                     Build.
                                     <br />
                                     Manage.
@@ -181,7 +181,7 @@ export default function AdminLoginForm() {
                                     </span>
                                 </h1>
 
-                                <p className="mt-8 max-w-md text-base leading-8 text-slate-400">
+                                <p className="mt-5 max-w-md text-sm leading-7 text-slate-400">
                                     Manage your digital
                                     ecosystem, content,
                                     clients, projects, and
@@ -219,17 +219,17 @@ export default function AdminLoginForm() {
                             duration: 0.6,
                             delay: 0.1,
                         }}
-                        className="flex min-h-[680px] items-center p-6 sm:p-10 lg:p-14"
+                        className="flex min-h-[560px] items-center p-5 sm:p-8 lg:p-10"
                     >
                         <div className="mx-auto w-full max-w-md">
                             {/* Mobile logo */}
 
-                            <div className="mb-10 lg:hidden">
+                            <div className="mb-7 lg:hidden">
                                 <Link
                                     href="/"
                                     className="inline-flex items-center gap-3"
                                 >
-                                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 font-black text-white">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 font-black text-white">
                                         A
                                     </span>
 
@@ -252,11 +252,11 @@ export default function AdminLoginForm() {
                                     Welcome Back
                                 </span>
 
-                                <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+                                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
                                     Sign in to ADM
                                 </h2>
 
-                                <p className="mt-3 leading-7 text-slate-500">
+                                <p className="mt-2 text-sm leading-6 text-slate-500">
                                     Access your ADM
                                     administration
                                     workspace.
@@ -275,7 +275,7 @@ export default function AdminLoginForm() {
                                         opacity: 1,
                                         y: 0,
                                     }}
-                                    className="mt-7 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+                                    className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
                                     role="alert"
                                 >
                                     {error}
@@ -288,7 +288,7 @@ export default function AdminLoginForm() {
                                 onSubmit={
                                     handleSubmit
                                 }
-                                className="mt-8 space-y-5"
+                                className="mt-6 space-y-4"
                             >
                                 {/* Email */}
 
@@ -330,7 +330,7 @@ export default function AdminLoginForm() {
                                             disabled={
                                                 loading
                                             }
-                                            className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                            className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                                         />
                                     </div>
                                 </div>
@@ -388,7 +388,7 @@ export default function AdminLoginForm() {
                                             disabled={
                                                 loading
                                             }
-                                            className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-12 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                            className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-11 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:cursor-not-allowed disabled:opacity-60"
                                         />
 
                                         <button
@@ -431,7 +431,7 @@ export default function AdminLoginForm() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="group flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-blue-600 px-6 font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/25 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+                                    className="group flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-blue-600 px-6 font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/25 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
                                 >
                                     {loading ? (
                                         <>
@@ -456,7 +456,7 @@ export default function AdminLoginForm() {
 
                             {/* Security note */}
 
-                            <div className="mt-8 flex items-start gap-3 rounded-2xl bg-slate-50 p-4">
+                            <div className="mt-6 flex items-start gap-3 rounded-2xl bg-slate-50 p-3.5">
                                 <ShieldCheck
                                     size={19}
                                     className="mt-0.5 shrink-0 text-blue-600"
@@ -469,7 +469,7 @@ export default function AdminLoginForm() {
                                 </p>
                             </div>
 
-                            <p className="mt-8 text-center text-xs text-slate-400">
+                            <p className="mt-6 text-center text-[11px] uppercase tracking-[0.16em] text-slate-400">
                                 ADM Admin Portal
                             </p>
                         </div>

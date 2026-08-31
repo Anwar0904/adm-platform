@@ -53,7 +53,7 @@ const company = [
 const socials = [
     {
         icon: FaFacebookF,
-        href: "#",
+        href: "https://www.facebook.com/share/1Q8xVAMvsK/",
     },
     {
         icon: FaLinkedinIn,
@@ -65,7 +65,7 @@ const socials = [
     },
     {
         icon: FaInstagram,
-        href: "#",
+        href: "https://www.instagram.com/arazidigitalmedia?igsi=MW56cnFwNDhzZDZ6eQ==",
     },
 ];
 
