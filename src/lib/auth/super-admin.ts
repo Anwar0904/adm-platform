@@ -8,6 +8,18 @@ type RoleLike =
     | null
     | undefined;
 
+function normalizeRoleName(
+    roleName: string | undefined
+): string {
+    return (
+        roleName
+            ?.trim()
+            .toLowerCase()
+            .replace(/[\s_-]+/g, "_") ??
+        ""
+    );
+}
+
 export function isSuperAdmin(
     role: RoleLike
 ): boolean {
@@ -16,10 +28,7 @@ export function isSuperAdmin(
             ? role
             : role?.name;
 
-    return (
-        roleName?.toLowerCase() ===
-        "super_admin"
-    );
+    return normalizeRoleName(roleName) === "super_admin";
 }
 
 export function requireSuperAdmin(

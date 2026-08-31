@@ -56,6 +56,6 @@ export class AuthorizationService {
         return roleName
             .trim()
             .toLowerCase()
-            .replace(/\s+/g, "_") === "super_admin";
+            .replace(/[\s_-]+/g, "_") === "super_admin";
     }
 }
