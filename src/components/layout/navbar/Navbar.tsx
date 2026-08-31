@@ -39,7 +39,7 @@ function NavLogo({ compact = false }: { compact?: boolean }) {
 
 function MegaMenu({ items }: { items: { title: string; description: string; href: string; icon: any }[] }) {
     return (
-        <div className="absolute left-1/2 top-full hidden w-[31rem] -translate-x-1/2 rounded-2xl border border-border bg-surface p-6 shadow-xl group-hover:block">
+        <div className="absolute left-1/2 top-full hidden w-[31rem] -translate-x-1/2 rounded-2xl border border-white/10 bg-slate-950/95 p-6 shadow-[0_30px_60px_rgba(2,6,23,0.5)] backdrop-blur-md group-hover:block">
             <div className="grid grid-cols-2 gap-4">
                 {items.map((item) => {
                     const Icon = item.icon;
@@ -48,13 +48,13 @@ function MegaMenu({ items }: { items: { title: string; description: string; href
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex gap-4 rounded-xl p-4 transition hover:bg-brand-50"
+                            className="flex gap-4 rounded-xl border border-transparent p-4 transition hover:border-blue-400/30 hover:bg-blue-500/10"
                         >
-                            <Icon className="mt-1 h-5 w-5 text-brand-600" />
+                            <Icon className="mt-1 h-5 w-5 text-cyan-300" />
 
                             <div>
-                                <h4 className="font-semibold text-text">{item.title}</h4>
-                                <p className="mt-1 text-sm text-text-muted">{item.description}</p>
+                                <h4 className="font-semibold text-white">{item.title}</h4>
+                                <p className="mt-1 text-sm text-slate-300">{item.description}</p>
                             </div>
                         </Link>
                     );
@@ -98,7 +98,7 @@ export default function Navbar() {
     };
 
     return (
-        <header className={`site-nav sticky top-0 z-50 w-full bg-white/20 transition-all duration-300 ${scrolled ? "shadow-sm backdrop-blur-sm" : "shadow-none"}`}>
+        <header className={`site-nav sticky top-0 z-50 w-full bg-slate-950/60 transition-all duration-300 ${scrolled ? "shadow-[0_20px_50px_rgba(8,15,30,0.45)] backdrop-blur-md" : "shadow-none"}`}>
             <div className={`mx-auto flex w-full max-w-7xl items-center justify-between px-4 transition-all duration-300 sm:px-5 lg:px-8 ${scrolled ? "h-13 sm:h-16 lg:h-14" : "h-16 sm:h-14 lg:h-16"}`}>
                 <div className="shrink-0">
                     <NavLogo compact={scrolled} />
@@ -221,7 +221,7 @@ export default function Navbar() {
                                                 </div>
 
                                                 {servicesOpen && (
-                                                    <div className="ml-3 mt-1 space-y-1 border-l-2 border-border pl-3">
+                                                    <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-3">
                                                         {item.items?.map((child) => {
                                                             const Icon = child.icon;
 
@@ -230,16 +230,16 @@ export default function Navbar() {
                                                                     key={child.href}
                                                                     href={child.href}
                                                                     onClick={closeMenu}
-                                                                    className="flex items-start gap-3 rounded-xl px-3 py-3 transition hover:bg-surface-alt"
+                                                                    className="flex items-start gap-3 rounded-xl px-3 py-3 transition hover:border hover:border-blue-400/30 hover:bg-blue-500/10"
                                                                 >
-                                                                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
+                                                                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/15 text-cyan-300">
                                                                         {Icon && <Icon size={17} />}
                                                                     </span>
 
                                                                     <span className="min-w-0">
-                                                                        <span className="block text-sm font-semibold text-text">{child.title}</span>
+                                                                        <span className="block text-sm font-semibold text-white">{child.title}</span>
                                                                         {child.description && (
-                                                                            <span className="mt-0.5 block text-xs leading-5 text-text-soft">
+                                                                            <span className="mt-0.5 block text-xs leading-5 text-slate-300">
                                                                                 {child.description}
                                                                             </span>
                                                                         )}

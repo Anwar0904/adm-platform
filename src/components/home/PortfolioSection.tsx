@@ -58,7 +58,7 @@ export default function PortfolioSection() {
           {portfolio.map((project) => (
             <article
               key={project.title}
-              className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl sm:rounded-3xl"
+              className="group overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 shadow-[0_20px_40px_rgba(2,6,23,0.35)] backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-blue-400/40 hover:shadow-[0_22px_50px_rgba(37,99,235,0.18)] sm:rounded-3xl"
             >
               {/* Image */}
               <div className="relative h-60 overflow-hidden sm:h-72 lg:h-80">
@@ -70,10 +70,10 @@ export default function PortfolioSection() {
                   className="object-cover transition duration-700 group-hover:scale-105"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/15 to-transparent" />
 
                 <div className="absolute bottom-5 left-5 right-5 sm:bottom-6 sm:left-6">
-                  <span className="inline-flex max-w-full rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white sm:px-4">
+                  <span className="inline-flex max-w-full rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-lg shadow-blue-600/20 sm:px-4">
                     {project.category}
                   </span>
                 </div>
@@ -81,13 +81,13 @@ export default function PortfolioSection() {
 
               {/* Content */}
               <div className="space-y-4 p-5 sm:space-y-5 sm:p-7 lg:p-8">
-                <h3 className="text-xl font-bold leading-tight text-slate-900 sm:text-2xl">
+                <h3 className="text-xl font-bold leading-tight text-white sm:text-2xl">
                   {project.title}
                 </h3>
 
                 <Link
                   href="/portfolio"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition-all group-hover:gap-3 sm:text-base"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 transition-all group-hover:gap-3 sm:text-base"
                 >
                   Explore Project
                   <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />

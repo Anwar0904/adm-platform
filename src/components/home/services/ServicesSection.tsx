@@ -98,15 +98,15 @@ function ServiceCard({
         overflow-hidden
         rounded-2xl
         border
-        border-slate-200
-        bg-white
-        shadow-sm
+        border-white/10
+        bg-slate-900/70
+        shadow-[0_20px_40px_rgba(8,15,30,0.38)]
+        backdrop-blur-sm
         transition-all
         duration-300
         hover:-translate-y-1
-        hover:border-blue-200
-        hover:shadow-xl
-        hover:shadow-blue-900/10
+        hover:border-blue-400/40
+        hover:shadow-[0_20px_45px_rgba(37,99,235,0.22)]
         sm:rounded-3xl
       "
     >
@@ -249,7 +249,7 @@ function ServiceCard({
             font-black
             leading-tight
             tracking-tight
-            text-slate-950
+            text-white
             sm:text-xl
             lg:text-2xl
           "
@@ -263,7 +263,7 @@ function ServiceCard({
             line-clamp-3
             text-sm
             leading-6
-            text-slate-600
+            text-slate-300
             sm:text-base
             sm:leading-7
           "
@@ -285,10 +285,10 @@ function ServiceCard({
             rounded-lg
             text-sm
             font-bold
-            text-blue-600
+            text-cyan-300
             transition-all
             duration-200
-            hover:text-blue-700
+            hover:text-cyan-200
             sm:mt-6
             sm:text-base
           "
@@ -389,7 +389,7 @@ export default function ServicesSection() {
       className="
         relative
         overflow-hidden
-        bg-white
+        bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.18),transparent_20%),linear-gradient(180deg,#081420_0%,#0b1d33_35%,#091827_100%)]
         py-16
         sm:py-20
         md:py-24
@@ -459,14 +459,16 @@ export default function ServicesSection() {
               inline-flex
               items-center
               rounded-full
-              bg-blue-50
+              border
+              border-blue-400/30
+              bg-blue-500/10
               px-3
               py-1.5
               text-[11px]
               font-bold
               uppercase
               tracking-[0.18em]
-              text-blue-700
+              text-blue-200
               sm:px-4
               sm:py-2
               sm:text-xs
@@ -480,10 +482,11 @@ export default function ServicesSection() {
             className="
               section-title
               max-w-2xl
+              text-white
             "
           >
             Digital Services Built
-            <span className="text-blue-600">
+            <span className="text-cyan-300">
               {" "}
               For Growth
             </span>
@@ -496,7 +499,7 @@ export default function ServicesSection() {
               max-w-2xl
               text-sm
               leading-6
-              text-slate-600
+              text-slate-300
               sm:mt-4
               sm:text-base
               sm:leading-7

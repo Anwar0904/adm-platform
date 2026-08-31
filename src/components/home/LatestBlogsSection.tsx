@@ -16,9 +16,7 @@ type Blog = {
   createdAt?: string;
 };
 
-function getImageUrl(
-  image: Blog["featuredImage"]
-): string {
+function getImageUrl(image: Blog["featuredImage"]): string {
   if (!image) {
     return "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80";
   }
@@ -27,15 +25,10 @@ function getImageUrl(
     return image;
   }
 
-  return (
-    image.url ??
-    "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80"
-  );
+  return image.url ?? "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&q=80";
 }
 
-function getCategory(
-  category: Blog["category"]
-): string {
+function getCategory(category: Blog["category"]): string {
   if (!category) return "Insights";
 
   if (typeof category === "string") {
@@ -74,28 +67,17 @@ export default function LatestBlogsSection() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(
-          "/api/public/blogs?page=1&limit=3",
-          {
-            method: "GET",
-            cache: "no-store",
-          }
-        );
+        const response = await fetch("/api/public/blogs?page=1&limit=3", {
+          method: "GET",
+          cache: "no-store",
+        });
 
         const result = await response.json();
 
         if (!response.ok || result?.success === false) {
-          throw new Error(
-            result?.message ?? "Unable to load latest blogs."
-          );
+          throw new Error(result?.message ?? "Unable to load latest blogs.");
         }
 
-        /*
-         * Supports both:
-         * data: [...]
-         * data: { blogs: [...] }
-         * data: { posts: [...] }
-         */
         const data = result?.data;
 
         const items = Array.isArray(data)
@@ -113,11 +95,7 @@ export default function LatestBlogsSection() {
         }
       } catch (cause) {
         if (mounted) {
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : "Unable to load latest blogs."
-          );
+          setError(cause instanceof Error ? cause.message : "Unable to load latest blogs.");
         }
       } finally {
         if (mounted) {
@@ -134,22 +112,15 @@ export default function LatestBlogsSection() {
   }, []);
 
   return (
-    <section className="section-shell light-panel">
+    <section className="section-shell bg-slate-950/80">
       <div className="container px-4 sm:px-6 lg:px-8">
-
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:mb-14 md:mb-16 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
-
           <div className="max-w-3xl">
-            <span className="section-kicker">
-              Latest Insights
-            </span>
+            <span className="section-kicker">Latest Insights</span>
 
-            <h2 className="section-title mt-2 sm:mt-4">
-              Insights & Resources
-            </h2>
+            <h2 className="section-title mt-2 sm:mt-4">Insights & Resources</h2>
 
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-text-muted sm:mt-2 sm:text-base sm:leading-7 md:text-lg md:leading-8">
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-300 sm:mt-2 sm:text-base sm:leading-7 md:text-lg md:leading-8">
               Stay updated with technology trends, AI innovations,
               software engineering and digital transformation.
             </p>
@@ -157,133 +128,101 @@ export default function LatestBlogsSection() {
 
           <Link
             href="/blogs"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-[8] font-semibold transition hover:shadow-lg sm:w-fit sm:gap-3 sm:rounded-xl sm:px-6 sm:py-3 sm:text-sm md:text-base"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-slate-900/80 px-4 py-2.5 text-sm font-semibold text-slate-100 transition hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200 sm:w-fit sm:gap-3 sm:rounded-xl sm:px-6 sm:py-3 md:text-base"
           >
             View All Articles
             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
           </Link>
         </div>
 
-        {/* Loading */}
-        {
-          loading && (
-            <div className="flex min-h-60 items-center justify-center rounded-3xl border border-slate-200 bg-white">
-              <div className="flex items-center gap-3 text-sm text-slate-500">
-                <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
-                Loading latest articles...
-              </div>
+        {loading && (
+          <div className="flex min-h-60 items-center justify-center rounded-3xl border border-white/10 bg-slate-900/80">
+            <div className="flex items-center gap-3 text-sm text-slate-300">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+              Loading latest articles...
             </div>
-          )
-        }
+          </div>
+        )}
 
-        {/* Error */}
-        {
-          !loading && error && (
-            <div className="rounded-3xl border border-red-200 bg-red-50 p-8 text-center">
-              <p className="text-sm font-medium text-red-700">
-                {error}
-              </p>
-            </div>
-          )
-        }
+        {!loading && error && (
+          <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-8 text-center">
+            <p className="text-sm font-medium text-red-200">{error}</p>
+          </div>
+        )}
 
-        {/* Empty */}
-        {
-          !loading && !error && blogs.length === 0 && (
-            <div className="rounded-3xl border border-slate-200 bg-slate-50 p-12 text-center">
-              <h3 className="text-xl font-bold text-slate-900">
-                No articles available yet
-              </h3>
+        {!loading && !error && blogs.length === 0 && (
+          <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-12 text-center">
+            <h3 className="text-xl font-bold text-white">No articles available yet</h3>
+            <p className="mt-2 text-sm text-slate-300">Check back soon for the latest insights from ADM.</p>
+          </div>
+        )}
 
-              <p className="mt-2 text-sm text-slate-500">
-                Check back soon for the latest insights from ADM.
-              </p>
-            </div>
-          )
-        }
+        {!loading && !error && blogs.length > 0 && (
+          <div className="grid gap-6 sm:gap-7 lg:grid-cols-3">
+            {blogs.map((blog) => {
+              const image = getImageUrl(blog.featuredImage);
+              const category = getCategory(blog.category);
+              const date = formatDate(blog.publishedAt ?? blog.createdAt);
 
-        {/* Blog cards */}
-        {
-          !loading && !error && blogs.length > 0 && (
-            <div className="grid gap-6 sm:gap-7 lg:grid-cols-3">
-              {blogs.map((blog) => {
-                const image = getImageUrl(blog.featuredImage);
-                const category = getCategory(blog.category);
-                const date = formatDate(
-                  blog.publishedAt ?? blog.createdAt
-                );
+              return (
+                <article
+                  key={blog._id}
+                  className="group flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900/80 shadow-[0_18px_45px_rgba(2,6,23,0.5)] transition-all duration-500 hover:-translate-y-2 hover:border-blue-400/30 hover:shadow-[0_22px_55px_rgba(37,99,235,0.16)]"
+                >
+                  <Link href={`/blogs/${blog.slug}`} className="block">
+                    <div className="relative h-44 overflow-hidden sm:h-48 lg:h-52">
+                      <Image
+                        src={image}
+                        alt={blog.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition duration-700 group-hover:scale-105"
+                      />
 
-                return (
-                  <article
-                    key={blog._id}
-                    className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
-                  >
-                    {/* Image */}
-                    <Link
-                      href={`/blogs/${blog.slug}`}
-                      className="block"
-                    >
-                      <div className="relative h-44 overflow-hidden sm:h-48 lg:h-52">
-                        <Image
-                          src={image}
-                          alt={blog.title}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-cover transition duration-700 group-hover:scale-105"
-                        />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    </div>
+                  </Link>
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                      </div>
+                  <div className="flex flex-1 flex-col space-y-4 p-5 sm:p-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <span className="rounded-full bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-200 sm:px-3 sm:text-xs">
+                        {category}
+                      </span>
+
+                      <span className="flex items-center gap-1.5 text-[11px] text-slate-400 sm:text-xs">
+                        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                        {date}
+                      </span>
+                    </div>
+
+                    <Link href={`/blogs/${blog.slug}`}>
+                      <h3 className="text-lg font-bold leading-snug text-white transition group-hover:text-blue-300 sm:text-xl">
+                        {blog.title}
+                      </h3>
                     </Link>
 
-                    {/* Content */}
-                    <div className="flex flex-1 flex-col space-y-4 p-5 sm:p-6">
+                    {blog.excerpt && (
+                      <p className="line-clamp-3 text-sm leading-6 text-slate-300 sm:text-[15px]">
+                        {blog.excerpt}
+                      </p>
+                    )}
 
-                      {/* Meta */}
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-600 sm:px-3 sm:text-xs">
-                          {category}
-                        </span>
-
-                        <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground sm:text-xs">
-                          <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                          {date}
-                        </span>
-                      </div>
-
-                      {/* Title */}
-                      <Link href={`/blogs/${blog.slug}`}>
-                        <h3 className="text-lg font-bold leading-snug text-slate-900 transition group-hover:text-blue-600 sm:text-xl">
-                          {blog.title}
-                        </h3>
+                    <div className="mt-auto pt-1">
+                      <Link
+                        href={`/blogs/${blog.slug}`}
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-blue-300 transition-all group-hover:gap-3 sm:text-sm"
+                      >
+                        Read Article
+                        <ArrowRight className="h-4 w-4" />
                       </Link>
-
-                      {/* Excerpt */}
-                      {blog.excerpt && (
-                        <p className="line-clamp-3 text-sm leading-6 text-muted-foreground sm:text-[15px]">
-                          {blog.excerpt}
-                        </p>
-                      )}
-
-                      {/* Read more */}
-                      <div className="mt-auto pt-1">
-                        <Link
-                          href={`/blogs/${blog.slug}`}
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition-all group-hover:gap-3 sm:text-sm"
-                        >
-                          Read Article
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </div>
-
                     </div>
-                  </article>
-                );
-              })}
-            </div>
-          )
-        }
-      </div >
-    </section >
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

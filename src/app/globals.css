@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-    --color-brand-50: #eff6ff;
-    --color-brand-100: #dbeafe;
-    --color-brand-200: #bfdbfe;
-    --color-brand-300: #93c5fd;
-    --color-brand-400: #60a5fa;
-    --color-brand-500: #3b82f6;
-    --color-brand-600: #2563eb;
-    --color-brand-700: #1d4ed8;
-    --color-brand-800: #1e3a8a;
-    --color-brand-900: #0f172a;
-    --color-surface: #ffffff;
-    --color-surface-alt: #f8fafc;
-    --color-surface-muted: #f1f5f9;
-    --color-border: #e2e8f0;
-    --color-text: #0f172a;
-    --color-text-muted: #475569;
-    --color-text-soft: #64748b;
-    --color-success: #10b981;
-    --color-warning: #f59e0b;
-    --color-error: #ef4444;
-    --shadow-soft: 0 12px 30px rgba(15, 23, 42, 0.08);
-    --shadow-brand: 0 18px 45px rgba(37, 99, 235, 0.22);
+    --color-brand-50: #eaf3ff;
+    --color-brand-100: #d5e7ff;
+    --color-brand-200: #adcfff;
+    --color-brand-300: #7db4ff;
+    --color-brand-400: #4b94ff;
+    --color-brand-500: #2b7cff;
+    --color-brand-600: #1d63f2;
+    --color-brand-700: #184cc0;
+    --color-brand-800: #163a8f;
+    --color-brand-900: #081a39;
+    --color-surface: #091827;
+    --color-surface-alt: #0f223a;
+    --color-surface-muted: #132d4f;
+    --color-border: rgba(148, 163, 184, 0.2);
+    --color-text: #ecf7ff;
+    --color-text-muted: #c5d8f4;
+    --color-text-soft: #8ca5c8;
+    --color-success: #22c55e;
+    --color-warning: #fbbf24;
+    --color-error: #f87171;
+    --shadow-soft: 0 18px 40px rgba(2, 6, 23, 0.42);
+    --shadow-brand: 0 22px 60px rgba(29, 99, 242, 0.35);
     --radius-card: 1rem;
     --radius-panel: 1.5rem;
 }
@@ -32,10 +32,10 @@
    ========================================================= */
 
 :root {
-    color-scheme: light;
-    --page-bg: #ffffff;
-    --page-text: #0f172a;
-    --page-text-soft: #475569;
+    color-scheme: dark;
+    --page-bg: #050d1a;
+    --page-text: #ecf7ff;
+    --page-text-soft: #b8c9e5;
     --font-size-root: 14px;
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.8125rem;
@@ -52,19 +52,24 @@
 html {
     scroll-behavior: smooth;
     font-size: var(--font-size-root);
+    background: #050d1a;
 }
 
 body {
     margin: 0;
     min-width: 320px;
     overflow-x: hidden;
-    background: var(--page-bg);
+    background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.12), transparent 30%),
+        linear-gradient(180deg, #040b15 0%, #071423 38%, #091827 100%);
     color: var(--page-text);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     font-family: Arial, Helvetica, sans-serif;
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
+    background-attachment: fixed;
 }
 
 *,
@@ -138,19 +143,19 @@ a {
     }
 
     .site-nav {
-        @apply border-b border-border bg-white/95 backdrop-blur-md;
+        @apply border-b border-border bg-slate-950/70 backdrop-blur-md;
     }
 
     .site-nav-link {
-        @apply whitespace-nowrap text-sm font-medium text-text-muted transition hover:text-brand-600;
+        @apply whitespace-nowrap text-sm font-medium text-slate-200 transition hover:text-blue-300;
     }
 
     .site-button-primary {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-brand transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
+        @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(37,99,235,0.35)] transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-slate-950;
     }
 
     .site-button-secondary {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text transition hover:bg-surface-alt;
+        @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-surface px-4 py-2.5 text-sm font-medium text-text transition hover:bg-surface-alt;
     }
 
     .site-section-surface {
