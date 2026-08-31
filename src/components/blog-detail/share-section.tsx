@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
 
@@ -22,15 +22,17 @@ interface Props {
 export default function ShareSection({
     blog,
 }: Props) {
-    const [shareUrl] = useState(() =>
-        typeof window === "undefined"
-            ? ""
-            : window.location.href
-    );
+    const [shareUrl, setShareUrl] = useState("");
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setShareUrl(window.location.href);
+        }
+    }, []);
 
     const copyLink = async () => {
         const currentUrl =
-            shareUrl || blog.slug;
+            shareUrl || `/blogs/${blog.slug}`;
 
         await navigator.clipboard.writeText(
             currentUrl
