@@ -1,46 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
 
 import {
     ArrowUpRight,
     BriefcaseBusiness,
+    CheckCircle2,
+    Clock3,
+    Eye,
     FileText,
     ImageIcon,
-    Users,
-    Eye,
     TrendingUp,
-    Clock3,
-    CheckCircle2,
+    Users,
 } from "lucide-react";
+
+import { trackPageView } from "@/lib/analytics";
+
 const quickActions = [
     {
         title: "Create Blog",
-        description:
-            "Publish a new article",
+        description: "Publish a new article",
         href: "/admin/blogs/new",
         icon: FileText,
     },
     {
         title: "Add Project",
-        description:
-            "Update your portfolio",
+        description: "Update your portfolio",
         href: "/admin/portfolio/new",
         icon: ImageIcon,
     },
     {
         title: "View Consultations",
-        description:
-            "Manage client requests",
+        description: "Manage client requests",
         href: "/admin/consultations",
         icon: BriefcaseBusiness,
     },
     {
         title: "Manage Team",
-        description:
-            "Update team members",
+        description: "Update team members",
         href: "/admin/team",
         icon: Users,
     },
@@ -48,6 +46,9 @@ const quickActions = [
 
 interface DashboardStats {
     totalLeads: number;
+    newLeads: number;
+    qualifiedLeads: number;
+    convertedLeads: number;
     consultations: number;
     publishedBlogs: number;
     portfolioProjects: number;
@@ -64,6 +65,9 @@ interface RecentActivityItem {
 export default function AdminDashboard() {
     const [stats, setStats] = useState<DashboardStats>({
         totalLeads: 0,
+        newLeads: 0,
+        qualifiedLeads: 0,
+        convertedLeads: 0,
         consultations: 0,
         publishedBlogs: 0,
         portfolioProjects: 0,
@@ -74,83 +78,94 @@ export default function AdminDashboard() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        trackPageView("admin_dashboard_view");
+    }, []);
+
+    useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                // Fetch consultations (leads)
-                const consultResponse = await fetch("/api/consultations?limit=1000", {
-                    cache: "no-store",
-                });
-                const consultData = await consultResponse.json();
+                const [leadResponse, consultResponse, blogsResponse, portfolioResponse] = await Promise.all([
+                    fetch("/api/leads?limit=1000", { cache: "no-store" }),
+                    fetch("/api/consultations?limit=1000", { cache: "no-store" }),
+                    fetch("/api/blogs?limit=1000&status=published", { cache: "no-store" }),
+                    fetch("/api/portfolio?limit=1000&status=published", { cache: "no-store" }),
+                ]);
+
+                const [leadData, consultData, blogsData, portfolioData] = await Promise.all([
+                    leadResponse.json(),
+                    consultResponse.json(),
+                    blogsResponse.json(),
+                    portfolioResponse.json(),
+                ]);
+
+                const leadList = Array.isArray(leadData?.data?.leads) ? leadData.data.leads : [];
+                const totalLeads = leadList.length;
+                const newLeads = leadList.filter((lead: Record<string, unknown>) => getString(lead.status) === "new").length;
+                const qualifiedLeads = leadList.filter((lead: Record<string, unknown>) => {
+                    const status = getString(lead.status);
+                    return ["qualified", "proposal_sent", "converted", "won"].includes(status);
+                }).length;
+                const convertedLeads = leadList.filter((lead: Record<string, unknown>) => {
+                    const status = getString(lead.status);
+                    return ["converted", "won"].includes(status);
+                }).length;
                 const totalConsultations = consultData.data?.total || 0;
-
-                // Fetch blogs
-                const blogsResponse = await fetch("/api/blogs?limit=1000&status=published", {
-                    cache: "no-store",
-                });
-                const blogsData = await blogsResponse.json();
                 const publishedBlogs = blogsData.data?.total || 0;
-
-                // Fetch portfolio
-                const portfolioResponse = await fetch("/api/portfolio?limit=1000&status=published", {
-                    cache: "no-store",
-                });
-                const portfolioData = await portfolioResponse.json();
                 const portfolioProjects = portfolioData.data?.total || 0;
 
                 setStats({
-                    totalLeads: totalConsultations,
+                    totalLeads,
+                    newLeads,
+                    qualifiedLeads,
+                    convertedLeads,
                     consultations: totalConsultations,
-                    publishedBlogs: publishedBlogs,
-                    portfolioProjects: portfolioProjects,
+                    publishedBlogs,
+                    portfolioProjects,
                 });
 
-                // Build recent activity from actual data
                 const activities: RecentActivityItem[] = [];
 
-                // Add recent consultations
+                if (Array.isArray(leadData?.data?.leads)) {
+                    (leadData.data.leads as Array<Record<string, unknown>>) .slice(0, 2)
+                        .forEach((item) => {
+                            activities.push({
+                                title: `New lead: ${getString(item.fullName, "Client")}`,
+                                description: getPreview(item.message, "New inquiry received"),
+                                time: getTimeAgo(getString(item.createdAt)),
+                                icon: Users,
+                                status: getString(item.status, "new"),
+                            });
+                        });
+                }
+
                 if (consultData.data?.data && Array.isArray(consultData.data.data)) {
-                    (consultData.data.data as Array<Record<string, unknown>>).slice(0, 2).forEach((item) => {
-                        activities.push({
-                            title: `Consultation from ${getString(item.name, "Client")}`,
-                            description: getPreview(item.message, "New consultation request"),
-                            time: getTimeAgo(getString(item.createdAt)),
-                            icon: BriefcaseBusiness,
-                            status: getString(item.status, "New"),
+                    (consultData.data.data as Array<Record<string, unknown>>) .slice(0, 2)
+                        .forEach((item) => {
+                            activities.push({
+                                title: `Consultation from ${getString(item.name, "Client")}`,
+                                description: getPreview(item.message, "Consultation request"),
+                                time: getTimeAgo(getString(item.createdAt)),
+                                icon: BriefcaseBusiness,
+                                status: getString(item.status, "Scheduled"),
+                            });
                         });
-                    });
                 }
 
-                // Add recent blogs
                 if (blogsData.data?.data && Array.isArray(blogsData.data.data)) {
-                    (blogsData.data.data as Array<Record<string, unknown>>).slice(0, 2).forEach((item) => {
-                        const title = getString(item.title, "Untitled blog");
-
-                        activities.push({
-                            title: `Blog published: ${title}`,
-                            description: getPreview(item.excerpt, title),
-                            time: getTimeAgo(getString(item.publishedAt ?? item.createdAt)),
-                            icon: FileText,
-                            status: "Published",
+                    (blogsData.data.data as Array<Record<string, unknown>>) .slice(0, 2)
+                        .forEach((item) => {
+                            const title = getString(item.title, "Untitled blog");
+                            activities.push({
+                                title: `Blog published: ${title}`,
+                                description: getPreview(item.excerpt, title),
+                                time: getTimeAgo(getString(item.publishedAt ?? item.createdAt)),
+                                icon: FileText,
+                                status: "Published",
+                            });
                         });
-                    });
-                }
-
-                // Add recent portfolio
-                if (portfolioData.data?.data && Array.isArray(portfolioData.data.data)) {
-                    (portfolioData.data.data as Array<Record<string, unknown>>).slice(0, 2).forEach((item) => {
-                        const title = getString(item.title, "Untitled project");
-
-                        activities.push({
-                            title: `Portfolio: ${title}`,
-                            description: getPreview(item.shortDescription, title),
-                            time: getTimeAgo(getString(item.createdAt)),
-                            icon: ImageIcon,
-                            status: "Updated",
-                        });
-                    });
                 }
 
                 setRecentActivity(activities.slice(0, 4));
@@ -164,7 +179,12 @@ export default function AdminDashboard() {
         fetchDashboardData();
     }, []);
 
-    const formatStats = (stats: DashboardStats) => [
+    const conversionRate = useMemo(() => {
+        if (!stats.totalLeads) return 0;
+        return Math.round((stats.convertedLeads / stats.totalLeads) * 100);
+    }, [stats]);
+
+    const statCards = [
         {
             label: "Total Leads",
             value: stats.totalLeads.toString(),
@@ -173,22 +193,22 @@ export default function AdminDashboard() {
             href: "/admin/consultations",
         },
         {
-            label: "Consultations",
-            value: stats.consultations.toString(),
+            label: "Qualified",
+            value: stats.qualifiedLeads.toString(),
             change: "+8.4%",
             icon: BriefcaseBusiness,
             href: "/admin/consultations",
         },
         {
-            label: "Published Blogs",
-            value: stats.publishedBlogs.toString(),
+            label: "New Inquiries",
+            value: stats.newLeads.toString(),
             change: "+5.2%",
             icon: FileText,
             href: "/admin/blogs",
         },
         {
-            label: "Portfolio Projects",
-            value: stats.portfolioProjects.toString(),
+            label: "Converted",
+            value: stats.convertedLeads.toString(),
             change: "+3.1%",
             icon: ImageIcon,
             href: "/admin/portfolio",
@@ -197,71 +217,49 @@ export default function AdminDashboard() {
 
     return (
         <div className="mx-auto max-w-7xl space-y-8">
-            {/* Header */}
             <section className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-blue-600">
-                        Overview
-                    </p>
-
-                    <h2 className="mt-1 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+                    <p className="text-sm font-semibold text-blue-400">Overview</p>
+                    <h2 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
                         Good morning, Admin.
                     </h2>
-
-                    <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-                        Here&apos;s what&apos;s happening across
-                        your ADM digital ecosystem.
+                    <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+                        Here&apos;s what&apos;s happening across your ADM digital ecosystem.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 shadow-sm">
+                <div className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-300 shadow-sm">
                     <Clock3 size={17} />
                     <span>Today</span>
                 </div>
             </section>
 
-            {/* Stats */}
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {loading ? (
-                    <div className="col-span-4 text-center text-sm text-slate-500">
-                        Loading dashboard...
-                    </div>
+                    <div className="col-span-4 text-center text-sm text-slate-400">Loading dashboard...</div>
                 ) : error ? (
-                    <div className="col-span-4 text-center text-sm text-red-500">
-                        {error}
-                    </div>
+                    <div className="col-span-4 text-center text-sm text-red-400">{error}</div>
                 ) : (
-                    formatStats(stats).map((stat) => {
+                    statCards.map((stat) => {
                         const Icon = stat.icon;
-
                         return (
                             <Link
                                 key={stat.label}
                                 href={stat.href}
-                                className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
+                                className="group rounded-2xl border border-slate-800 bg-slate-900 p-5 transition-all hover:-translate-y-0.5 hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-950/30"
                             >
                                 <div className="flex items-start justify-between">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
                                         <Icon size={21} />
                                     </div>
-
-                                    <ArrowUpRight
-                                        size={18}
-                                        className="text-slate-300 transition group-hover:text-blue-600"
-                                    />
+                                    <ArrowUpRight size={18} className="text-slate-500 transition group-hover:text-blue-300" />
                                 </div>
 
                                 <div className="mt-6">
-                                    <p className="text-sm font-medium text-slate-500">
-                                        {stat.label}
-                                    </p>
-
+                                    <p className="text-sm font-medium text-slate-400">{stat.label}</p>
                                     <div className="mt-1 flex items-end gap-3">
-                                        <p className="text-3xl font-black tracking-tight text-slate-900">
-                                            {stat.value}
-                                        </p>
-
-                                        <span className="mb-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-600">
+                                        <p className="text-3xl font-black tracking-tight text-white">{stat.value}</p>
+                                        <span className="mb-1 rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-bold text-emerald-400">
                                             {stat.change}
                                         </span>
                                     </div>
@@ -272,103 +270,64 @@ export default function AdminDashboard() {
                 )}
             </section>
 
-            {/* Main grid */}
-            <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-                {/* Performance */}
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div className="flex items-center justify-between border-b border-slate-100 p-6">
+            <section className="grid gap-6 xl:grid-cols-[1.45fr_1fr]">
+                <div className="rounded-2xl border border-slate-800 bg-slate-900 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-slate-800 p-6">
                         <div>
-                            <h3 className="font-black text-slate-900">
-                                Website Performance
-                            </h3>
-
-                            <p className="mt-1 text-sm text-slate-500">
-                                Overview of your digital presence
-                            </p>
+                            <h3 className="font-black text-white">Conversion Performance</h3>
+                            <p className="mt-1 text-sm text-slate-400">Overall lead-to-client progress</p>
                         </div>
 
-                        <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-600">
+                        <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-400">
                             <TrendingUp size={15} />
-                            18.6%
+                            {conversionRate}%
                         </div>
                     </div>
 
-                    <div className="p-6">
-                        <div className="flex h-64 items-end gap-2 sm:gap-4">
-                            {[42, 55, 48, 67, 61, 76, 69, 84, 72, 91, 82, 96].map(
-                                (height, index) => (
-                                    <div
-                                        key={index}
-                                        className="group flex h-full flex-1 items-end"
-                                    >
-                                        <div
-                                            style={{
-                                                height: `${height}%`,
-                                            }}
-                                            className="relative w-full rounded-t-lg bg-blue-100 transition-all group-hover:bg-blue-500"
-                                        >
-                                            <div className="absolute -top-8 left-1/2 hidden -translate-x-1/2 rounded-lg bg-slate-900 px-2 py-1 text-[10px] font-bold text-white group-hover:block">
-                                                {height}%
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            )}
+                    <div className="grid gap-4 p-6 md:grid-cols-3">
+                        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Lead rate</p>
+                            <p className="mt-3 text-3xl font-black text-white">{conversionRate}%</p>
+                            <p className="mt-2 text-sm text-slate-400">Converted from total inquiries</p>
                         </div>
-
-                        <div className="mt-4 flex justify-between text-xs font-medium text-slate-400">
-                            <span>Jan</span>
-                            <span>Feb</span>
-                            <span>Mar</span>
-                            <span>Apr</span>
-                            <span>May</span>
-                            <span>Jun</span>
-                            <span>Jul</span>
-                            <span>Aug</span>
+                        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Qualified</p>
+                            <p className="mt-3 text-3xl font-black text-white">{stats.qualifiedLeads}</p>
+                            <p className="mt-2 text-sm text-slate-400">High-intent opportunities</p>
+                        </div>
+                        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Consultations</p>
+                            <p className="mt-3 text-3xl font-black text-white">{stats.consultations}</p>
+                            <p className="mt-2 text-sm text-slate-400">Booked discovery calls</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
                     <div>
-                        <h3 className="font-black text-slate-900">
-                            Quick Actions
-                        </h3>
-
-                        <p className="mt-1 text-sm text-slate-500">
-                            Frequently used actions
-                        </p>
+                        <h3 className="font-black text-white">Quick Actions</h3>
+                        <p className="mt-1 text-sm text-slate-400">Frequently used actions</p>
                     </div>
 
                     <div className="mt-6 space-y-3">
                         {quickActions.map((action) => {
                             const Icon = action.icon;
-
                             return (
                                 <Link
                                     key={action.title}
                                     href={action.href}
-                                    className="group flex items-center gap-4 rounded-xl border border-slate-100 p-4 transition hover:border-blue-100 hover:bg-blue-50/50"
+                                    className="group flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-950/60 p-4 transition hover:border-blue-500/50 hover:bg-slate-950"
                                 >
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition group-hover:bg-blue-100 group-hover:text-blue-600">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-slate-300 transition group-hover:bg-blue-500/15 group-hover:text-blue-300">
                                         <Icon size={19} />
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-bold text-slate-900">
-                                            {action.title}
-                                        </p>
-
-                                        <p className="mt-0.5 text-xs text-slate-500">
-                                            {action.description}
-                                        </p>
+                                        <p className="text-sm font-bold text-white">{action.title}</p>
+                                        <p className="mt-0.5 text-xs text-slate-400">{action.description}</p>
                                     </div>
 
-                                    <ArrowUpRight
-                                        size={17}
-                                        className="text-slate-300 transition group-hover:text-blue-600"
-                                    />
+                                    <ArrowUpRight size={17} className="text-slate-500 transition group-hover:text-blue-300" />
                                 </Link>
                             );
                         })}
@@ -376,66 +335,40 @@ export default function AdminDashboard() {
                 </div>
             </section>
 
-            {/* Bottom grid */}
-            <section className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-                {/* Recent Activity */}
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <div className="flex items-center justify-between border-b border-slate-100 p-6">
+            <section className="grid gap-6 xl:grid-cols-[1.45fr_1fr]">
+                <div className="rounded-2xl border border-slate-800 bg-slate-900 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-slate-800 p-6">
                         <div>
-                            <h3 className="font-black text-slate-900">
-                                Recent Activity
-                            </h3>
-
-                            <p className="mt-1 text-sm text-slate-500">
-                                Latest changes across ADM
-                            </p>
+                            <h3 className="font-black text-white">Recent Activity</h3>
+                            <p className="mt-1 text-sm text-slate-400">Latest changes across ADM</p>
                         </div>
-
-                        <button className="text-sm font-bold text-blue-600 hover:text-blue-700">
-                            View all
-                        </button>
+                        <button className="text-sm font-bold text-blue-300 hover:text-blue-200">View all</button>
                     </div>
 
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-slate-800">
                         {loading ? (
-                            <div className="p-5 text-center text-sm text-slate-500">
-                                Loading activities...
-                            </div>
+                            <div className="p-5 text-center text-sm text-slate-400">Loading activities...</div>
                         ) : recentActivity.length === 0 ? (
-                            <div className="p-5 text-center text-sm text-slate-500">
-                                No recent activity yet
-                            </div>
+                            <div className="p-5 text-center text-sm text-slate-400">No recent activity yet</div>
                         ) : (
                             recentActivity.map((activity) => {
                                 const Icon = activity.icon;
-
                                 return (
-                                    <div
-                                        key={activity.title}
-                                        className="flex gap-4 p-5"
-                                    >
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                    <div key={`${activity.title}-${activity.time}`} className="flex gap-4 p-5">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
                                             <Icon size={18} />
                                         </div>
 
                                         <div className="min-w-0 flex-1">
                                             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                                <p className="text-sm font-bold text-slate-900">
-                                                    {activity.title}
-                                                </p>
-
-                                                <span className="w-fit rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-500">
+                                                <p className="text-sm font-bold text-white">{activity.title}</p>
+                                                <span className="w-fit rounded-full bg-slate-800 px-2.5 py-1 text-[10px] font-bold capitalize text-slate-300">
                                                     {activity.status}
                                                 </span>
                                             </div>
 
-                                            <p className="mt-1 text-sm text-slate-500">
-                                                {activity.description}
-                                            </p>
-
-                                            <p className="mt-2 text-xs font-medium text-slate-400">
-                                                {activity.time}
-                                            </p>
+                                            <p className="mt-1 text-sm text-slate-400">{activity.description}</p>
+                                            <p className="mt-2 text-xs font-medium text-slate-500">{activity.time}</p>
                                         </div>
                                     </div>
                                 );
@@ -444,58 +377,36 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* System Status */}
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
                     <div>
-                        <h3 className="font-black text-slate-900">
-                            System Status
-                        </h3>
-
-                        <p className="mt-1 text-sm text-slate-500">
-                            ADM services overview
-                        </p>
+                        <h3 className="font-black text-white">System Status</h3>
+                        <p className="mt-1 text-sm text-slate-400">ADM services overview</p>
                     </div>
 
                     <div className="mt-6 space-y-3">
                         {[
-                            "Website",
-                            "Database",
-                            "Authentication",
-                            "API Services",
+                            { name: "Website", status: "Operational" },
+                            { name: "Database", status: "Operational" },
+                            { name: "Authentication", status: "Operational" },
+                            { name: "API Services", status: "Operational" },
                         ].map((service) => (
-                            <div
-                                key={service}
-                                className="flex items-center justify-between rounded-xl bg-slate-50 p-4"
-                            >
+                            <div key={service.name} className="flex items-center justify-between rounded-xl bg-slate-950/60 p-4">
                                 <div className="flex items-center gap-3">
                                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-
-                                    <span className="text-sm font-semibold text-slate-700">
-                                        {service}
-                                    </span>
+                                    <span className="text-sm font-semibold text-slate-200">{service.name}</span>
                                 </div>
-
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600">
-                                    <CheckCircle2
-                                        size={14}
-                                    />
-
-                                    Operational
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                                    <CheckCircle2 size={14} />
+                                    {service.status}
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="mt-6 flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
-                        <Eye
-                            size={18}
-                            className="text-blue-600"
-                        />
-
-                        <p className="text-xs leading-5 text-blue-700">
-                            Dashboard is now connected to
-                            real ADM data. Stats and activity
-                            are updated from your database.
+                    <div className="mt-6 flex items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
+                        <Eye size={18} className="text-blue-300" />
+                        <p className="text-xs leading-5 text-blue-200">
+                            Dashboard is connected to real ADM data and updates as leads and consultations are recorded.
                         </p>
                     </div>
                 </div>
@@ -510,10 +421,9 @@ function getString(value: unknown, fallback = ""): string {
 
 function getPreview(value: unknown, fallback: string): string {
     const text = getString(value, fallback);
-    return text.length > 50 ? `${text.substring(0, 50)}...` : text;
+    return text.length > 60 ? `${text.substring(0, 60)}...` : text;
 }
 
-// Helper function to format time
 function getTimeAgo(dateString: string): string {
     if (!dateString) return "Recently";
 

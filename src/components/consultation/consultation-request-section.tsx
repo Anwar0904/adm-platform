@@ -3,6 +3,7 @@
 import {
     ChangeEvent,
     DragEvent,
+    useEffect,
     useState,
 } from "react";
 
@@ -36,6 +37,10 @@ import {
     Video,
 } from "lucide-react";
 
+import {
+    formatConsultationAnalytics,
+    trackPageView,
+} from "@/lib/analytics";
 import {
     ConsultationFormSchema,
     ConsultationFormValues,
@@ -123,6 +128,10 @@ function formatFileSize(
 }
 
 export default function ConsultationRequestSection() {
+    useEffect(() => {
+        trackPageView("consultation_page_view");
+    }, []);
+
     const [currentStep, setCurrentStep] =
         useState(1);
 
@@ -375,6 +384,17 @@ export default function ConsultationRequestSection() {
                     "Request failed."
                 );
             }
+
+            trackPageView(
+                "consultation_request_submitted",
+                formatConsultationAnalytics({
+                    projectType: values.projectType,
+                    budget: values.budget,
+                    timeline: values.timeline,
+                    preferredContact: values.preferredContact,
+                    hasFiles: files.length > 0,
+                })
+            );
 
             setSubmitted(true);
             setCurrentStep(1);

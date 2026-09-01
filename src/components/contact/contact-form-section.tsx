@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -14,10 +15,15 @@ import { Send } from "lucide-react";
 import { contactServices } from "@/lib/dummy/contact-services";
 
 import { useCreateLead } from "@/hooks/useCreateLead";
+import {
+    formatLeadAnalytics,
+    trackPageView,
+} from "@/lib/analytics";
 
 export default function ContactFormSection() {
-
-
+    useEffect(() => {
+        trackPageView("contact_page_view");
+    }, []);
 
     const {
         register,
@@ -75,16 +81,32 @@ export default function ContactFormSection() {
             ? budgetMap[data.budget]
             : undefined;
 
-        createLeadMutation.mutate({
-            fullName: data.fullName,
-            email: data.email,
-            phone: data.phone || undefined,
-            company: data.company || undefined,
-            website: data.website || undefined,
-            interestedServices: data.interestedServices,
-            budget: budgetValue,
-            message: data.message,
-        });
+        createLeadMutation.mutate(
+            {
+                fullName: data.fullName,
+                email: data.email,
+                phone: data.phone || undefined,
+                company: data.company || undefined,
+                website: data.website || undefined,
+                interestedServices: data.interestedServices,
+                budget: budgetValue,
+                message: data.message,
+            },
+            {
+                onSuccess: () => {
+                    trackPageView(
+                        "lead_created",
+                        formatLeadAnalytics({
+                            source: "website",
+                            interestedServices: data.interestedServices,
+                            budget: data.budget ?? null,
+                            hasFiles: false,
+                        })
+                    );
+                    reset();
+                },
+            }
+        );
     };
 
     return (
