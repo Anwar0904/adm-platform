@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { ApiError } from "@/lib/api/api-error";
 
 import { getUserFromToken } from "./get-user";
-import { AuthorizationService } from "./ authorization";
+import { AuthorizationService } from "./authorization";
 
 
 type RoleLike = {

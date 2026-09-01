@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 
 import { getUserFromToken } from "@/lib/auth/get-user";
 import { ApiError } from "@/lib/api/api-error";
-import { AuthorizationService } from "@/lib/auth/ authorization";
+import { AuthorizationService } from "@/lib/auth/authorization";
 
 type RoleLike = {
     name: string;
