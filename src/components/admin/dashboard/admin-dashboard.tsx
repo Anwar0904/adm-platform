@@ -13,6 +13,7 @@ import {
     ImageIcon,
     TrendingUp,
     Users,
+
 } from "lucide-react";
 
 import { trackPageView } from "@/lib/analytics";
@@ -88,10 +89,10 @@ export default function AdminDashboard() {
                 setError(null);
 
                 const [leadResponse, consultResponse, blogsResponse, portfolioResponse] = await Promise.all([
-                    fetch("/api/leads?limit=1000", { cache: "no-store" }),
-                    fetch("/api/consultations?limit=1000", { cache: "no-store" }),
-                    fetch("/api/blogs?limit=1000&status=published", { cache: "no-store" }),
-                    fetch("/api/portfolio?limit=1000&status=published", { cache: "no-store" }),
+                    fetch("/api/leads?limit=100", { cache: "no-store" }),
+                    fetch("/api/consultations?limit=100", { cache: "no-store" }),
+                    fetch("/api/blogs?limit=100&status=published", { cache: "no-store" }),
+                    fetch("/api/portfolio?limit=100&status=published", { cache: "no-store" }),
                 ]);
 
                 const [leadData, consultData, blogsData, portfolioData] = await Promise.all([
@@ -101,20 +102,36 @@ export default function AdminDashboard() {
                     portfolioResponse.json(),
                 ]);
 
-                const leadList = Array.isArray(leadData?.data?.leads) ? leadData.data.leads : [];
-                const totalLeads = leadList.length;
-                const newLeads = leadList.filter((lead: Record<string, unknown>) => getString(lead.status) === "new").length;
-                const qualifiedLeads = leadList.filter((lead: Record<string, unknown>) => {
+                if (!leadResponse.ok || !consultResponse.ok || !blogsResponse.ok || !portfolioResponse.ok) {
+                    const message =
+                        leadData?.message ||
+                        consultData?.message ||
+                        blogsData?.message ||
+                        portfolioData?.message ||
+                        "Failed to load dashboard data";
+
+                    throw new Error(message);
+                }
+
+                const leadList = (getArrayField(leadData, ["data.leads", "leads", "data"]) as Array<Record<string, unknown>>);
+                const consultationList = (getArrayField(consultData, ["data.consultations", "consultations", "data"]) as Array<Record<string, unknown>>);
+                const blogList = (getArrayField(blogsData, ["data.blogs", "blogs", "data"]) as Array<Record<string, unknown>>);
+                const portfolioList = (getArrayField(portfolioData, ["data.data", "data", "projects"]) as Array<Record<string, unknown>>);
+
+                const totalLeads = getTotalCount(leadData, ["data.pagination.total", "pagination.total", "data.total", "total"], leadList.length);
+                const totalConsultations = getTotalCount(consultData, ["data.pagination.total", "pagination.total", "data.total", "total"], consultationList.length);
+                const publishedBlogs = getTotalCount(blogsData, ["data.pagination.total", "pagination.total", "data.total", "total"], blogList.length);
+                const portfolioProjects = getTotalCount(portfolioData, ["data.pagination.total", "pagination.total", "data.total", "total"], portfolioList.length);
+
+                const newLeads = leadList.filter((lead) => getString(lead.status) === "new").length;
+                const qualifiedLeads = leadList.filter((lead) => {
                     const status = getString(lead.status);
                     return ["qualified", "proposal_sent", "converted", "won"].includes(status);
                 }).length;
-                const convertedLeads = leadList.filter((lead: Record<string, unknown>) => {
+                const convertedLeads = leadList.filter((lead) => {
                     const status = getString(lead.status);
                     return ["converted", "won"].includes(status);
                 }).length;
-                const totalConsultations = consultData.data?.total || 0;
-                const publishedBlogs = blogsData.data?.total || 0;
-                const portfolioProjects = portfolioData.data?.total || 0;
 
                 setStats({
                     totalLeads,
@@ -129,7 +146,7 @@ export default function AdminDashboard() {
                 const activities: RecentActivityItem[] = [];
 
                 if (Array.isArray(leadData?.data?.leads)) {
-                    (leadData.data.leads as Array<Record<string, unknown>>) .slice(0, 2)
+                    (leadData.data.leads as Array<Record<string, unknown>>).slice(0, 2)
                         .forEach((item) => {
                             activities.push({
                                 title: `New lead: ${getString(item.fullName, "Client")}`,
@@ -142,7 +159,7 @@ export default function AdminDashboard() {
                 }
 
                 if (consultData.data?.data && Array.isArray(consultData.data.data)) {
-                    (consultData.data.data as Array<Record<string, unknown>>) .slice(0, 2)
+                    (consultData.data.data as Array<Record<string, unknown>>).slice(0, 2)
                         .forEach((item) => {
                             activities.push({
                                 title: `Consultation from ${getString(item.name, "Client")}`,
@@ -155,7 +172,7 @@ export default function AdminDashboard() {
                 }
 
                 if (blogsData.data?.data && Array.isArray(blogsData.data.data)) {
-                    (blogsData.data.data as Array<Record<string, unknown>>) .slice(0, 2)
+                    (blogsData.data.data as Array<Record<string, unknown>>).slice(0, 2)
                         .forEach((item) => {
                             const title = getString(item.title, "Untitled blog");
                             activities.push({
@@ -169,8 +186,8 @@ export default function AdminDashboard() {
                 }
 
                 setRecentActivity(activities.slice(0, 4));
-            } catch {
-                setError("Failed to load dashboard data");
+            } catch (error) {
+                setError(error instanceof Error ? error.message : "Failed to load dashboard data");
             } finally {
                 setLoading(false);
             }
@@ -413,6 +430,46 @@ export default function AdminDashboard() {
             </section>
         </div>
     );
+}
+
+function getArrayField(payload: Record<string, unknown> | null | undefined, paths: string[]): unknown[] {
+    for (const path of paths) {
+        const value = readPath(payload, path);
+        if (Array.isArray(value)) return value;
+    }
+
+    return [];
+}
+
+function getTotalCount(payload: Record<string, unknown> | null | undefined, paths: string[], fallback = 0): number {
+    for (const path of paths) {
+        const value = readPath(payload, path);
+        if (typeof value === "number" && Number.isFinite(value)) return value;
+        if (typeof value === "string" && value.trim() !== "") {
+            const parsed = Number(value);
+            if (Number.isFinite(parsed)) return parsed;
+        }
+    }
+
+    return fallback;
+}
+
+function readPath(payload: Record<string, unknown> | null | undefined, path: string): unknown {
+    if (!payload) return undefined;
+
+    const parts = path.split(".");
+    let current: unknown = payload;
+
+    for (const part of parts) {
+        if (current && typeof current === "object" && part in current) {
+            current = (current as Record<string, unknown>)[part];
+            continue;
+        }
+
+        return undefined;
+    }
+
+    return current;
 }
 
 function getString(value: unknown, fallback = ""): string {
