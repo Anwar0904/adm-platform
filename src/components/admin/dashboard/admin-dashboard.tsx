@@ -89,10 +89,10 @@ export default function AdminDashboard() {
                 setError(null);
 
                 const [leadResponse, consultResponse, blogsResponse, portfolioResponse] = await Promise.all([
-                    fetch("/api/leads?limit=100", { cache: "no-store" }),
-                    fetch("/api/consultations?limit=100", { cache: "no-store" }),
-                    fetch("/api/blogs?limit=100&status=published", { cache: "no-store" }),
-                    fetch("/api/portfolio?limit=100&status=published", { cache: "no-store" }),
+                    fetch("/api/leads?limit=100", { cache: "no-store", credentials: "include" }),
+                    fetch("/api/consultations?limit=100", { cache: "no-store", credentials: "include" }),
+                    fetch("/api/blogs?limit=100&status=published", { cache: "no-store", credentials: "include" }),
+                    fetch("/api/portfolio?limit=100&status=published", { cache: "no-store", credentials: "include" }),
                 ]);
 
                 const [leadData, consultData, blogsData, portfolioData] = await Promise.all([
