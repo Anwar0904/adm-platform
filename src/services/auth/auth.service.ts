@@ -143,8 +143,7 @@ class AuthService {
             );
         }
 
-        // Email verification
-        if (!user.emailVerified) {
+        if (!user.emailVerified && !user.isEmailVerified) {
             throw new ApiError(
                 403,
                 "Please verify your email first."
