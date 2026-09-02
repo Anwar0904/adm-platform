@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 
 import {
@@ -54,12 +54,11 @@ interface DashboardStats {
     publishedBlogs: number;
     portfolioProjects: number;
 }
-
 interface RecentActivityItem {
     title: string;
     description: string;
     time: string;
-    icon: typeof Users;
+    icon: "users" | "briefcase" | "file";
     status: string;
 }
 
@@ -67,155 +66,25 @@ type ResourceName = "leads" | "consultations" | "blogs" | "portfolio";
 
 type ResourceHealth = Record<ResourceName, "operational" | "unavailable">;
 
-export default function AdminDashboard() {
-    const [stats, setStats] = useState<DashboardStats>({
-        totalLeads: 0,
-        newLeads: 0,
-        qualifiedLeads: 0,
-        convertedLeads: 0,
-        consultations: 0,
-        publishedBlogs: 0,
-        portfolioProjects: 0,
-    });
+export interface AdminDashboardData {
+    stats: DashboardStats;
+    recentActivity: RecentActivityItem[];
+    resourceHealth: ResourceHealth;
+    error: string | null;
+}
 
-    const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [resourceHealth, setResourceHealth] = useState<ResourceHealth>({
-        leads: "unavailable",
-        consultations: "unavailable",
-        blogs: "unavailable",
-        portfolio: "unavailable",
-    });
+export default function AdminDashboard({
+    stats,
+    recentActivity,
+    resourceHealth,
+    error,
+}: AdminDashboardData) {
 
-    useEffect(() => {
-        trackPageView("admin_dashboard_view");
-    }, []);
-
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const results = await Promise.allSettled([
-                    fetch("/api/leads?limit=100", { cache: "no-store", credentials: "include" }),
-                    fetch("/api/consultations?limit=100", { cache: "no-store", credentials: "include" }),
-                    fetch("/api/blogs?limit=100&status=published", { cache: "no-store", credentials: "include" }),
-                    fetch("/api/portfolio?limit=100&status=published", { cache: "no-store", credentials: "include" }),
-                ]);
-
-                const responses = await Promise.all(
-                    results.map(async (result) => {
-                        if (result.status === "rejected") {
-                            return { response: null, data: null };
-                        }
-
-                        try {
-                            return {
-                                response: result.value,
-                                data: await result.value.json(),
-                            };
-                        } catch {
-                            return { response: result.value, data: null };
-                        }
-                    })
-                );
-
-                const [leadResult, consultResult, blogsResult, portfolioResult] = responses;
-                const leadData = leadResult.data ?? {};
-                const consultData = consultResult.data ?? {};
-                const blogsData = blogsResult.data ?? {};
-                const portfolioData = portfolioResult.data ?? {};
-
-                const health: ResourceHealth = {
-                    leads: leadResult.response?.ok ? "operational" : "unavailable",
-                    consultations: consultResult.response?.ok ? "operational" : "unavailable",
-                    blogs: blogsResult.response?.ok ? "operational" : "unavailable",
-                    portfolio: portfolioResult.response?.ok ? "operational" : "unavailable",
-                };
-                setResourceHealth(health);
-
-                if (Object.values(health).every((status) => status === "unavailable")) {
-                    throw new Error("Dashboard data is unavailable.");
-                }
-
-                const leadList = getArrayField(leadData, ["data.leads", "leads", "data"]) as Array<Record<string, unknown>>;
-                const consultationList = getArrayField(consultData, ["data.consultations", "consultations", "data"]) as Array<Record<string, unknown>>;
-                const blogList = getArrayField(blogsData, ["data.blogs", "blogs", "data"]) as Array<Record<string, unknown>>;
-                const portfolioList = (getArrayField(portfolioData, ["data.data", "data", "projects"]) as Array<Record<string, unknown>>);
-
-                const totalLeads = getTotalCount(leadData, ["data.pagination.total", "pagination.total", "data.total", "total"], leadList.length);
-                const totalConsultations = getTotalCount(consultData, ["data.pagination.total", "pagination.total", "data.total", "total"], consultationList.length);
-                const publishedBlogs = getTotalCount(blogsData, ["data.pagination.total", "pagination.total", "data.total", "total"], blogList.length);
-                const portfolioProjects = getTotalCount(portfolioData, ["data.pagination.total", "pagination.total", "data.total", "total"], portfolioList.length);
-
-                const newLeads = leadList.filter((lead) => getString(lead.status) === "new").length;
-                const qualifiedLeads = leadList.filter((lead) => {
-                    const status = getString(lead.status);
-                    return ["qualified", "proposal_sent", "converted", "won"].includes(status);
-                }).length;
-                const convertedLeads = leadList.filter((lead) => {
-                    const status = getString(lead.status);
-                    return ["converted", "won"].includes(status);
-                }).length;
-
-                setStats({
-                    totalLeads,
-                    newLeads,
-                    qualifiedLeads,
-                    convertedLeads,
-                    consultations: totalConsultations,
-                    publishedBlogs,
-                    portfolioProjects,
-                });
-
-                const activities: RecentActivityItem[] = [];
-
-                leadList.slice(0, 2)
-                    .forEach((item) => {
-                        activities.push({
-                            title: `New lead: ${getString(item.fullName, "Client")}`,
-                            description: getPreview(item.message, "New inquiry received"),
-                            time: getTimeAgo(getString(item.createdAt)),
-                            icon: Users,
-                            status: getString(item.status, "new"),
-                        });
-                    });
-
-                consultationList.slice(0, 2)
-                    .forEach((item) => {
-                        activities.push({
-                            title: `Consultation from ${getString(item.name, "Client")}`,
-                            description: getPreview(item.message, "Consultation request"),
-                            time: getTimeAgo(getString(item.createdAt)),
-                            icon: BriefcaseBusiness,
-                            status: getString(item.status, "Scheduled"),
-                        });
-                    });
-
-                blogList.slice(0, 2)
-                    .forEach((item) => {
-                        const title = getString(item.title, "Untitled blog");
-                        activities.push({
-                            title: `Blog published: ${title}`,
-                            description: getPreview(item.excerpt, title),
-                            time: getTimeAgo(getString(item.publishedAt ?? item.createdAt)),
-                            icon: FileText,
-                            status: "Published",
-                        });
-                    });
-
-                setRecentActivity(activities.slice(0, 4));
-            } catch (error) {
-                setError(error instanceof Error ? error.message : "Failed to load dashboard data");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDashboardData();
-    }, []);
+    const activityIcons = {
+        users: Users,
+        briefcase: BriefcaseBusiness,
+        file: FileText,
+    } as const;
 
     const conversionRate = useMemo(() => {
         if (!stats.totalLeads) return 0;
@@ -269,9 +138,7 @@ export default function AdminDashboard() {
             </section>
 
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {loading ? (
-                    <div className="col-span-4 text-center text-sm text-slate-400">Loading dashboard...</div>
-                ) : error ? (
+                {error ? (
                     <div className="col-span-4 text-center text-sm text-red-400">{error}</div>
                 ) : (
                     statCards.map((stat) => {
@@ -377,13 +244,11 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="divide-y divide-slate-800">
-                        {loading ? (
-                            <div className="p-5 text-center text-sm text-slate-400">Loading activities...</div>
-                        ) : recentActivity.length === 0 ? (
+                        {recentActivity.length === 0 ? (
                             <div className="p-5 text-center text-sm text-slate-400">No recent activity yet</div>
                         ) : (
                             recentActivity.map((activity) => {
-                                const Icon = activity.icon;
+                                const Icon = activityIcons[activity.icon];
                                 return (
                                     <div key={`${activity.title}-${activity.time}`} className="flex gap-4 p-5">
                                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
@@ -444,68 +309,4 @@ export default function AdminDashboard() {
             </section>
         </div>
     );
-}
-
-function getArrayField(payload: Record<string, unknown> | null | undefined, paths: string[]): unknown[] {
-    for (const path of paths) {
-        const value = readPath(payload, path);
-        if (Array.isArray(value)) return value;
-    }
-
-    return [];
-}
-
-function getTotalCount(payload: Record<string, unknown> | null | undefined, paths: string[], fallback = 0): number {
-    for (const path of paths) {
-        const value = readPath(payload, path);
-        if (typeof value === "number" && Number.isFinite(value)) return value;
-        if (typeof value === "string" && value.trim() !== "") {
-            const parsed = Number(value);
-            if (Number.isFinite(parsed)) return parsed;
-        }
-    }
-
-    return fallback;
-}
-
-function readPath(payload: Record<string, unknown> | null | undefined, path: string): unknown {
-    if (!payload) return undefined;
-
-    const parts = path.split(".");
-    let current: unknown = payload;
-
-    for (const part of parts) {
-        if (current && typeof current === "object" && part in current) {
-            current = (current as Record<string, unknown>)[part];
-            continue;
-        }
-
-        return undefined;
-    }
-
-    return current;
-}
-
-function getString(value: unknown, fallback = ""): string {
-    return typeof value === "string" ? value : fallback;
-}
-
-function getPreview(value: unknown, fallback: string): string {
-    const text = getString(value, fallback);
-    return text.length > 60 ? `${text.substring(0, 60)}...` : text;
-}
-
-function getTimeAgo(dateString: string): string {
-    if (!dateString) return "Recently";
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-
-    return date.toLocaleDateString();
 }

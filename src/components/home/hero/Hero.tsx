@@ -51,9 +51,9 @@ export default function Hero() {
           </div>
 
           <h1 className="max-w-xl text-[2.5rem] font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
-            We Build Digital Products That Drive{" "}
+            We Drive{" "}
             <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-200 bg-clip-text text-transparent">
-              Business Forward
+              Businesses
             </span>
           </h1>
 
