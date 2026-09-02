@@ -25,7 +25,7 @@ export const env = {
     "mongodb://127.0.0.1:27017/adm-platform"
   ),
 
-  MONGODB_DB: getEnvValue("MONGODB_DB", "adm-website"),
+  MONGODB_DB: getEnvValue("MONGODB_DB", "adm-platform"),
 
   JWT_ACCESS_SECRET: getRequiredEnvValue(
     "JWT_ACCESS_SECRET",
