@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import {
     portfolioService,
 } from "@/services/portfolio.service";
+import { connectDB } from "@/lib/db";
+import { requirePermission } from "@/lib/auth/require-auth";
+import { PERMISSIONS } from "@/constants/permissions";
 
 interface RouteContext {
     params: Promise<{
@@ -15,6 +18,8 @@ export async function GET(
     context: RouteContext
 ) {
     try {
+        await connectDB();
+
         const { id } =
             await context.params;
 
@@ -67,38 +72,24 @@ export async function PATCH(
     context: RouteContext
 ) {
     try {
+        await connectDB();
+
+        const currentUser = await requirePermission(
+            request,
+            PERMISSIONS.PORTFOLIO_UPDATE
+        );
+
         const { id } =
             await context.params;
 
         const body =
             await request.json();
 
-        /*
-         * TEMPORARY:
-         * Replace this with the authenticated
-         * user's ID from your session.
-         */
-        const updatedBy =
-            body.updatedBy;
-
-        if (!updatedBy) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message:
-                        "UpdatedBy is required.",
-                },
-                {
-                    status: 400,
-                }
-            );
-        }
-
         const portfolio =
             await portfolioService.update(
                 id,
                 body,
-                updatedBy
+                currentUser._id.toString()
             );
 
         if (!portfolio) {
@@ -153,36 +144,19 @@ export async function DELETE(
     context: RouteContext
 ) {
     try {
+        await connectDB();
+
+        const currentUser = await requirePermission(
+            request,
+            PERMISSIONS.PORTFOLIO_DELETE
+        );
+
         const { id } =
             await context.params;
 
-        /*
-         * TEMPORARY:
-         * Replace this with authenticated
-         * user's ID.
-         */
-        const body =
-            await request.json();
-
-        const deletedBy =
-            body.deletedBy;
-
-        if (!deletedBy) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message:
-                        "DeletedBy is required.",
-                },
-                {
-                    status: 400,
-                }
-            );
-        }
-
         await portfolioService.delete(
             id,
-            deletedBy
+            currentUser._id.toString()
         );
 
         return NextResponse.json(

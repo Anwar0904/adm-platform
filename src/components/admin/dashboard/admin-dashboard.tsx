@@ -63,6 +63,10 @@ interface RecentActivityItem {
     status: string;
 }
 
+type ResourceName = "leads" | "consultations" | "blogs" | "portfolio";
+
+type ResourceHealth = Record<ResourceName, "operational" | "unavailable">;
+
 export default function AdminDashboard() {
     const [stats, setStats] = useState<DashboardStats>({
         totalLeads: 0,
@@ -77,6 +81,12 @@ export default function AdminDashboard() {
     const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [resourceHealth, setResourceHealth] = useState<ResourceHealth>({
+        leads: "unavailable",
+        consultations: "unavailable",
+        blogs: "unavailable",
+        portfolio: "unavailable",
+    });
 
     useEffect(() => {
         trackPageView("admin_dashboard_view");
@@ -88,34 +98,51 @@ export default function AdminDashboard() {
                 setLoading(true);
                 setError(null);
 
-                const [leadResponse, consultResponse, blogsResponse, portfolioResponse] = await Promise.all([
+                const results = await Promise.allSettled([
                     fetch("/api/leads?limit=100", { cache: "no-store", credentials: "include" }),
                     fetch("/api/consultations?limit=100", { cache: "no-store", credentials: "include" }),
                     fetch("/api/blogs?limit=100&status=published", { cache: "no-store", credentials: "include" }),
                     fetch("/api/portfolio?limit=100&status=published", { cache: "no-store", credentials: "include" }),
                 ]);
 
-                const [leadData, consultData, blogsData, portfolioData] = await Promise.all([
-                    leadResponse.json(),
-                    consultResponse.json(),
-                    blogsResponse.json(),
-                    portfolioResponse.json(),
-                ]);
+                const responses = await Promise.all(
+                    results.map(async (result) => {
+                        if (result.status === "rejected") {
+                            return { response: null, data: null };
+                        }
 
-                if (!leadResponse.ok || !consultResponse.ok || !blogsResponse.ok || !portfolioResponse.ok) {
-                    const message =
-                        leadData?.message ||
-                        consultData?.message ||
-                        blogsData?.message ||
-                        portfolioData?.message ||
-                        "Failed to load dashboard data";
+                        try {
+                            return {
+                                response: result.value,
+                                data: await result.value.json(),
+                            };
+                        } catch {
+                            return { response: result.value, data: null };
+                        }
+                    })
+                );
 
-                    throw new Error(message);
+                const [leadResult, consultResult, blogsResult, portfolioResult] = responses;
+                const leadData = leadResult.data ?? {};
+                const consultData = consultResult.data ?? {};
+                const blogsData = blogsResult.data ?? {};
+                const portfolioData = portfolioResult.data ?? {};
+
+                const health: ResourceHealth = {
+                    leads: leadResult.response?.ok ? "operational" : "unavailable",
+                    consultations: consultResult.response?.ok ? "operational" : "unavailable",
+                    blogs: blogsResult.response?.ok ? "operational" : "unavailable",
+                    portfolio: portfolioResult.response?.ok ? "operational" : "unavailable",
+                };
+                setResourceHealth(health);
+
+                if (Object.values(health).every((status) => status === "unavailable")) {
+                    throw new Error("Dashboard data is unavailable.");
                 }
 
-                const leadList = (getArrayField(leadData, ["data.leads", "leads", "data"]) as Array<Record<string, unknown>>);
-                const consultationList = (getArrayField(consultData, ["data.consultations", "consultations", "data"]) as Array<Record<string, unknown>>);
-                const blogList = (getArrayField(blogsData, ["data.blogs", "blogs", "data"]) as Array<Record<string, unknown>>);
+                const leadList = getArrayField(leadData, ["data.leads", "leads", "data"]) as Array<Record<string, unknown>>;
+                const consultationList = getArrayField(consultData, ["data.consultations", "consultations", "data"]) as Array<Record<string, unknown>>;
+                const blogList = getArrayField(blogsData, ["data.blogs", "blogs", "data"]) as Array<Record<string, unknown>>;
                 const portfolioList = (getArrayField(portfolioData, ["data.data", "data", "projects"]) as Array<Record<string, unknown>>);
 
                 const totalLeads = getTotalCount(leadData, ["data.pagination.total", "pagination.total", "data.total", "total"], leadList.length);
@@ -145,45 +172,39 @@ export default function AdminDashboard() {
 
                 const activities: RecentActivityItem[] = [];
 
-                if (Array.isArray(leadData?.data?.leads)) {
-                    (leadData.data.leads as Array<Record<string, unknown>>).slice(0, 2)
-                        .forEach((item) => {
-                            activities.push({
-                                title: `New lead: ${getString(item.fullName, "Client")}`,
-                                description: getPreview(item.message, "New inquiry received"),
-                                time: getTimeAgo(getString(item.createdAt)),
-                                icon: Users,
-                                status: getString(item.status, "new"),
-                            });
+                leadList.slice(0, 2)
+                    .forEach((item) => {
+                        activities.push({
+                            title: `New lead: ${getString(item.fullName, "Client")}`,
+                            description: getPreview(item.message, "New inquiry received"),
+                            time: getTimeAgo(getString(item.createdAt)),
+                            icon: Users,
+                            status: getString(item.status, "new"),
                         });
-                }
+                    });
 
-                if (consultData.data?.data && Array.isArray(consultData.data.data)) {
-                    (consultData.data.data as Array<Record<string, unknown>>).slice(0, 2)
-                        .forEach((item) => {
-                            activities.push({
-                                title: `Consultation from ${getString(item.name, "Client")}`,
-                                description: getPreview(item.message, "Consultation request"),
-                                time: getTimeAgo(getString(item.createdAt)),
-                                icon: BriefcaseBusiness,
-                                status: getString(item.status, "Scheduled"),
-                            });
+                consultationList.slice(0, 2)
+                    .forEach((item) => {
+                        activities.push({
+                            title: `Consultation from ${getString(item.name, "Client")}`,
+                            description: getPreview(item.message, "Consultation request"),
+                            time: getTimeAgo(getString(item.createdAt)),
+                            icon: BriefcaseBusiness,
+                            status: getString(item.status, "Scheduled"),
                         });
-                }
+                    });
 
-                if (blogsData.data?.data && Array.isArray(blogsData.data.data)) {
-                    (blogsData.data.data as Array<Record<string, unknown>>).slice(0, 2)
-                        .forEach((item) => {
-                            const title = getString(item.title, "Untitled blog");
-                            activities.push({
-                                title: `Blog published: ${title}`,
-                                description: getPreview(item.excerpt, title),
-                                time: getTimeAgo(getString(item.publishedAt ?? item.createdAt)),
-                                icon: FileText,
-                                status: "Published",
-                            });
+                blogList.slice(0, 2)
+                    .forEach((item) => {
+                        const title = getString(item.title, "Untitled blog");
+                        activities.push({
+                            title: `Blog published: ${title}`,
+                            description: getPreview(item.excerpt, title),
+                            time: getTimeAgo(getString(item.publishedAt ?? item.createdAt)),
+                            icon: FileText,
+                            status: "Published",
                         });
-                }
+                    });
 
                 setRecentActivity(activities.slice(0, 4));
             } catch (error) {
@@ -205,28 +226,24 @@ export default function AdminDashboard() {
         {
             label: "Total Leads",
             value: stats.totalLeads.toString(),
-            change: "+12.8%",
             icon: Users,
             href: "/admin/consultations",
         },
         {
             label: "Qualified",
             value: stats.qualifiedLeads.toString(),
-            change: "+8.4%",
             icon: BriefcaseBusiness,
             href: "/admin/consultations",
         },
         {
             label: "New Inquiries",
             value: stats.newLeads.toString(),
-            change: "+5.2%",
             icon: FileText,
             href: "/admin/blogs",
         },
         {
             label: "Converted",
             value: stats.convertedLeads.toString(),
-            change: "+3.1%",
             icon: ImageIcon,
             href: "/admin/portfolio",
         },
@@ -276,9 +293,6 @@ export default function AdminDashboard() {
                                     <p className="text-sm font-medium text-slate-400">{stat.label}</p>
                                     <div className="mt-1 flex items-end gap-3">
                                         <p className="text-3xl font-black tracking-tight text-white">{stat.value}</p>
-                                        <span className="mb-1 rounded-full bg-emerald-500/10 px-2 py-1 text-xs font-bold text-emerald-400">
-                                            {stat.change}
-                                        </span>
                                     </div>
                                 </div>
                             </Link>
@@ -402,17 +416,17 @@ export default function AdminDashboard() {
 
                     <div className="mt-6 space-y-3">
                         {[
-                            { name: "Website", status: "Operational" },
-                            { name: "Database", status: "Operational" },
-                            { name: "Authentication", status: "Operational" },
-                            { name: "API Services", status: "Operational" },
+                            { name: "Website", status: "Operational", healthy: true },
+                            { name: "Database", status: "Observed via API", healthy: Object.values(resourceHealth).some((status) => status === "operational") },
+                            { name: "Authentication", status: "Observed via API", healthy: Object.values(resourceHealth).some((status) => status === "operational") },
+                            { name: "API Services", status: Object.values(resourceHealth).every((status) => status === "operational") ? "Operational" : "Partial outage", healthy: Object.values(resourceHealth).some((status) => status === "operational") },
                         ].map((service) => (
                             <div key={service.name} className="flex items-center justify-between rounded-xl bg-slate-950/60 p-4">
                                 <div className="flex items-center gap-3">
-                                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                                    <span className={["h-2.5 w-2.5 rounded-full", service.healthy ? "bg-emerald-500" : "bg-amber-500"].join(" ")} />
                                     <span className="text-sm font-semibold text-slate-200">{service.name}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                                <div className={["flex items-center gap-1.5 text-xs font-bold", service.healthy ? "text-emerald-400" : "text-amber-400"].join(" ")}>
                                     <CheckCircle2 size={14} />
                                     {service.status}
                                 </div>

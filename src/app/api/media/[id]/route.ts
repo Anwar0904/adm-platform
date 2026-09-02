@@ -18,6 +18,13 @@ import {
     ApiErrorHandler,
 } from "@/lib/api/api-error";
 
+const UPLOAD_DIR = path.resolve(
+    process.cwd(),
+    "public",
+    "uploads",
+    "media"
+);
+
 interface Params {
     params: Promise<{
         id: string;
@@ -104,11 +111,14 @@ export async function DELETE(
                     : media.url;
 
             const filePath =
-                path.join(
-                    process.cwd(),
-                    "public",
-                    relativePath
-                );
+                path.resolve(process.cwd(), "public", relativePath);
+
+            if (
+                filePath !== UPLOAD_DIR &&
+                !filePath.startsWith(`${UPLOAD_DIR}${path.sep}`)
+            ) {
+                throw new Error("Invalid media file path.");
+            }
 
             try {
                 await fs.unlink(

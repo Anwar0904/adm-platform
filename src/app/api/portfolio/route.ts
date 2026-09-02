@@ -12,11 +12,16 @@ import {
 import {
     isEnumValue,
 } from "@/utils/enum.utils";
+import { connectDB } from "@/lib/db";
+import { requirePermission } from "@/lib/auth/require-auth";
+import { PERMISSIONS } from "@/constants/permissions";
 
 export async function GET(
     request: NextRequest
 ) {
     try {
+        await connectDB();
+
         const { searchParams } =
             new URL(request.url);
 
@@ -126,35 +131,20 @@ export async function POST(
     request: NextRequest
 ) {
     try {
+        await connectDB();
+
+        const currentUser = await requirePermission(
+            request,
+            PERMISSIONS.PORTFOLIO_CREATE
+        );
+
         const body =
             await request.json();
-
-        /*
-         * TEMPORARY:
-         * We will replace this with
-         * the authenticated user's ID
-         * from your session system.
-         */
-        const authorId =
-            body.authorId;
-
-        if (!authorId) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message:
-                        "Author ID is required.",
-                },
-                {
-                    status: 400,
-                }
-            );
-        }
 
         const portfolio =
             await portfolioService.create(
                 body,
-                authorId
+                currentUser._id.toString()
             );
 
         return NextResponse.json(

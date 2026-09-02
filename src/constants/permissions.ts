@@ -19,6 +19,11 @@ export const PERMISSIONS = {
   SERVICE_UPDATE: "service.update",
   SERVICE_DELETE: "service.delete",
 
+  PORTFOLIO_READ: "portfolio.read",
+  PORTFOLIO_CREATE: "portfolio.create",
+  PORTFOLIO_UPDATE: "portfolio.update",
+  PORTFOLIO_DELETE: "portfolio.delete",
+
   MEDIA_READ: "media.read",
   MEDIA_CREATE: "media.create",
   MEDIA_UPDATE: "media.update",

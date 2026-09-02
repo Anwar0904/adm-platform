@@ -8,6 +8,7 @@ import { ApiErrorHandler } from "@/lib/api/api-error";
 import AuthService from "@/services/auth/auth.service";
 
 import { RefreshTokenSchema } from "@/validators/auth/refresh.validator";
+import { setAuthCookies } from "@/lib/auth/auth-cookies";
 
 export async function POST(request: NextRequest) {
     try {
@@ -22,6 +23,12 @@ export async function POST(request: NextRequest) {
             await AuthService.refresh(
                 data.refreshToken
             );
+
+        await setAuthCookies(
+            result.accessToken,
+            result.refreshToken
+        );
+
         return ApiResponse.success(
             result,
             "Token refreshed successfully."

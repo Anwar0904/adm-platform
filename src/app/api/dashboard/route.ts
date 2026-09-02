@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import DashboardService from "@/services/dashboard.service";
+import { connectDB } from "@/lib/db";
 
 import { ApiResponse } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/error-handler";
@@ -15,6 +16,8 @@ export async function GET(
     request: NextRequest
 ) {
     try {
+        await connectDB();
+
         await requirePermission(
             request,
             PERMISSIONS.SETTINGS_MANAGE

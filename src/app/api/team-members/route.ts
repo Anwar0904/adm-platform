@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import TeamMemberService from "@/services/team-member.service";
+import { connectDB } from "@/lib/db";
 
 import { ApiResponse } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/error-handler";
@@ -18,6 +19,8 @@ export async function GET(
     request: NextRequest
 ) {
     try {
+        await connectDB();
+
         await requirePermission(
             request,
             PERMISSIONS.TEAM_MEMBER_READ
@@ -45,6 +48,8 @@ export async function POST(
     request: NextRequest
 ) {
     try {
+        await connectDB();
+
         const user =
             await requirePermission(
                 request,
