@@ -10,7 +10,10 @@ import { requirePermission } from "@/middleware/auth.middleware";
 import { PERMISSIONS } from "@/constants/permissions";
 
 import { ApiResponse } from "@/lib/api/api-response";
-import { ApiErrorHandler } from "@/lib/api/api-error";
+import {
+    ApiError,
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
 
 const UPLOAD_DIR = path.join(
     process.cwd(),
@@ -200,7 +203,10 @@ export async function POST(request: NextRequest) {
         }
 
         if (files.length === 0) {
-            throw new Error("No files uploaded.");
+            throw new ApiError(
+                400,
+                "No files uploaded."
+            );
         }
 
         await fs.mkdir(
@@ -218,13 +224,15 @@ export async function POST(request: NextRequest) {
             }
 
             if (file.size <= 0) {
-                throw new Error(
+                throw new ApiError(
+                    400,
                     `File "${file.name}" is empty.`
                 );
             }
 
             if (file.size > MAX_FILE_SIZE) {
-                throw new Error(
+                throw new ApiError(
+                    400,
                     `File "${file.name}" exceeds the 10 MB limit.`
                 );
             }
@@ -234,7 +242,8 @@ export async function POST(request: NextRequest) {
                     file.type
                 )
             ) {
-                throw new Error(
+                throw new ApiError(
+                    400,
                     `File type "${file.type}" is not supported.`
                 );
             }
