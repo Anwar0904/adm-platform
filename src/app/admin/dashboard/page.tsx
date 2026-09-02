@@ -89,13 +89,14 @@ export default async function DashboardPage() {
     );
 }
 
-function getTimeAgo(date: Date) {
-    const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+function getTimeAgo(date: Date | string) {
+    const dateValue = new Date(date).toISOString();
+    const seconds = Math.floor((Date.now() - new Date(dateValue).getTime()) / 1000);
 
     if (seconds < 60) return "Just now";
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
     if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
 
-    return new Date(date).toLocaleDateString();
+    return new Date(dateValue).toLocaleDateString();
 }
