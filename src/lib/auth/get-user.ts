@@ -1,4 +1,5 @@
 import { User } from "@/models/user.model";
+import "@/models/role.model";
 import { JwtService } from "@/lib/auth/jwt";
 import { ApiError } from "@/lib/api/api-error";
 

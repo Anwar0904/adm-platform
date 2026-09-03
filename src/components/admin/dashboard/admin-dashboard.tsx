@@ -1,8 +1,4 @@
-"use client";
-
-import { useEffect, useMemo } from "react";
 import Link from "next/link";
-
 import {
     ArrowUpRight,
     BriefcaseBusiness,
@@ -13,10 +9,8 @@ import {
     ImageIcon,
     TrendingUp,
     Users,
-
+    XCircle,
 } from "lucide-react";
-
-import { trackPageView } from "@/lib/analytics";
 
 const quickActions = [
     {
@@ -43,7 +37,7 @@ const quickActions = [
         href: "/admin/team",
         icon: Users,
     },
-];
+] as const;
 
 interface DashboardStats {
     totalLeads: number;
@@ -54,42 +48,90 @@ interface DashboardStats {
     publishedBlogs: number;
     portfolioProjects: number;
 }
+
+type ActivityIcon = "users" | "briefcase" | "file";
+
 interface RecentActivityItem {
     title: string;
     description: string;
     time: string;
-    icon: "users" | "briefcase" | "file";
+    icon: ActivityIcon;
     status: string;
 }
 
 type ResourceName = "leads" | "consultations" | "blogs" | "portfolio";
 
-type ResourceHealth = Record<ResourceName, "operational" | "unavailable">;
+type ResourceStatus = "operational" | "unavailable";
+
+type ResourceHealth = Record<ResourceName, ResourceStatus>;
 
 export interface AdminDashboardData {
-    stats: DashboardStats;
-    recentActivity: RecentActivityItem[];
-    resourceHealth: ResourceHealth;
-    error: string | null;
+    stats?: Partial<DashboardStats> | null;
+    recentActivity?: RecentActivityItem[] | null;
+    resourceHealth?: Partial<ResourceHealth> | null;
+    error?: string | null;
 }
 
+const DEFAULT_STATS: DashboardStats = {
+    totalLeads: 0,
+    newLeads: 0,
+    qualifiedLeads: 0,
+    convertedLeads: 0,
+    consultations: 0,
+    publishedBlogs: 0,
+    portfolioProjects: 0,
+};
+
+const DEFAULT_RESOURCE_HEALTH: ResourceHealth = {
+    leads: "unavailable",
+    consultations: "unavailable",
+    blogs: "unavailable",
+    portfolio: "unavailable",
+};
+
 export default function AdminDashboard({
-    stats,
-    recentActivity,
-    resourceHealth,
-    error,
+    stats: incomingStats,
+    recentActivity: incomingActivity,
+    resourceHealth: incomingResourceHealth,
+    error = null,
 }: AdminDashboardData) {
+    const stats: DashboardStats = {
+        ...DEFAULT_STATS,
+        ...(incomingStats ?? {}),
+    };
+
+    const recentActivity = Array.isArray(incomingActivity)
+        ? incomingActivity
+        : [];
+
+    const resourceHealth: ResourceHealth = {
+        ...DEFAULT_RESOURCE_HEALTH,
+        ...(incomingResourceHealth ?? {}),
+    };
+
+    const conversionRate =
+        stats.totalLeads > 0
+            ? Math.round((stats.convertedLeads / stats.totalLeads) * 100)
+            : 0;
+
+    const resourceEntries = Object.entries(resourceHealth);
+
+    const operationalCount = resourceEntries.filter(
+        ([, status]) => status === "operational",
+    ).length;
+
+    const totalResources = resourceEntries.length;
+
+    const allResourcesOperational =
+        totalResources > 0 && operationalCount === totalResources;
+
+    const someResourcesOperational = operationalCount > 0;
 
     const activityIcons = {
         users: Users,
         briefcase: BriefcaseBusiness,
         file: FileText,
     } as const;
-
-    const conversionRate = useMemo(() => {
-        if (!stats.totalLeads) return 0;
-        return Math.round((stats.convertedLeads / stats.totalLeads) * 100);
-    }, [stats]);
 
     const statCards = [
         {
@@ -108,26 +150,68 @@ export default function AdminDashboard({
             label: "New Inquiries",
             value: stats.newLeads.toString(),
             icon: FileText,
-            href: "/admin/blogs",
+            href: "/admin/leads",
         },
         {
             label: "Converted",
             value: stats.convertedLeads.toString(),
-            icon: ImageIcon,
-            href: "/admin/portfolio",
+            icon: TrendingUp,
+            href: "/admin/consultations",
         },
-    ];
+    ] as const;
+
+    const systemStatus = [
+        {
+            name: "Website",
+            status: "Operational",
+            healthy: true,
+        },
+        {
+            name: "Database",
+            status:
+                allResourcesOperational
+                    ? "Operational"
+                    : someResourcesOperational
+                        ? "Partially available"
+                        : "Unavailable",
+            healthy: allResourcesOperational,
+        },
+        {
+            name: "Authentication",
+            status:
+                error === null
+                    ? "Observed"
+                    : "Needs attention",
+            healthy: error === null,
+        },
+        {
+            name: "API Services",
+            status:
+                allResourcesOperational
+                    ? "Operational"
+                    : someResourcesOperational
+                        ? "Partial outage"
+                        : "Unavailable",
+            healthy: allResourcesOperational,
+        },
+    ] as const;
 
     return (
         <div className="mx-auto max-w-7xl space-y-8">
+            {/* Header */}
             <section className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p className="text-sm font-semibold text-blue-400">Overview</p>
-                    <h2 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
+                    <p className="text-sm font-semibold text-blue-400">
+                        Overview
+                    </p>
+
+                    <h1 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
                         Good morning, Admin.
-                    </h2>
+                    </h1>
+
                     <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
-                        Here&apos;s what&apos;s happening across your ADM digital ecosystem.
+                        Here&apos;s what&apos;s happening across your ADM
+                        digital ecosystem.
                     </p>
                 </div>
 
@@ -137,43 +221,79 @@ export default function AdminDashboard({
                 </div>
             </section>
 
+            {/* Error banner */}
+            {error && (
+                <section
+                    role="alert"
+                    className="rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-4"
+                >
+                    <div className="flex items-start gap-3">
+                        <XCircle
+                            size={20}
+                            className="mt-0.5 shrink-0 text-red-400"
+                        />
+
+                        <div>
+                            <p className="text-sm font-bold text-red-300">
+                                Dashboard data is partially unavailable
+                            </p>
+
+                            <p className="mt-1 text-sm leading-6 text-red-200/80">
+                                {error}
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Statistics */}
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {error ? (
-                    <div className="col-span-4 text-center text-sm text-red-400">{error}</div>
-                ) : (
-                    statCards.map((stat) => {
-                        const Icon = stat.icon;
-                        return (
-                            <Link
-                                key={stat.label}
-                                href={stat.href}
-                                className="group rounded-2xl border border-slate-800 bg-slate-900 p-5 transition-all hover:-translate-y-0.5 hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-950/30"
-                            >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
-                                        <Icon size={21} />
-                                    </div>
-                                    <ArrowUpRight size={18} className="text-slate-500 transition group-hover:text-blue-300" />
+                {statCards.map((stat) => {
+                    const Icon = stat.icon;
+
+                    return (
+                        <Link
+                            key={stat.label}
+                            href={stat.href}
+                            className="group rounded-2xl border border-slate-800 bg-slate-900 p-5 transition-all hover:-translate-y-0.5 hover:border-blue-500/60 hover:shadow-lg hover:shadow-blue-950/30"
+                        >
+                            <div className="flex items-start justify-between">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
+                                    <Icon size={21} />
                                 </div>
 
-                                <div className="mt-6">
-                                    <p className="text-sm font-medium text-slate-400">{stat.label}</p>
-                                    <div className="mt-1 flex items-end gap-3">
-                                        <p className="text-3xl font-black tracking-tight text-white">{stat.value}</p>
-                                    </div>
-                                </div>
-                            </Link>
-                        );
-                    })
-                )}
+                                <ArrowUpRight
+                                    size={18}
+                                    className="text-slate-500 transition group-hover:text-blue-300"
+                                />
+                            </div>
+
+                            <div className="mt-6">
+                                <p className="text-sm font-medium text-slate-400">
+                                    {stat.label}
+                                </p>
+
+                                <p className="mt-1 text-3xl font-black tracking-tight text-white">
+                                    {stat.value}
+                                </p>
+                            </div>
+                        </Link>
+                    );
+                })}
             </section>
 
+            {/* Conversion + Quick Actions */}
             <section className="grid gap-6 xl:grid-cols-[1.45fr_1fr]">
                 <div className="rounded-2xl border border-slate-800 bg-slate-900 shadow-sm">
                     <div className="flex items-center justify-between border-b border-slate-800 p-6">
                         <div>
-                            <h3 className="font-black text-white">Conversion Performance</h3>
-                            <p className="mt-1 text-sm text-slate-400">Overall lead-to-client progress</p>
+                            <h2 className="font-black text-white">
+                                Conversion Performance
+                            </h2>
+
+                            <p className="mt-1 text-sm text-slate-400">
+                                Overall lead-to-client progress
+                            </p>
                         </div>
 
                         <div className="flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-400">
@@ -184,32 +304,64 @@ export default function AdminDashboard({
 
                     <div className="grid gap-4 p-6 md:grid-cols-3">
                         <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Lead rate</p>
-                            <p className="mt-3 text-3xl font-black text-white">{conversionRate}%</p>
-                            <p className="mt-2 text-sm text-slate-400">Converted from total inquiries</p>
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                                Lead rate
+                            </p>
+
+                            <p className="mt-3 text-3xl font-black text-white">
+                                {conversionRate}%
+                            </p>
+
+                            <p className="mt-2 text-sm text-slate-400">
+                                Converted from total inquiries
+                            </p>
                         </div>
+
                         <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Qualified</p>
-                            <p className="mt-3 text-3xl font-black text-white">{stats.qualifiedLeads}</p>
-                            <p className="mt-2 text-sm text-slate-400">High-intent opportunities</p>
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                                Qualified
+                            </p>
+
+                            <p className="mt-3 text-3xl font-black text-white">
+                                {stats.qualifiedLeads}
+                            </p>
+
+                            <p className="mt-2 text-sm text-slate-400">
+                                High-intent opportunities
+                            </p>
                         </div>
+
                         <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Consultations</p>
-                            <p className="mt-3 text-3xl font-black text-white">{stats.consultations}</p>
-                            <p className="mt-2 text-sm text-slate-400">Booked discovery calls</p>
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                                Consultations
+                            </p>
+
+                            <p className="mt-3 text-3xl font-black text-white">
+                                {stats.consultations}
+                            </p>
+
+                            <p className="mt-2 text-sm text-slate-400">
+                                Booked discovery calls
+                            </p>
                         </div>
                     </div>
                 </div>
 
                 <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
                     <div>
-                        <h3 className="font-black text-white">Quick Actions</h3>
-                        <p className="mt-1 text-sm text-slate-400">Frequently used actions</p>
+                        <h2 className="font-black text-white">
+                            Quick Actions
+                        </h2>
+
+                        <p className="mt-1 text-sm text-slate-400">
+                            Frequently used actions
+                        </p>
                     </div>
 
                     <div className="mt-6 space-y-3">
                         {quickActions.map((action) => {
                             const Icon = action.icon;
+
                             return (
                                 <Link
                                     key={action.title}
@@ -221,11 +373,19 @@ export default function AdminDashboard({
                                     </div>
 
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-bold text-white">{action.title}</p>
-                                        <p className="mt-0.5 text-xs text-slate-400">{action.description}</p>
+                                        <p className="text-sm font-bold text-white">
+                                            {action.title}
+                                        </p>
+
+                                        <p className="mt-0.5 text-xs text-slate-400">
+                                            {action.description}
+                                        </p>
                                     </div>
 
-                                    <ArrowUpRight size={17} className="text-slate-500 transition group-hover:text-blue-300" />
+                                    <ArrowUpRight
+                                        size={17}
+                                        className="text-slate-500 transition group-hover:text-blue-300"
+                                    />
                                 </Link>
                             );
                         })}
@@ -233,38 +393,65 @@ export default function AdminDashboard({
                 </div>
             </section>
 
+            {/* Recent Activity + System Status */}
             <section className="grid gap-6 xl:grid-cols-[1.45fr_1fr]">
                 <div className="rounded-2xl border border-slate-800 bg-slate-900 shadow-sm">
                     <div className="flex items-center justify-between border-b border-slate-800 p-6">
                         <div>
-                            <h3 className="font-black text-white">Recent Activity</h3>
-                            <p className="mt-1 text-sm text-slate-400">Latest changes across ADM</p>
+                            <h2 className="font-black text-white">
+                                Recent Activity
+                            </h2>
+
+                            <p className="mt-1 text-sm text-slate-400">
+                                Latest changes across ADM
+                            </p>
                         </div>
-                        <button className="text-sm font-bold text-blue-300 hover:text-blue-200">View all</button>
+
+                        <Link
+                            href="/admin/consultations"
+                            className="text-sm font-bold text-blue-300 transition hover:text-blue-200"
+                        >
+                            View all
+                        </Link>
                     </div>
 
                     <div className="divide-y divide-slate-800">
                         {recentActivity.length === 0 ? (
-                            <div className="p-5 text-center text-sm text-slate-400">No recent activity yet</div>
+                            <div className="p-5 text-center text-sm text-slate-400">
+                                No recent activity yet
+                            </div>
                         ) : (
-                            recentActivity.map((activity) => {
-                                const Icon = activityIcons[activity.icon];
+                            recentActivity.map((activity, index) => {
+                                const Icon =
+                                    activityIcons[activity.icon] ?? FileText;
+
                                 return (
-                                    <div key={`${activity.title}-${activity.time}`} className="flex gap-4 p-5">
+                                    <div
+                                        key={`${activity.title}-${activity.time}-${index}`}
+                                        className="flex gap-4 p-5"
+                                    >
                                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
                                             <Icon size={18} />
                                         </div>
 
                                         <div className="min-w-0 flex-1">
                                             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                                                <p className="text-sm font-bold text-white">{activity.title}</p>
+                                                <p className="text-sm font-bold text-white">
+                                                    {activity.title}
+                                                </p>
+
                                                 <span className="w-fit rounded-full bg-slate-800 px-2.5 py-1 text-[10px] font-bold capitalize text-slate-300">
                                                     {activity.status}
                                                 </span>
                                             </div>
 
-                                            <p className="mt-1 text-sm text-slate-400">{activity.description}</p>
-                                            <p className="mt-2 text-xs font-medium text-slate-500">{activity.time}</p>
+                                            <p className="mt-1 text-sm text-slate-400">
+                                                {activity.description}
+                                            </p>
+
+                                            <p className="mt-2 text-xs font-medium text-slate-500">
+                                                {activity.time}
+                                            </p>
                                         </div>
                                     </div>
                                 );
@@ -275,24 +462,50 @@ export default function AdminDashboard({
 
                 <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
                     <div>
-                        <h3 className="font-black text-white">System Status</h3>
-                        <p className="mt-1 text-sm text-slate-400">ADM services overview</p>
+                        <h2 className="font-black text-white">
+                            System Status
+                        </h2>
+
+                        <p className="mt-1 text-sm text-slate-400">
+                            ADM services overview
+                        </p>
                     </div>
 
                     <div className="mt-6 space-y-3">
-                        {[
-                            { name: "Website", status: "Operational", healthy: true },
-                            { name: "Database", status: "Observed via API", healthy: Object.values(resourceHealth).some((status) => status === "operational") },
-                            { name: "Authentication", status: "Observed via API", healthy: Object.values(resourceHealth).some((status) => status === "operational") },
-                            { name: "API Services", status: Object.values(resourceHealth).every((status) => status === "operational") ? "Operational" : "Partial outage", healthy: Object.values(resourceHealth).some((status) => status === "operational") },
-                        ].map((service) => (
-                            <div key={service.name} className="flex items-center justify-between rounded-xl bg-slate-950/60 p-4">
+                        {systemStatus.map((service) => (
+                            <div
+                                key={service.name}
+                                className="flex items-center justify-between rounded-xl bg-slate-950/60 p-4"
+                            >
                                 <div className="flex items-center gap-3">
-                                    <span className={["h-2.5 w-2.5 rounded-full", service.healthy ? "bg-emerald-500" : "bg-amber-500"].join(" ")} />
-                                    <span className="text-sm font-semibold text-slate-200">{service.name}</span>
+                                    <span
+                                        className={[
+                                            "h-2.5 w-2.5 rounded-full",
+                                            service.healthy
+                                                ? "bg-emerald-500"
+                                                : "bg-amber-500",
+                                        ].join(" ")}
+                                    />
+
+                                    <span className="text-sm font-semibold text-slate-200">
+                                        {service.name}
+                                    </span>
                                 </div>
-                                <div className={["flex items-center gap-1.5 text-xs font-bold", service.healthy ? "text-emerald-400" : "text-amber-400"].join(" ")}>
-                                    <CheckCircle2 size={14} />
+
+                                <div
+                                    className={[
+                                        "flex items-center gap-1.5 text-xs font-bold",
+                                        service.healthy
+                                            ? "text-emerald-400"
+                                            : "text-amber-400",
+                                    ].join(" ")}
+                                >
+                                    {service.healthy ? (
+                                        <CheckCircle2 size={14} />
+                                    ) : (
+                                        <XCircle size={14} />
+                                    )}
+
                                     {service.status}
                                 </div>
                             </div>
@@ -300,9 +513,15 @@ export default function AdminDashboard({
                     </div>
 
                     <div className="mt-6 flex items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
-                        <Eye size={18} className="text-blue-300" />
+                        <Eye
+                            size={18}
+                            className="shrink-0 text-blue-300"
+                        />
+
                         <p className="text-xs leading-5 text-blue-200">
-                            Dashboard is connected to real ADM data and updates as leads and consultations are recorded.
+                            Dashboard information is generated from the
+                            server-provided ADM data and reflects the health
+                            information available to the dashboard.
                         </p>
                     </div>
                 </div>
