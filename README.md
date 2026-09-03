@@ -66,6 +66,16 @@ MONGODB_URL=your_mongodb_connection_string
 NODE_ENV=development
 ```
 
+For production deployments on Vercel, create a Vercel Blob store and add its
+read/write token to the project environment variables:
+
+```bash
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_read_write_token
+```
+
+Production media files are stored in Vercel Blob. Local development continues
+to use `public/uploads/media`.
+
 ### 3. Run the development server
 
 ```bash

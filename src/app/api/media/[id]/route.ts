@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+import { del } from "@vercel/blob";
 
 import mongoose from "mongoose";
 
@@ -105,25 +106,27 @@ export async function DELETE(
          * Delete physical file.
          */
         if (media.url) {
-            const relativePath =
-                media.url.startsWith("/")
-                    ? media.url.slice(1)
-                    : media.url;
-
-            const filePath =
-                path.resolve(process.cwd(), "public", relativePath);
-
-            if (
-                filePath !== UPLOAD_DIR &&
-                !filePath.startsWith(`${UPLOAD_DIR}${path.sep}`)
-            ) {
-                throw new Error("Invalid media file path.");
-            }
-
             try {
-                await fs.unlink(
-                    filePath
-                );
+                if (media.url.startsWith("http")) {
+                    await del(media.url);
+                } else {
+                    const relativePath =
+                        media.url.startsWith("/")
+                            ? media.url.slice(1)
+                            : media.url;
+
+                    const filePath =
+                        path.resolve(process.cwd(), "public", relativePath);
+
+                    if (
+                        filePath !== UPLOAD_DIR &&
+                        !filePath.startsWith(`${UPLOAD_DIR}${path.sep}`)
+                    ) {
+                        throw new Error("Invalid media file path.");
+                    }
+
+                    await fs.unlink(filePath);
+                }
             } catch {
                 /*
                  * The database record should still

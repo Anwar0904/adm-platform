@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import path from "path";
 import fs from "fs/promises";
 import crypto from "crypto";
+import { put } from "@vercel/blob";
 
 import { connectDB } from "@/lib/db";
 import { Media } from "@/models/media.model";
@@ -10,7 +11,10 @@ import { requirePermission } from "@/middleware/auth.middleware";
 import { PERMISSIONS } from "@/constants/permissions";
 
 import { ApiResponse } from "@/lib/api/api-response";
-import { ApiErrorHandler } from "@/lib/api/api-error";
+import {
+    ApiError,
+    ApiErrorHandler,
+} from "@/lib/api/api-error";
 
 const UPLOAD_DIR = path.join(
     process.cwd(),
@@ -20,6 +24,9 @@ const UPLOAD_DIR = path.join(
 );
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+const USE_BLOB_STORAGE =
+    process.env.NODE_ENV === "production";
 
 const ALLOWED_MIME_TYPES = [
     "image/jpeg",
@@ -174,6 +181,16 @@ export async function POST(request: NextRequest) {
 
         await ensurePublicIdIndex();
 
+        if (
+            USE_BLOB_STORAGE &&
+            !process.env.BLOB_READ_WRITE_TOKEN
+        ) {
+            throw new ApiError(
+                503,
+                "Media storage is not configured. Set BLOB_READ_WRITE_TOKEN in the production environment."
+            );
+        }
+
         const formData =
             await request.formData();
 
@@ -200,15 +217,20 @@ export async function POST(request: NextRequest) {
         }
 
         if (files.length === 0) {
-            throw new Error("No files uploaded.");
+            throw new ApiError(
+                400,
+                "No files uploaded."
+            );
         }
 
-        await fs.mkdir(
-            UPLOAD_DIR,
-            {
-                recursive: true,
-            }
-        );
+        if (!USE_BLOB_STORAGE) {
+            await fs.mkdir(
+                UPLOAD_DIR,
+                {
+                    recursive: true,
+                }
+            );
+        }
 
         const uploaded = [];
 
@@ -218,13 +240,15 @@ export async function POST(request: NextRequest) {
             }
 
             if (file.size <= 0) {
-                throw new Error(
+                throw new ApiError(
+                    400,
                     `File "${file.name}" is empty.`
                 );
             }
 
             if (file.size > MAX_FILE_SIZE) {
-                throw new Error(
+                throw new ApiError(
+                    400,
                     `File "${file.name}" exceeds the 10 MB limit.`
                 );
             }
@@ -234,7 +258,8 @@ export async function POST(request: NextRequest) {
                     file.type
                 )
             ) {
-                throw new Error(
+                throw new ApiError(
+                    400,
                     `File type "${file.type}" is not supported.`
                 );
             }
@@ -260,16 +285,13 @@ export async function POST(request: NextRequest) {
                     .randomBytes(6)
                     .toString("hex")}${extension}`;
 
-            const filePath =
-                path.join(
-                    UPLOAD_DIR,
-                    uniqueName
-                );
-
-            const publicUrl =
-                `/uploads/media/${uniqueName}`;
+            const filePath = path.join(
+                UPLOAD_DIR,
+                uniqueName
+            );
 
             let fileWritten = false;
+            let publicUrl = "";
 
             try {
                 const arrayBuffer =
@@ -278,12 +300,28 @@ export async function POST(request: NextRequest) {
                 const buffer =
                     Buffer.from(arrayBuffer);
 
-                await fs.writeFile(
-                    filePath,
-                    buffer
-                );
+                if (USE_BLOB_STORAGE) {
+                    const blob = await put(
+                        `media/${uniqueName}`,
+                        buffer,
+                        {
+                            access: "public",
+                            addRandomSuffix: false,
+                            contentType: file.type,
+                        }
+                    );
 
-                fileWritten = true;
+                    publicUrl = blob.url;
+                } else {
+                    await fs.writeFile(
+                        filePath,
+                        buffer
+                    );
+
+                    fileWritten = true;
+                    publicUrl =
+                        `/uploads/media/${uniqueName}`;
+                }
 
                 const media =
                     await Media.create({
