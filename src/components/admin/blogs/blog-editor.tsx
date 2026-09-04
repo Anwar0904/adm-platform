@@ -234,6 +234,30 @@ function getErrorMessage(
     return "Something went wrong.";
 }
 
+function getRenderableContent(content: string) {
+    const trimmedContent = content.trim();
+    const fencedContent = trimmedContent.match(
+        /^```(?:html)?\s*([\s\S]*?)\s*```$/i
+    );
+
+    if (fencedContent) {
+        return fencedContent[1];
+    }
+
+    if (
+        /```/.test(trimmedContent) &&
+        /<\s*(article|section|header|h[1-6]|p|ul|ol)\b/i.test(
+            trimmedContent
+        )
+    ) {
+        return trimmedContent
+            .replace(/```(?:html)?\s*/gi, "")
+            .replace(/```/g, "");
+    }
+
+    return content;
+}
+
 export default function BlogEditor({
     blogId,
 }: BlogEditorProps) {
@@ -2814,10 +2838,16 @@ function Preview({
                         </div>
                     </div>
 
-                    <div className="mt-8 whitespace-pre-wrap text-sm leading-8 text-slate-700 sm:text-base">
-                        {form.content ||
-                            "Start writing your article..."}
-                    </div>
+                    <div
+                        className="prose prose-slate mt-8 max-w-none text-sm leading-8 sm:text-base [&_a]:font-bold [&_a]:text-blue-600 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-black [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-black [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-black [&_li]:ml-5 [&_li]:list-disc [&_ol]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_strong]:font-black [&_ul]:mb-4"
+                        dangerouslySetInnerHTML={{
+                            __html:
+                                getRenderableContent(
+                                    form.content
+                                ) ||
+                                "<p>Start writing your article...</p>",
+                        }}
+                    />
 
                     {form.faqs.length >
                         0 && (

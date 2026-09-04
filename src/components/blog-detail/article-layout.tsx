@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
@@ -11,6 +9,30 @@ import type { BlogPost } from "@/lib/dummy/blog";
 
 interface Props {
     blog: BlogPost;
+}
+
+function getRenderableContent(content: string) {
+    const trimmedContent = content.trim();
+    const fencedContent = trimmedContent.match(
+        /^```(?:html)?\s*([\s\S]*?)\s*```$/i
+    );
+
+    if (fencedContent) {
+        return fencedContent[1];
+    }
+
+    if (
+        /```/.test(trimmedContent) &&
+        /<\s*(article|section|header|h[1-6]|p|ul|ol)\b/i.test(
+            trimmedContent
+        )
+    ) {
+        return trimmedContent
+            .replace(/```(?:html)?\s*/gi, "")
+            .replace(/```/g, "");
+    }
+
+    return content;
 }
 
 export default function ArticleLayout({
@@ -156,52 +178,14 @@ export default function ArticleLayout({
                             prose-blockquote:text-slate-200
                         "
                         >
-                            <ReactMarkdown
-                                remarkPlugins={[
-                                    remarkGfm,
-                                ]}
-                                components={{
-                                    h1: ({
-                                        children,
-                                    }) => (
-                                        <h1 id="introduction">
-                                            {
-                                                children
-                                            }
-                                        </h1>
-                                    ),
-
-                                    h2: ({
-                                        children,
-                                    }) => {
-                                        const id =
-                                            String(
-                                                children
-                                            )
-                                                .toLowerCase()
-                                                .replaceAll(
-                                                    " ",
-                                                    "-"
-                                                );
-
-                                        return (
-                                            <h2
-                                                id={
-                                                    id
-                                                }
-                                            >
-                                                {
-                                                    children
-                                                }
-                                            </h2>
-                                        );
-                                    },
+                            <div
+                                dangerouslySetInnerHTML={{
+                                    __html:
+                                        getRenderableContent(
+                                            blog.content
+                                        ),
                                 }}
-                            >
-                                {
-                                    blog.content
-                                }
-                            </ReactMarkdown>
+                            />
                         </div>
                     </article>
                 </div>
