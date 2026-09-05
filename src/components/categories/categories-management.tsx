@@ -25,7 +25,7 @@ type Category = {
     name: string;
     slug: string;
     description?: string;
-    status?: "active" | "inactive";
+    status?: "draft" | "published" | "archived";
     posts?: number;
     createdAt: string;
 };
@@ -119,8 +119,8 @@ export default function CategoriesManagement() {
         useState("");
 
     const [status, setStatus] =
-        useState<"active" | "inactive">(
-            "active"
+        useState<"draft" | "published" | "archived">(
+            "draft"
         );
 
     const [slugManuallyEdited, setSlugManuallyEdited] =
@@ -204,17 +204,17 @@ export default function CategoriesManagement() {
             0
         );
 
-    const activeCount =
+    const publishedCount =
         categories.filter(
             (category) =>
-                category.status !== "inactive"
+                category.status === "published"
         ).length;
 
     function resetForm() {
         setName("");
         setSlug("");
         setDescription("");
-        setStatus("active");
+        setStatus("draft");
         setEditing(null);
         setSlugManuallyEdited(false);
     }
@@ -235,11 +235,7 @@ export default function CategoriesManagement() {
         setDescription(
             category.description ?? ""
         );
-        setStatus(
-            category.status === "inactive"
-                ? "inactive"
-                : "active"
-        );
+        setStatus(category.status ?? "draft");
         setSlugManuallyEdited(true);
         setError(null);
         setSuccess(null);
@@ -520,11 +516,11 @@ export default function CategoriesManagement() {
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                     <p className="text-sm font-medium text-slate-500">
-                        Active
+                        Published
                     </p>
 
                     <p className="mt-2 text-3xl font-black text-emerald-600">
-                        {activeCount}
+                        {publishedCount}
                     </p>
                 </div>
 
@@ -663,17 +659,14 @@ export default function CategoriesManagement() {
                                                     className={[
                                                         "inline-flex rounded-full px-2.5 py-1 text-xs font-bold capitalize",
                                                         category.status ===
-                                                            "inactive"
-                                                            ? "bg-slate-100 text-slate-500"
-                                                            : "bg-emerald-50 text-emerald-600",
+                                                            "published"
+                                                            ? "bg-emerald-50 text-emerald-600"
+                                                            : "bg-slate-100 text-slate-500",
                                                     ].join(
                                                         " "
                                                     )}
                                                 >
-                                                    {category.status ===
-                                                        "inactive"
-                                                        ? "inactive"
-                                                        : "active"}
+                                                    {category.status ?? "draft"}
                                                 </span>
                                             </td>
 
@@ -762,17 +755,14 @@ export default function CategoriesManagement() {
                                                     className={[
                                                         "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold",
                                                         category.status ===
-                                                            "inactive"
-                                                            ? "bg-slate-100 text-slate-500"
-                                                            : "bg-emerald-50 text-emerald-600",
+                                                            "published"
+                                                            ? "bg-emerald-50 text-emerald-600"
+                                                            : "bg-slate-100 text-slate-500",
                                                     ].join(
                                                         " "
                                                     )}
                                                 >
-                                                    {category.status ===
-                                                        "inactive"
-                                                        ? "inactive"
-                                                        : "active"}
+                                                    {category.status ?? "draft"}
                                                 </span>
                                             </div>
 
@@ -883,7 +873,7 @@ export default function CategoriesManagement() {
                         }
                     }}
                 >
-                    <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white shadow-2xl">
+                    <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white/80 shadow-2xl">
                         <div className="flex items-center justify-between border-b border-slate-100 p-6">
                             <div>
                                 <p className="text-xs font-bold uppercase tracking-widest text-blue-600">
@@ -932,7 +922,7 @@ export default function CategoriesManagement() {
                                     placeholder="e.g. Artificial Intelligence"
                                     required
                                     disabled={saving}
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
+                                    className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
                             </div>
 
@@ -956,7 +946,7 @@ export default function CategoriesManagement() {
                                     placeholder="artificial-intelligence"
                                     required
                                     disabled={saving}
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
+                                    className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
 
                                 <p className="mt-1.5 text-xs text-slate-400">
@@ -983,7 +973,7 @@ export default function CategoriesManagement() {
                                     rows={4}
                                     disabled={saving}
                                     placeholder="Briefly describe this category..."
-                                    className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
+                                    className="w-full text-black resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
                             </div>
 
@@ -995,8 +985,9 @@ export default function CategoriesManagement() {
                                 <div className="grid grid-cols-2 gap-2">
                                     {(
                                         [
-                                            "active",
-                                            "inactive",
+                                            "draft",
+                                            "published",
+                                            "archived",
                                         ] as const
                                     ).map(
                                         (value) => (

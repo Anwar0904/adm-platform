@@ -19,7 +19,7 @@ class BlogRepository {
             )
             .populate(
                 "author",
-                "name email avatar"
+                "firstName lastName email avatar jobTitle"
             )
             .populate(
                 "featuredImage"

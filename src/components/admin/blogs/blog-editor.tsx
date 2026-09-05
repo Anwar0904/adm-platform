@@ -125,6 +125,8 @@ type BlogResponse = {
     | {
         _id: string;
         name?: string;
+        firstName?: string;
+        lastName?: string;
         email?: string;
         avatar?: string;
         jobTitle?: string;
@@ -600,12 +602,21 @@ export default function BlogEditor({
                 typeof blog.author !==
                 "string"
             ) {
+                const authorName =
+                    blog.author.name ??
+                    [
+                        blog.author.firstName,
+                        blog.author.lastName,
+                    ]
+                        .filter(Boolean)
+                        .join(" ");
+
                 setCurrentUser({
                     _id:
                         blog.author._id,
 
                     name:
-                        blog.author.name ??
+                        authorName ||
                         "Unknown author",
 
                     email:
@@ -2839,7 +2850,7 @@ function Preview({
                     </div>
 
                     <div
-                        className="prose prose-slate mt-8 max-w-none text-sm leading-8 sm:text-base [&_a]:font-bold [&_a]:text-blue-600 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-black [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-black [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-black [&_li]:ml-5 [&_li]:list-disc [&_ol]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_strong]:font-black [&_ul]:mb-4"
+                        className="prose bg-black prose-slate mt-8 max-w-none text-sm leading-8 sm:text-base [&_a]:font-bold [&_a]:text-blue-600 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-black [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:text-2xl [&_h2]:font-black [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-xl [&_h3]:font-black [&_li]:ml-5 [&_li]:list-disc [&_ol]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_strong]:font-black [&_ul]:mb-4"
                         dangerouslySetInnerHTML={{
                             __html:
                                 getRenderableContent(

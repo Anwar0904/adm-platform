@@ -738,7 +738,7 @@ export default function TagsManagement() {
                             )
                         }
                         placeholder="Search tags..."
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+                        className="h-11 text-black w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
                     />
                 </div>
             </section>
@@ -1209,7 +1209,7 @@ export default function TagsManagement() {
                                     disabled={
                                         submitting
                                     }
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
+                                    className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
                             </div>
 
@@ -1240,7 +1240,7 @@ export default function TagsManagement() {
                                     disabled={
                                         submitting
                                     }
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
+                                    className="h-12 w-full text-black rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
 
                                 <p className="mt-1.5 text-xs text-slate-400">
@@ -1276,7 +1276,7 @@ export default function TagsManagement() {
                                     disabled={
                                         submitting
                                     }
-                                    className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
+                                    className="w-full text-black resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 disabled:opacity-60"
                                 />
 
                                 <p className="mt-1 text-right text-xs text-slate-400">
@@ -1313,7 +1313,7 @@ export default function TagsManagement() {
                                             disabled={
                                                 submitting
                                             }
-                                            className="h-8 w-8 cursor-pointer rounded-lg border-0 bg-transparent p-0"
+                                            className="h-8 w-8 text-black cursor-pointer rounded-lg border-0 bg-transparent p-0"
                                         />
 
                                         <input
@@ -1332,7 +1332,7 @@ export default function TagsManagement() {
                                             disabled={
                                                 submitting
                                             }
-                                            className="min-w-0 flex-1 bg-transparent text-sm font-medium uppercase outline-none"
+                                            className="min-w-0 text-black flex-1 bg-transparent text-sm font-medium uppercase outline-none"
                                         />
                                     </div>
                                 </div>
