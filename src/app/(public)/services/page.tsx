@@ -18,7 +18,7 @@ export default function ServicesPage() {
       <ProcessSection />
       <TechnologiesSection />
       <FAQPreviewSection />
-      <ServicesCTASection /> 
+      <ServicesCTASection />
     </main>
   );
 }

@@ -115,7 +115,7 @@ export default function Hero({ service }: { service: any }) {
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">
-              <Link href="/book-consultation" className="inline-flex items-center rounded-xl bg-linear-to-r from-blue-600 to-cyan-500 px-7 py-3.5 font-semibold text-white shadow-[0_15px_40px_rgba(37,99,235,0.35)] transition hover:-translate-y-0.5">
+              <Link href="/consultation" className="inline-flex items-center rounded-xl bg-linear-to-r from-blue-600 to-cyan-500 px-7 py-3.5 font-semibold text-white shadow-[0_15px_40px_rgba(37,99,235,0.35)] transition hover:-translate-y-0.5">
                 Book Consultation
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>

@@ -51,7 +51,7 @@ export default function IndustriesHero() {
 
                         <div className="mt-10 flex flex-wrap gap-5">
                             <Link
-                                href="/book-consultation"
+                                href="/consultation"
                                 className="group inline-flex items-center rounded-2xl bg-blue-600 px-7 py-4 font-semibold text-white shadow-lg shadow-blue-900/40 transition-all duration-300 hover:-translate-y-1 hover:bg-blue-500"
                             >
                                 Book Consultation

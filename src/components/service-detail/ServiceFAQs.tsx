@@ -132,7 +132,7 @@ export default function ServiceFAQs() {
           </p>
 
           <a
-            href="/book-consultation"
+            href="/consultation"
             className="mt-8 inline-flex rounded-xl bg-white px-8 py-4 font-semibold text-blue-600 transition duration-300 hover:scale-105"
           >
             Schedule Free Consultation

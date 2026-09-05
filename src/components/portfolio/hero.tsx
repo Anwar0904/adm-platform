@@ -49,7 +49,7 @@ export default function PortfolioHero() {
               </Link>
 
               <Link
-                href="/book-consultation"
+                href="/consultation"
                 className="group inline-flex items-center rounded-xl border border-white/10 bg-slate-900/40 px-8 py-4 font-semibold text-slate-100 shadow-sm transition-all hover:border-blue-400 hover:text-blue-300"
               >
                 Start Your Project

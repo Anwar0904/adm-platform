@@ -95,11 +95,10 @@ export default function ServicePricing() {
               <motion.div
                 key={plan.title}
                 whileHover={{ y: -10 }}
-                className={`relative overflow-hidden rounded-[32px] border transition-all duration-300 ${
-                  plan.highlighted
-                    ? "border-blue-600 bg-gradient-to-b from-blue-600 to-cyan-500 text-white shadow-2xl scale-105"
-                    : "border-slate-200 bg-white shadow-lg"
-                }`}
+                className={`relative overflow-hidden rounded-[32px] border transition-all duration-300 ${plan.highlighted
+                  ? "border-blue-600 bg-gradient-to-b from-blue-600 to-cyan-500 text-white shadow-2xl scale-105"
+                  : "border-slate-200 bg-white shadow-lg"
+                  }`}
               >
                 {plan.highlighted && (
                   <div className="absolute right-5 top-5 rounded-full bg-white px-4 py-1 text-sm font-bold text-blue-600">
@@ -110,11 +109,10 @@ export default function ServicePricing() {
                 <div className="p-10">
 
                   <div
-                    className={`flex h-16 w-16 items-center justify-center rounded-2xl ${
-                      plan.highlighted
-                        ? "bg-white text-blue-600"
-                        : "bg-blue-100 text-blue-600"
-                    }`}
+                    className={`flex h-16 w-16 items-center justify-center rounded-2xl ${plan.highlighted
+                      ? "bg-white text-blue-600"
+                      : "bg-blue-100 text-blue-600"
+                      }`}
                   >
                     <Icon className="h-8 w-8" />
                   </div>
@@ -124,11 +122,10 @@ export default function ServicePricing() {
                   </h3>
 
                   <p
-                    className={`mt-2 ${
-                      plan.highlighted
-                        ? "text-blue-100"
-                        : "text-slate-500"
-                    }`}
+                    className={`mt-2 ${plan.highlighted
+                      ? "text-blue-100"
+                      : "text-slate-500"
+                      }`}
                   >
                     {plan.subtitle}
                   </p>
@@ -138,11 +135,10 @@ export default function ServicePricing() {
                   </div>
 
                   <p
-                    className={`mt-6 leading-7 ${
-                      plan.highlighted
-                        ? "text-blue-100"
-                        : "text-slate-600"
-                    }`}
+                    className={`mt-6 leading-7 ${plan.highlighted
+                      ? "text-blue-100"
+                      : "text-slate-600"
+                      }`}
                   >
                     {plan.description}
                   </p>
@@ -157,11 +153,10 @@ export default function ServicePricing() {
                         className="flex items-center gap-3"
                       >
                         <CheckCircle2
-                          className={`h-5 w-5 ${
-                            plan.highlighted
-                              ? "text-white"
-                              : "text-blue-600"
-                          }`}
+                          className={`h-5 w-5 ${plan.highlighted
+                            ? "text-white"
+                            : "text-blue-600"
+                            }`}
                         />
 
                         <span>{feature}</span>
@@ -171,12 +166,11 @@ export default function ServicePricing() {
                   </div>
 
                   <Link
-                    href="/book-consultation"
-                    className={`mt-10 flex items-center justify-center gap-2 rounded-xl px-6 py-4 font-semibold transition ${
-                      plan.highlighted
-                        ? "bg-white text-blue-600 hover:scale-105"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    }`}
+                    href="/consultation"
+                    className={`mt-10 flex items-center justify-center gap-2 rounded-xl px-6 py-4 font-semibold transition ${plan.highlighted
+                      ? "bg-white text-blue-600 hover:scale-105"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                      }`}
                   >
                     Book Consultation
 

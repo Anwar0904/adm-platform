@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/config/site";
 
 import { connectDB } from "@/lib/db";
 import PublicContentService from "@/services/public-content.service";
@@ -35,21 +36,53 @@ export async function generateMetadata({
         };
     }
 
+    const url = `${SITE_URL}/blogs/${blog.slug}`;
+    const authorName = typeof blog.author === 'object' && blog.author
+        ? (blog.author as any)?.name
+        : typeof blog.author === 'string' ? blog.author : undefined;
+    const tagNames = blog.tags?.map(t => typeof t === 'string' ? t : (t as any)?.name).filter(Boolean) || [];
+
     return {
-        title: blog.seoTitle,
+        title: blog.seoTitle || blog.title,
 
         description:
-            blog.metaDescription,
+            blog.metaDescription || blog.excerpt,
+
+        keywords: tagNames,
+
+        authors: authorName ? [{ name: authorName }] : undefined,
 
         openGraph: {
+            type: "article",
             title: blog.title,
 
             description:
-                blog.metaDescription,
+                blog.metaDescription || blog.excerpt,
 
-            images: [
-                blog.featuredImage,
-            ],
+            url: url,
+
+            images: blog.featuredImage ? [
+                {
+                    url: blog.featuredImage,
+                    width: 1200,
+                    height: 630,
+                    alt: blog.title,
+                }
+            ] : [],
+
+            publishedTime: blog.publishedAt ? new Date(blog.publishedAt).toISOString() : undefined,
+
+            authors: authorName ? [`${SITE_URL}/team`] : undefined,
+
+            tags: tagNames,
+        },
+
+        twitter: {
+            card: "summary_large_image",
+            title: blog.title,
+            description: blog.metaDescription || blog.excerpt,
+            images: blog.featuredImage ? [blog.featuredImage] : [],
+            creator: authorName ? `@${authorName.replace(/\s+/g, '')}` : undefined,
         },
     };
 }

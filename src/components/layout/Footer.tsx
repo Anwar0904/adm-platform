@@ -57,11 +57,11 @@ const socials = [
     },
     {
         icon: FaLinkedinIn,
-        href: "#",
+        href: "https://www.linkedin.com/company/arazi-digital-media",
     },
     {
         icon: FaGithub,
-        href: "#",
+        href: "https://github.com",
     },
     {
         icon: FaInstagram,

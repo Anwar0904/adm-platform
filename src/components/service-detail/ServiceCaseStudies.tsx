@@ -184,7 +184,7 @@ export default function ServiceCaseStudies() {
 
           <div className="mt-10">
             <Link
-              href="/book-consultation"
+              href="/consultation"
               className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-semibold text-blue-600 transition hover:scale-105"
             >
               Start Your Project

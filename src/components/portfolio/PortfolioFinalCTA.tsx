@@ -51,7 +51,7 @@ export default function PortfolioFinalCTA() {
 
                             <div className="mt-10 flex flex-wrap gap-5">
                                 <Link
-                                    href="/book-consultation"
+                                    href="/consultation"
                                     className="group inline-flex items-center gap-3 rounded-2xl bg-white px-8 py-5 font-bold text-blue-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                                 >
                                     <CalendarDays className="h-5 w-5" />

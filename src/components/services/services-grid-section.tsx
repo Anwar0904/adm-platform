@@ -28,7 +28,7 @@ const services = [
       "Cross-platform mobile apps with beautiful UI, excellent performance and native experience.",
     image:
       "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=900&q=80",
-    href: "/services/mobile-development",
+    href: "/services/mobile-apps",
   },
   {
     title: "UI / UX Design",
@@ -36,23 +36,7 @@ const services = [
       "Research-driven interfaces focused on usability, accessibility and premium user experience.",
     image:
       "https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=900&q=80",
-    href: "/services/ui-ux-design",
-  },
-  {
-    title: "Cloud & DevOps",
-    description:
-      "CI/CD, Docker, Kubernetes, AWS deployment, monitoring and infrastructure automation.",
-    image:
-      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=900&q=80",
-    href: "/services/cloud-devops",
-  },
-  {
-    title: "Blockchain",
-    description:
-      "Smart contracts, Web3 applications, token systems and enterprise blockchain development.",
-    image:
-      "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=900&q=80",
-    href: "/services/blockchain",
+    href: "/services/ui-ux",
   },
 ];
 

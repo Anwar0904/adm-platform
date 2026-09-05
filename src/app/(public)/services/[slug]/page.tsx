@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { SITE_URL } from "@/config/site";
 
 import Hero from "@/components/service-detail/Hero";
 import { RelatedServices } from "@/components/service-detail/related-services";
@@ -90,9 +91,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       return { title: "Service Not Found" };
     }
 
+    const url = `${SITE_URL}/services/${service.slug}`;
+
     return {
       title: service.seo?.metaTitle || service.title || "Service",
       description: service.seo?.metaDescription || service.shortDescription || "Service details",
+      keywords: service.seo?.keywords || [],
+      openGraph: {
+        type: "website",
+        title: service.title,
+        description: service.seo?.metaDescription || service.shortDescription || "Service details",
+        url: url,
+        images: service.image ? [
+          {
+            url: service.image,
+            width: 1200,
+            height: 630,
+            alt: service.title,
+          }
+        ] : [],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: service.title,
+        description: service.seo?.metaDescription || service.shortDescription || "Service details",
+        images: service.image ? [service.image] : [],
+      },
     };
   } catch {
     return { title: "Service Not Found" };

@@ -162,26 +162,17 @@ export default function AuthorSpotlightSection() {
                             </div>
 
                             <div className="mt-10 flex items-center gap-5">
-                                <Link
-                                    href="#"
-                                    className="rounded-full bg-slate-100 p-3 transition hover:bg-blue-600 hover:text-white"
-                                >
+                                <div className="rounded-full bg-slate-100 p-3 text-blue-600">
                                     <FaLinkedin size={18} />
-                                </Link>
+                                </div>
 
-                                <Link
-                                    href="#"
-                                    className="rounded-full bg-slate-100 p-3 transition hover:bg-blue-600 hover:text-white"
-                                >
+                                <div className="rounded-full bg-slate-100 p-3 text-blue-600">
                                     <FaTwitter size={18} />
-                                </Link>
+                                </div>
 
-                                <Link
-                                    href="#"
-                                    className="rounded-full bg-slate-100 p-3 transition hover:bg-blue-600 hover:text-white"
-                                >
+                                <div className="rounded-full bg-slate-100 p-3 text-blue-600">
                                     <Globe size={18} />
-                                </Link>
+                                </div>
                             </div>
                         </div>
                     </div>
