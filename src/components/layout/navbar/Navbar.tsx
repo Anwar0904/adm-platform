@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { profile } from "@/config/profile";
 
-import { navigation } from "./menu";
+import { navigation, type NavigationChild } from "./menu";
 
 function NavLogo({ compact = false }: { compact?: boolean }) {
     return (
@@ -16,20 +18,21 @@ function NavLogo({ compact = false }: { compact?: boolean }) {
                 <div className={`brand-gradient relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl shadow-brand transition-all duration-300 group-hover:-translate-y-0.5 ${compact ? "h-6 w-6 sm:h-7 sm:w-7" : "h-7 w-7 sm:h-9 sm:w-9"}`}>
                     <div className="absolute inset-0 bg-white/10" />
 
-                    <img
+                    <Image
                         src="/logo.png"
-                        alt="ADM logo"
+                        alt={`${profile.name} logo`}
+                        width={28}
+                        height={28}
                         className={`relative object-contain ${compact ? "h-5 w-5 sm:h-6 sm:w-6" : "h-7 w-7 sm:h-7 sm:w-7"}`}
                     />
                 </div>
 
                 <div className="leading-none">
                     <h1 className={`font-black tracking-tight text-text transition-all duration-300 ${compact ? "text-base sm:text-base" : "text-lg sm:text-lg"}`}>
-                        Arazi{" "}
-                        <span className="text-brand-600">Digital Media</span>
+                        {profile.name}
                     </h1>
                     <p className={`mt-1.5 font-semibold uppercase tracking-[0.18em] text-text-soft transition-all duration-300 ${compact ? "text-[7px]" : "text-[8px] sm:text-[7px]"}`}>
-                        Intelligent Digital Solutions
+                        {profile.title}
                     </p>
                 </div>
             </div>
@@ -37,7 +40,7 @@ function NavLogo({ compact = false }: { compact?: boolean }) {
     );
 }
 
-function MegaMenu({ items }: { items: { title: string; description: string; href: string; icon: any }[] }) {
+function MegaMenu({ items }: { items: NavigationChild[] }) {
     return (
         <div className="absolute left-1/2 top-full hidden w-[31rem] -translate-x-1/2 rounded-2xl border border-white/10 bg-slate-950/95 p-6 shadow-[0_30px_60px_rgba(2,6,23,0.5)] backdrop-blur-md group-hover:block">
             <div className="grid grid-cols-2 gap-4">
@@ -149,7 +152,7 @@ export default function Navbar() {
                         href="/consultation"
                         className="site-button-primary hidden lg:inline-flex xl:px-5 xl:py-2.5"
                     >
-                        Book Consultation
+                        Start a Conversation
                     </Link>
 
                     <button
@@ -176,7 +179,7 @@ export default function Navbar() {
                     <div className="absolute inset-x-0 top-0 flex h-screen flex-col bg-surface shadow-2xl">
                         <div className="flex h-20 shrink-0 items-center justify-between border-b border-border px-5 sm:px-6">
                             <Link href="/" onClick={closeMenu} className="text-lg font-bold text-text">
-                                ADM
+                                {profile.name}
                             </Link>
 
                             <button

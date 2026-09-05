@@ -11,31 +11,31 @@ const steps = [
     icon: Search,
     title: "Discover",
     description:
-      "We understand your business, goals, users, and challenges before writing a single line of code.",
+      "I clarify the problem, users, constraints, and definition of done before writing a single line of code.",
   },
   {
     icon: PenTool,
     title: "Design",
     description:
-      "We create intuitive UI/UX prototypes with modern interaction design focused on real user needs.",
+      "I shape an interface and interaction model that keeps the real user need in view.",
   },
   {
     icon: Code2,
     title: "Develop",
     description:
-      "We build robust full-stack solutions using modern technologies, AI-assisted engineering, and scalable architecture.",
+      "I build the product across frontend, backend, data, and integrations with a focus on clarity.",
   },
   {
     icon: Rocket,
     title: "Deploy",
     description:
-      "We take your product to production with reliable deployment, cloud infrastructure, monitoring, and optimization.",
+      "I take the product to production with deliberate deployment, monitoring, and performance checks.",
   },
   {
     icon: TrendingUp,
     title: "Scale",
     description:
-      "We continuously optimize performance, analyze results, and improve features as your business grows.",
+      "I use feedback and evidence to improve the product after launch.",
   },
 ];
 
@@ -46,16 +46,16 @@ export default function ProcessSection() {
         {/* Heading */}
         <div className="mx-auto mb-14 max-w-3xl text-center sm:mb-16 lg:mb-20">
           <span className="section-kicker">
-            ADM Methodology
+            How I work
           </span>
 
           <h2 className="section-title">
-            Our Execution Blueprint
+            From first conversation to shipped product
           </h2>
 
           <p className="section-copy">
             Every successful digital product follows a structured process.
-            Here&apos;s how ADM transforms ideas into intelligent solutions.
+            A practical process keeps the work understandable, testable, and moving.
           </p>
         </div>
 

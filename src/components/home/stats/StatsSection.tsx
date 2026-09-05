@@ -13,7 +13,7 @@ export default function StatsSection() {
           {/* Content */}
           <div className="min-w-0">
             <span className="section-kicker">
-              Why ADM
+              Why work with me
             </span>
 
             <h2 className="section-title max-w-2xl">
@@ -21,8 +21,8 @@ export default function StatsSection() {
             </h2>
 
             <p className="section-copy max-w-2xl">
-              We build AI-powered digital products that are scalable,
-              secure, and designed for long-term business growth.
+              I build digital products that are clear to use, dependable in
+              production, and designed to keep evolving.
             </p>
 
             <div className="mt-9 space-y-7 sm:mt-12 sm:space-y-8">
@@ -40,7 +40,7 @@ export default function StatsSection() {
             <div className="relative overflow-hidden rounded-3xl shadow-xl sm:rounded-[40px]">
               <Image
                 src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80"
-                alt="ADM team collaborating on digital solutions"
+                alt="A developer collaborating on a digital product"
                 width={1200}
                 height={900}
                 sizes="(max-width: 1024px) 100vw, 50vw"
