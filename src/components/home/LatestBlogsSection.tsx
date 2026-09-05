@@ -153,7 +153,7 @@ export default function LatestBlogsSection() {
         {!loading && !error && blogs.length === 0 && (
           <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-12 text-center">
             <h3 className="text-xl font-bold text-white">No articles available yet</h3>
-            <p className="mt-2 text-sm text-slate-300">New writing will appear here as it is published.</p>
+            <p className="mt-2 text-sm text-slate-300">Check back soon for the latest insights from ADM.</p>
           </div>
         )}
 

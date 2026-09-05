@@ -1,6 +1,11 @@
 import {
     Briefcase,
+    Smartphone,
+    BrainCircuit,
+    Palette,
     FolderKanban,
+    Building2,
+    Users,
     Newspaper,
     Phone,
     LucideIcon,
@@ -28,40 +33,67 @@ export const navigation: NavigationItem[] = [
     },
 
     {
-        title: "Expertise",
+        title: "Capabilities",
         href: "/services",
         mega: true,
         items: [
             {
-                title: "Full-Stack Development",
+                title: "Digital Platforms & Engineering",
                 description:
-                    "Web products built from interface to deployment",
+                    "Modern, scalable websites and web applications",
                 href: "/services/web-development",
                 icon: Briefcase,
             },
             {
-                title: "Backend & APIs",
-                description: "Reliable services, data, and integrations",
-                href: "/services",
-                icon: Briefcase,
+                title: "Mobile Apps",
+                description:
+                    "High-quality Android and iOS applications",
+                href: "/services/mobile-apps",
+                icon: Smartphone,
+            },
+            {
+                title: "AI & Intelligent Systems",
+                description:
+                    "AI-powered tools for modern businesses",
+                href: "/services/ai-solutions",
+                icon: BrainCircuit,
+            },
+            {
+                title: "UI / UX Design",
+                description:
+                    "Beautiful and intuitive digital experiences",
+                href: "/services/ui-ux",
+                icon: Palette,
             },
         ],
     },
 
     {
-        title: "Projects",
+        title: "Selected Work",
         href: "/portfolio",
         icon: FolderKanban,
     },
 
     {
-        title: "Writing",
+        title: "Industries",
+        href: "/industries",
+        icon: Building2,
+    },
+
+    {
+        title: "People & Expertise",
+        href: "/team",
+        icon: Users,
+    },
+
+    {
+        title: "Insights",
         href: "/blogs",
         icon: Newspaper,
     },
 
     {
-        title: "Contact",
+        title: "Talk to ADM",
         href: "/contact",
         icon: Phone,
     },

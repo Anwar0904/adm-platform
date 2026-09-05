@@ -86,7 +86,7 @@ function ServiceCard({
     service.shortDescription ||
     service.description ||
     service.content ||
-    "Explore the ways I can help turn a product idea into dependable software.";
+    "Discover how ADM can help transform your business with modern digital solutions.";
 
   return (
     <article
@@ -475,7 +475,7 @@ export default function ServicesSection() {
               md:text-sm
             "
           >
-            My Expertise
+            Our Capabilities
           </span>
 
           <h2
@@ -485,7 +485,7 @@ export default function ServicesSection() {
               text-white
             "
           >
-            Practical engineering for
+            Digital Capabilities Built
             <span className="text-cyan-300">
               {" "}
               For Growth
@@ -509,8 +509,10 @@ export default function ServicesSection() {
               md:leading-8
             "
           >
-            From product interfaces to APIs and data, I build software that is
-            useful today and understandable tomorrow.
+            From AI automation to enterprise
+            software, ADM delivers practical
+            digital solutions that help
+            businesses innovate faster.
           </p>
         </div>
 

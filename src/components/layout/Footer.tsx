@@ -2,78 +2,84 @@ import Link from "next/link";
 import {
     Mail,
     MapPin,
+    Phone,
     ArrowUpRight,
 } from "lucide-react";
 import {
+    FaFacebookF,
     FaGithub,
+    FaInstagram,
     FaLinkedinIn,
 } from "react-icons/fa";
-import { profile } from "@/config/profile";
 
 const services = [
     {
-        name: "Full-stack development",
+        name: "Digital Platforms & Engineering",
         href: "/services/web-development",
     },
     {
-        name: "Backend & APIs",
-        href: "/services",
+        name: "Mobile Apps",
+        href: "/services/mobile-apps",
     },
     {
-        name: "AI integrations",
+        name: "AI & Intelligent Systems",
         href: "/services/ai-solutions",
     },
     {
-        name: "Interface implementation",
+        name: "UI / UX Design",
         href: "/services/ui-ux",
     },
 ];
 
-const navigation = [
+const company = [
     {
-        name: "Projects",
+        name: "Selected Work",
         href: "/portfolio",
     },
     {
-        name: "About",
-        href: "/about",
+        name: "Industries",
+        href: "/industries",
     },
     {
-        name: "Expertise",
-        href: "/services",
+        name: "People & Expertise",
+        href: "/team",
     },
     {
-        name: "Writing",
+        name: "Insights",
         href: "/blogs",
-    },
-    {
-        name: "Contact",
-        href: "/contact",
     },
 ];
 
 const socials = [
     {
+        icon: FaFacebookF,
+        href: "https://www.facebook.com/share/1Q8xVAMvsK/",
+    },
+    {
         icon: FaLinkedinIn,
-        href: profile.socialLinks.linkedin,
+        href: "https://www.linkedin.com/company/arazi-digital-media",
     },
     {
         icon: FaGithub,
-        href: profile.socialLinks.github,
+        href: "https://github.com",
     },
-].filter((social) => social.href);
+    {
+        icon: FaInstagram,
+        href: "https://www.instagram.com/arazidigitalmedia?igsi=MW56cnFwNDhzZDZ6eQ==",
+    },
+];
 
 export default function Footer() {
     return (
-        <footer className="relative overflow-hidden bg-[#241a16] text-[#f7f0e6]">
+        <footer className="relative overflow-hidden bg-[#071426] text-white">
 
             {/* Background */}
 
             <div className="absolute inset-0 opacity-[0.04]">
 
-                <div className="absolute -top-24 left-0 h-80 w-80 rounded-full bg-amber-500 blur-[120px]" />
+                <div className="absolute -top-24 left-0 h-80 w-80 rounded-full bg-blue-600 blur-[120px]" />
 
-                <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-rose-400 blur-[120px]" />
+                <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-cyan-400 blur-[120px]" />
 
             </div>
 
@@ -87,13 +93,13 @@ export default function Footer() {
 
                         <div>
 
-                            <p className="mb-3 text-xs font-semibold text-amber-300 sm:text-sm">
-                                HAVE A PROJECT IN MIND?
+                            <p className="mb-3 text-xs font-semibold text-blue-400 sm:text-sm">
+                                READY TO BUILD SOMETHING AMAZING?
                             </p>
 
                             <h2 className="max-w-2xl text-2xl font-bold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
 
-                                Let&apos;s build something useful.
+                                Let's create digital experiences your customers will love.
 
                             </h2>
 
@@ -101,9 +107,9 @@ export default function Footer() {
 
                         <Link
                             href="/consultation"
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-300 hover:bg-amber-500 sm:w-auto sm:gap-3 sm:rounded-2xl sm:px-8 sm:py-4 sm:text-base"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold transition-all duration-300 hover:bg-blue-700 sm:w-auto sm:gap-3 sm:rounded-2xl sm:px-8 sm:py-4 sm:text-base"
                         >
-                            Start a Conversation
+                            Book Consultation
 
                             <ArrowUpRight size={16} className="sm:h-[18px] sm:w-[18px]" />
 
@@ -138,13 +144,13 @@ export default function Footer() {
 
                                     <h2 className="text-lg font-bold sm:text-2xl">
 
-                                        {profile.name}
+                                        ADM
 
                                     </h2>
 
                                     <p className="text-sm text-slate-400">
 
-                                        {profile.title}
+                                        Arazi Digital Media
 
                                     </p>
 
@@ -154,7 +160,10 @@ export default function Footer() {
 
                             <p className="max-w-md leading-8 text-slate-300">
 
-                                {profile.shortIntroduction}
+                                ADM helps businesses grow through
+                                premium digital platforms, AI-powered
+                                intelligent systems, UI/UX design, branding,
+                                and digital transformation.
 
                             </p>
 
@@ -215,19 +224,19 @@ export default function Footer() {
 
                         </div>
 
-                        {/* Navigation */}
+                        {/* Company */}
 
                         <div>
 
                             <h3 className="mb-6 text-base font-semibold sm:mb-8 sm:text-lg">
 
-                                Explore
+                                Company
 
                             </h3>
 
                             <div className="space-y-5">
 
-                                {navigation.map(
+                                {company.map(
                                     (item) => (
                                         <Link
                                             key={
@@ -273,9 +282,33 @@ export default function Footer() {
 
                                         </p>
 
-                                        <a href={`mailto:${profile.email}`} className="hover:text-cyan-300">
-                                            {profile.email}
-                                        </a>
+                                        <p>
+
+                                            hello@adm.com
+
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <div className="flex gap-4">
+
+                                    <Phone className="mt-1 text-blue-400" />
+
+                                    <div>
+
+                                        <p className="text-sm text-slate-400">
+
+                                            Phone
+
+                                        </p>
+
+                                        <p>
+
+                                            +92 300 0000000
+
+                                        </p>
 
                                     </div>
 
@@ -295,7 +328,7 @@ export default function Footer() {
 
                                         <p>
 
-                                            {profile.location}
+                                            Pakistan
 
                                         </p>
 
@@ -319,7 +352,7 @@ export default function Footer() {
 
                         <p>
 
-                            © {new Date().getFullYear()} {profile.name}.
+                            © {new Date().getFullYear()} Arazi Digital Media.
                             All Rights Reserved.
 
                         </p>
