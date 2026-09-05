@@ -11,7 +11,7 @@ const faqs = [
     {
         question: "How often do you publish new articles?",
         answer:
-            "We publish fresh content every week covering AI, software engineering, web development, cloud computing, cybersecurity, blockchain, UI/UX and digital transformation.",
+            "We publish fresh insights every week covering AI, technology engineering, digital platforms, cloud computing, cybersecurity, blockchain, UI/UX and digital transformation.",
     },
     {
         question: "Can I subscribe to receive new articles?",

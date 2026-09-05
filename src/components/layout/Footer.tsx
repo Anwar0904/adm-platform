@@ -14,7 +14,7 @@ import {
 
 const services = [
     {
-        name: "Web Development",
+        name: "Digital Platforms & Engineering",
         href: "/services/web-development",
     },
     {
@@ -22,7 +22,7 @@ const services = [
         href: "/services/mobile-apps",
     },
     {
-        name: "AI Solutions",
+        name: "AI & Intelligent Systems",
         href: "/services/ai-solutions",
     },
     {
@@ -33,7 +33,7 @@ const services = [
 
 const company = [
     {
-        name: "Portfolio",
+        name: "Selected Work",
         href: "/portfolio",
     },
     {
@@ -41,11 +41,11 @@ const company = [
         href: "/industries",
     },
     {
-        name: "Team",
+        name: "People & Expertise",
         href: "/team",
     },
     {
-        name: "Blogs",
+        name: "Insights",
         href: "/blogs",
     },
 ];
@@ -161,8 +161,8 @@ export default function Footer() {
                             <p className="max-w-md leading-8 text-slate-300">
 
                                 ADM helps businesses grow through
-                                premium web development, AI-powered
-                                solutions, UI/UX design, branding,
+                                premium digital platforms, AI-powered
+                                intelligent systems, UI/UX design, branding,
                                 and digital transformation.
 
                             </p>
@@ -196,7 +196,7 @@ export default function Footer() {
 
                             <h3 className="mb-6 text-base font-semibold sm:mb-8 sm:text-lg">
 
-                                Services
+                                Capabilities
 
                             </h3>
 

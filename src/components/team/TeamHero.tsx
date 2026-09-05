@@ -47,7 +47,7 @@ export default function TeamHero() {
                                 href="/consultation"
                                 className="group inline-flex items-center justify-center rounded-2xl bg-blue-600 px-8 py-4 font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-blue-500"
                             >
-                                Work With Our Team
+                                Work With Our People
                                 <ArrowRight className="ml-3 h-5 w-5 transition group-hover:translate-x-1" />
                             </Link>
 
@@ -55,7 +55,7 @@ export default function TeamHero() {
                                 href="/portfolio"
                                 className="inline-flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-900/60 px-8 py-4 font-semibold text-slate-100 transition-all hover:border-blue-500 hover:text-blue-300"
                             >
-                                View Our Work
+                                View Selected Work
                             </Link>
                         </div>
 
@@ -75,7 +75,7 @@ export default function TeamHero() {
                             >
                                 <Award className="mb-5 h-9 w-9 text-cyan-300" />
                                 <h3 className="text-4xl font-black text-white">50+</h3>
-                                <p className="mt-2 text-sm text-slate-400">Projects</p>
+                                <p className="mt-2 text-sm text-slate-400">Engagements</p>
                             </motion.div>
 
                             <motion.div

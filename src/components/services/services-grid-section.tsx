@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 const services = [
   {
-    title: "AI Solutions",
+    title: "AI & Intelligent Systems",
     description:
       "Custom AI systems, chatbots, automation, LLM integrations and intelligent business workflows.",
     image:
@@ -15,7 +15,7 @@ const services = [
     href: "/services/ai-solutions",
   },
   {
-    title: "Web Development",
+    title: "Digital Platforms & Engineering",
     description:
       "Modern websites and enterprise web applications using Next.js, React and scalable architecture.",
     image:
@@ -68,11 +68,11 @@ export default function ServicesGridSection() {
           className="mx-auto mb-16 max-w-3xl text-center"
         >
           <span className="rounded-full border border-blue-500/40 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200">
-            What We Do
+            Our Capabilities
           </span>
 
           <h2 className="mt-6 text-4xl font-black text-white md:text-5xl">
-            Digital Services Built
+            Capabilities Built
             <span className="block text-blue-400">
               Around Your Business Goals
             </span>

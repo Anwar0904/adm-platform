@@ -32,7 +32,7 @@ export default function BlogHero({
                 >
                     <Link href="/" className="transition hover:text-blue-300">Home</Link>
                     <ChevronRight size={12} />
-                    <Link href="/blogs" className="transition hover:text-blue-300">Blogs</Link>
+                    <Link href="/blogs" className="transition hover:text-blue-300">Insights</Link>
                     <ChevronRight size={12} />
                     <span className="max-w-[13rem] truncate font-medium text-white">{blog.title}</span>
                 </motion.div>

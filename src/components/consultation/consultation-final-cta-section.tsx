@@ -97,7 +97,7 @@ export default function ConsultationFinalCTASection() {
                             </h3>
 
                             <p className="mt-2 text-blue-100">
-                                Client Satisfaction
+                                Organization Satisfaction
                             </p>
                         </div>
 

@@ -475,7 +475,7 @@ export default function ServicesSection() {
               md:text-sm
             "
           >
-            What We Do
+            Our Capabilities
           </span>
 
           <h2
@@ -485,7 +485,7 @@ export default function ServicesSection() {
               text-white
             "
           >
-            Digital Services Built
+            Digital Capabilities Built
             <span className="text-cyan-300">
               {" "}
               For Growth
@@ -631,7 +631,7 @@ export default function ServicesSection() {
                 sm:text-xl
               "
             >
-              Our services are being updated
+              Our capabilities are being updated
             </h3>
 
             <p

@@ -93,7 +93,7 @@ export default function WhyADMSection() {
               <div>
                 <h3 className="text-5xl font-black text-blue-400">98%</h3>
                 <p className="mt-2 text-slate-400">
-                  Client Satisfaction
+                  Organization Satisfaction
                 </p>
               </div>
 

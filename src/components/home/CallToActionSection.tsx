@@ -32,8 +32,8 @@ export default function CallToActionSection() {
           </p>
 
           <div className="mt-8 grid grid-cols-2 overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl sm:mt-12 sm:grid-cols-4 sm:rounded-2xl md:mt-16 lg:rounded-3xl">
-            <Stat value="50+" label="Projects" />
-            <Stat value="98%" label="Client Satisfaction" />
+            <Stat value="50+" label="Engagements" />
+            <Stat value="98%" label="Organization Satisfaction" />
             <Stat value="24/7" label="Support" />
             <Stat value="AI" label="Powered" />
           </div>

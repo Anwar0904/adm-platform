@@ -73,7 +73,7 @@ export default function FAQCTA() {
                                 >
                                     <MessageCircle size={20} />
 
-                                    Contact Us
+                                    Talk to ADM
                                 </Link>
                             </div>
                         </div>

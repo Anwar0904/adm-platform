@@ -25,7 +25,7 @@ const topics = [
         bg: "bg-violet-50",
     },
     {
-        title: "Web Development",
+        title: "Digital Platforms & Engineering",
         articles: 96,
         icon: Code2,
         color:

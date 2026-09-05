@@ -103,12 +103,12 @@ export default function PortfolioFinalCTA() {
                                     <div className="grid grid-cols-2 gap-6 text-center">
                                         <div>
                                             <h4 className="text-4xl font-black text-white">98%</h4>
-                                            <p className="mt-2 text-sm text-blue-100">Client Satisfaction</p>
+                                            <p className="mt-2 text-sm text-blue-100">Organization Satisfaction</p>
                                         </div>
 
                                         <div>
                                             <h4 className="text-4xl font-black text-white">50+</h4>
-                                            <p className="mt-2 text-sm text-blue-100">Projects Delivered</p>
+                                            <p className="mt-2 text-sm text-blue-100">Engagements Delivered</p>
                                         </div>
                                     </div>
                                 </div>

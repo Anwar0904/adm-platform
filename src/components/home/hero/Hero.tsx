@@ -68,7 +68,7 @@ export default function Hero() {
               href="/services"
               className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-transform duration-200 hover:-translate-y-0.5"
             >
-              Explore Our Services
+              Explore Our Capabilities
               <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
 
@@ -166,13 +166,13 @@ export default function Hero() {
             subtitle="Smarter Workflows"
           />
 
-          {/* floating card — 98% Client Satisfaction */}
+          {/* floating card — 98% Organization Satisfaction */}
           <FloatingCard
             className="right-[-2%] top-[32%] w-[36%] sm:w-[36%]"
             icon={<BarChart3 size={18} />}
             title="98%"
             titleClassName="text-emerald-500"
-            subtitle="Client Satisfaction"
+            subtitle="Organization Satisfaction"
           />
 
           {/* floating card — Custom Software */}

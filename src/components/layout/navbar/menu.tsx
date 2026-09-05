@@ -33,12 +33,12 @@ export const navigation: NavigationItem[] = [
     },
 
     {
-        title: "Services",
+        title: "Capabilities",
         href: "/services",
         mega: true,
         items: [
             {
-                title: "Web Development",
+                title: "Digital Platforms & Engineering",
                 description:
                     "Modern, scalable websites and web applications",
                 href: "/services/web-development",
@@ -52,7 +52,7 @@ export const navigation: NavigationItem[] = [
                 icon: Smartphone,
             },
             {
-                title: "AI Solutions",
+                title: "AI & Intelligent Systems",
                 description:
                     "AI-powered tools for modern businesses",
                 href: "/services/ai-solutions",
@@ -69,7 +69,7 @@ export const navigation: NavigationItem[] = [
     },
 
     {
-        title: "Portfolio",
+        title: "Selected Work",
         href: "/portfolio",
         icon: FolderKanban,
     },
@@ -81,19 +81,19 @@ export const navigation: NavigationItem[] = [
     },
 
     {
-        title: "Team",
+        title: "People & Expertise",
         href: "/team",
         icon: Users,
     },
 
     {
-        title: "Blogs",
+        title: "Insights",
         href: "/blogs",
         icon: Newspaper,
     },
 
     {
-        title: "Contact",
+        title: "Talk to ADM",
         href: "/contact",
         icon: Phone,
     },

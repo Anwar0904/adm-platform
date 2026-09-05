@@ -61,7 +61,7 @@ export default function FAQHero() {
                         className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-slate-600 lg:text-xl"
                     >
                         Find answers to the most common questions
-                        about ADM, our services, development
+                        about ADM, our capabilities, development
                         process, pricing, timelines, and support.
                     </motion.p>
 
@@ -83,7 +83,7 @@ export default function FAQHero() {
                             href="/contact"
                             className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-8 py-4 font-semibold text-slate-700 transition hover:border-blue-600 hover:text-blue-600"
                         >
-                            Contact Us
+                            Talk to ADM
                         </Link>
                     </motion.div>
                 </div>

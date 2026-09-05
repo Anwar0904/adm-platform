@@ -190,7 +190,7 @@ export default function TeamCultureSection() {
 
                         <div className="mt-14 rounded-3xl border border-cyan-400/20 bg-white/5 p-8 backdrop-blur-xl">
                             <p className="text-xl italic leading-9 text-slate-200">
-                                “Our mission isn't just building software—it's building an environment where extraordinary people can create extraordinary things.”
+                                “Our purpose isn't just building software—it's building an environment where extraordinary people can create extraordinary things.”
                             </p>
 
                             <div className="mt-8 h-px w-full bg-white/10" />

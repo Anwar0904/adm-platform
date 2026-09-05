@@ -62,7 +62,7 @@ export default function LatestArticlesSection() {
                         </h2>
 
                         <p className="mt-6 text-lg leading-9 text-slate-300">
-                            Weekly content covering Artificial Intelligence, Web Development,
+                            Weekly insights covering Artificial Intelligence, Digital Platforms,
                             Cloud, UI/UX, Blockchain, Business and Digital Transformation.
                         </p>
                     </div>

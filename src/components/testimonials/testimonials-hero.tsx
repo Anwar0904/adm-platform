@@ -150,7 +150,7 @@ export default function TestimonialsHero() {
                             </p>
 
                             <span className="text-sm text-slate-500">
-                                Client Satisfaction
+                                Organization Satisfaction
                             </span>
                         </div>
                     </motion.div>

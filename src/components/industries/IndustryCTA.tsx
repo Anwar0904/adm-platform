@@ -106,11 +106,11 @@ export default function IndustryCTA() {
                         {[
                             {
                                 value: "50+",
-                                label: "Projects Delivered",
+                                label: "Engagements Delivered",
                             },
                             {
                                 value: "98%",
-                                label: "Client Satisfaction",
+                                label: "Organization Satisfaction",
                             },
                             {
                                 value: "10+",

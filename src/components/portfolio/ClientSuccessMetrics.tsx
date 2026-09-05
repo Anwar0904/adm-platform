@@ -12,7 +12,7 @@ import {
 const metrics = [
     {
         value: "98%",
-        label: "Client Satisfaction",
+        label: "Organization Satisfaction",
         description: "Long-term partnerships built on trust and consistent delivery.",
         icon: Users,
         color: "from-blue-600 to-cyan-500",
@@ -26,7 +26,7 @@ const metrics = [
     },
     {
         value: "60+",
-        label: "Projects Delivered",
+        label: "Engagements Delivered",
         description: "Successfully completed across multiple industries.",
         icon: Rocket,
         color: "from-violet-500 to-indigo-600",

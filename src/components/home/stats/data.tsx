@@ -2,12 +2,12 @@ export const stats = [
   {
     id: 1,
     number: "50+",
-    label: "Projects Delivered",
+    label: "Engagements Delivered",
   },
   {
     id: 2,
     number: "98%",
-    label: "Client Satisfaction",
+    label: "Organization Satisfaction",
   },
   {
     id: 3,

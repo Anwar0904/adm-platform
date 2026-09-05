@@ -93,7 +93,7 @@ export default function TestimonialsCTA() {
                                 </h3>
 
                                 <p className="mt-3 text-slate-300">
-                                    Client Satisfaction
+                                    Organization Satisfaction
                                 </p>
                             </div>
 

@@ -46,7 +46,7 @@ export default function ProcessSection() {
         {/* Heading */}
         <div className="mx-auto mb-14 max-w-3xl text-center sm:mb-16 lg:mb-20">
           <span className="section-kicker">
-            Our Process
+            ADM Methodology
           </span>
 
           <h2 className="section-title">

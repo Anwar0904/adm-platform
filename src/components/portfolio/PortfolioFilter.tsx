@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const categories = [
   "All",
   "Web Applications",
-  "AI Solutions",
+  "AI & Intelligent Systems",
   "SaaS Platforms",
   "E-Commerce",
   "Mobile Apps",

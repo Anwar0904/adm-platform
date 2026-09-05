@@ -18,7 +18,7 @@ export default function DeliveryProcess() {
             <div className="relative container mx-auto px-4 lg:px-8">
                 <div className="mx-auto max-w-3xl text-center">
                     <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
-                        Our Process
+                        ADM Methodology
                     </span>
 
                     <h2 className="mt-6 text-4xl font-black text-white lg:text-5xl">

@@ -44,11 +44,11 @@ const reasons = [
 const stats = [
     {
         value: "50+",
-        label: "Projects Delivered",
+        label: "Engagements Delivered",
     },
     {
         value: "98%",
-        label: "Client Satisfaction",
+        label: "Organization Satisfaction",
     },
     {
         value: "<24h",
@@ -86,7 +86,7 @@ export default function WhyChooseADMSection() {
                         }}
                     >
                         <span className="rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
-                            Why Clients Choose ADM
+                            Why ADM
                         </span>
 
                         <h2 className="mt-6 text-4xl font-black leading-tight text-white lg:text-6xl">

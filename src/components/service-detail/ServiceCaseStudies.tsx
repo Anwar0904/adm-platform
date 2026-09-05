@@ -54,7 +54,7 @@ const caseStudies = [
         icon: Clock3,
       },
       {
-        label: "Customers",
+        label: "Organizations",
         value: "500K+",
         icon: Users,
       },
@@ -101,9 +101,8 @@ export default function ServiceCaseStudies() {
               transition={{
                 duration: 0.6,
               }}
-              className={`grid items-center gap-14 lg:grid-cols-2 ${
-                index % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
-              }`}
+              className={`grid items-center gap-14 lg:grid-cols-2 ${index % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
+                }`}
             >
               {/* Image */}
 

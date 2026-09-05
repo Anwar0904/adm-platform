@@ -74,7 +74,7 @@ export default function IndustriesHero() {
 
                             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                                 <h3 className="text-3xl font-black text-blue-300">50+</h3>
-                                <p className="mt-2 text-sm text-slate-300">Projects</p>
+                                <p className="mt-2 text-sm text-slate-300">Engagements</p>
                             </div>
 
                             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">

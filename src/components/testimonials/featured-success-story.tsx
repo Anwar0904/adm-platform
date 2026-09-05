@@ -138,7 +138,7 @@ export default function FeaturedSuccessStory() {
                                 href="/portfolio"
                                 className="mt-12 inline-flex w-fit items-center gap-3 rounded-full bg-blue-600 px-7 py-4 font-semibold text-white transition hover:bg-blue-700"
                             >
-                                View More Case Studies
+                                View More Selected Work
 
                                 <ArrowRight size={18} />
                             </Link>

@@ -133,7 +133,7 @@ export default function PortfolioTestimonials() {
                 >
                     <div className="text-center">
                         <h3 className="text-5xl font-black">98%</h3>
-                        <p className="mt-3 text-blue-100">Client Satisfaction</p>
+                        <p className="mt-3 text-blue-100">Organization Satisfaction</p>
                     </div>
 
                     <div className="text-center">

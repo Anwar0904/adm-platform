@@ -13,7 +13,7 @@ import TrustedCompanies from "@/components/home/trusted";
 export default function HomePage() {
   return (
     <>
-      <Hero/>
+      <Hero />
       <TrustedCompanies />
       <ServicesSection />
       <StatsSection />

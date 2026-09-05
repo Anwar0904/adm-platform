@@ -5,7 +5,7 @@ const faqs = [
   {
     question: "What services does ADM provide?",
     answer:
-      "ADM specializes in AI solutions, web development, mobile applications, UI/UX design, enterprise software, cloud infrastructure, and digital transformation.",
+      "ADM specializes in AI and intelligent systems, digital platforms, mobile applications, UI/UX design, enterprise technology, cloud infrastructure, and digital transformation.",
   },
   {
     question: "How long does a typical project take?",

@@ -19,7 +19,7 @@ export default function PortfolioHero() {
           <div className="space-y-8">
             <div className="inline-flex items-center rounded-full border border-blue-400/25 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-200 backdrop-blur">
               <Sparkles className="mr-2 h-4 w-4" />
-              Our Work Speaks For Itself
+              Selected Work That Speaks For Itself
             </div>
 
             <div className="space-y-6">
@@ -44,7 +44,7 @@ export default function PortfolioHero() {
                 href="#projects"
                 className="group inline-flex items-center rounded-xl bg-linear-to-r from-blue-600 to-cyan-500 px-8 py-4 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-blue-500/30"
               >
-                Explore Projects
+                Explore Engagements
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-2" />
               </Link>
 
@@ -60,12 +60,12 @@ export default function PortfolioHero() {
             <div className="grid max-w-xl grid-cols-3 gap-6 pt-8">
               <div>
                 <h3 className="text-4xl font-black text-blue-400">50+</h3>
-                <p className="mt-2 text-sm text-slate-300">Projects Delivered</p>
+                <p className="mt-2 text-sm text-slate-300">Engagements Delivered</p>
               </div>
 
               <div>
                 <h3 className="text-4xl font-black text-blue-400">98%</h3>
-                <p className="mt-2 text-sm text-slate-300">Client Satisfaction</p>
+                <p className="mt-2 text-sm text-slate-300">Organization Satisfaction</p>
               </div>
 
               <div>

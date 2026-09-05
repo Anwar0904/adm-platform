@@ -14,8 +14,8 @@ const highlights = [
 ];
 
 const stats = [
-  { value: "50+", label: "Projects Delivered" },
-  { value: "98%", label: "Client Satisfaction" },
+  { value: "50+", label: "Engagements Delivered" },
+  { value: "98%", label: "Organization Satisfaction" },
   { value: "24/7", label: "Support" },
 ];
 

@@ -28,7 +28,7 @@ const faqs = [
     {
         question: "Can ADM handle both design and development?",
         answer:
-            "Yes. We provide complete end-to-end digital solutions including UI/UX design, web development, mobile applications, branding, AI solutions, and ongoing support.",
+            "Yes. We provide complete end-to-end capabilities including UI/UX design, digital platforms, mobile applications, branding, AI and intelligent systems, and ongoing support.",
     },
     {
         question: "Will I receive a project estimate?",

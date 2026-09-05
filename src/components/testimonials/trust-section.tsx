@@ -13,12 +13,12 @@ import {
 const stats = [
     {
         value: "100+",
-        label: "Projects Delivered",
+        label: "Engagements Delivered",
         icon: BriefcaseBusiness,
     },
     {
         value: "98%",
-        label: "Client Satisfaction",
+        label: "Organization Satisfaction",
         icon: Users,
     },
     {

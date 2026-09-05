@@ -18,7 +18,7 @@ const faqs = [
             "Our team typically responds within 24 business hours. Urgent enterprise inquiries are prioritized whenever possible.",
     },
     {
-        category: "Projects",
+        category: "Engagements",
         question: "Can you work with international clients?",
         answer:
             "Absolutely. ADM works with businesses worldwide through online meetings, collaborative tools and agile workflows.",

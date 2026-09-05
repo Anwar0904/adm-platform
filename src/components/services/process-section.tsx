@@ -55,7 +55,7 @@ export default function ProcessSection() {
           className="mx-auto mb-20 max-w-3xl text-center"
         >
           <span className="rounded-full border border-blue-500/40 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200">
-            Our Process
+            ADM Methodology
           </span>
 
           <h2 className="mt-6 text-4xl font-black text-white lg:text-5xl">
