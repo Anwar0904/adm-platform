@@ -35,6 +35,18 @@ const FAQSchema =
                 trim: true,
             },
 
+            category: {
+                type: String,
+                required: true,
+                trim: true,
+                maxlength: 100,
+            },
+
+            featured: {
+                type: Boolean,
+                default: false,
+            },
+
             status: {
                 type: String,
                 enum: Object.values(

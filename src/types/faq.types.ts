@@ -13,6 +13,10 @@ export interface IFAQ {
 }
 
 export interface IFAQManagement extends IFAQ {
+  category: string;
+
+  featured: boolean;
+
   status: ContentStatus;
 
   sortOrder: number;

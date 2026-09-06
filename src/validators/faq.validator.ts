@@ -17,8 +17,21 @@ export const FAQSchema =
             .min(5),
     });
 
-export const CreateFAQSchema =
+const FAQManagementSchema =
     FAQSchema.extend({
+
+        category: z
+            .string()
+            .trim()
+            .min(1)
+            .max(100),
+
+        featured: z
+            .boolean(),
+    });
+
+export const CreateFAQSchema =
+    FAQManagementSchema.extend({
         status: z
             .enum(CONTENT_STATUS)
             .optional(),

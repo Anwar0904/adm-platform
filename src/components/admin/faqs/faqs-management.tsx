@@ -1,6 +1,11 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import {
+    FormEvent,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 import {
     Edit3,
     GripVertical,
@@ -23,53 +28,6 @@ type FAQ = {
     createdAt: string;
 };
 
-const initialFAQs: FAQ[] = [
-    {
-        id: "1",
-        question: "What services does ADM provide?",
-        answer:
-            "ADM provides web development, UI/UX design, digital solutions, AI-powered applications, cloud solutions and other custom technology services.",
-        category: "General",
-        status: "Published",
-        featured: true,
-        order: 1,
-        createdAt: "2026-07-25",
-    },
-    {
-        id: "2",
-        question: "How do I start a project with ADM?",
-        answer:
-            "You can contact ADM through the contact form or book a consultation. Our team will discuss your requirements, goals, timeline and budget before preparing the next steps.",
-        category: "Process",
-        status: "Published",
-        featured: true,
-        order: 2,
-        createdAt: "2026-07-22",
-    },
-    {
-        id: "3",
-        question: "How long does a typical project take?",
-        answer:
-            "Project duration depends on scope and complexity. After understanding your requirements, ADM provides a realistic timeline during the project planning stage.",
-        category: "Process",
-        status: "Published",
-        featured: false,
-        order: 3,
-        createdAt: "2026-07-18",
-    },
-    {
-        id: "4",
-        question: "Can ADM work with an existing website?",
-        answer:
-            "Yes. ADM can improve, redesign, maintain or extend existing websites and applications depending on the technology and project requirements.",
-        category: "Services",
-        status: "Draft",
-        featured: false,
-        order: 4,
-        createdAt: "2026-07-14",
-    },
-];
-
 const categories = [
     "General",
     "Services",
@@ -78,9 +36,87 @@ const categories = [
     "Technical",
 ];
 
+type FAQApiRecord = {
+    _id?: string;
+    id?: string;
+    question: string;
+    answer: string;
+    category?: string;
+    featured?: boolean;
+    status: string;
+    sortOrder: number;
+    createdAt: string;
+};
+
+type FAQListResponse = {
+    faqs: FAQApiRecord[];
+};
+
+async function apiRequest<T>(
+    url: string,
+    options?: RequestInit
+): Promise<T> {
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+        },
+    });
+
+    const payload = (await response.json().catch(() => null)) as {
+        data?: T;
+        message?: string;
+    } | null;
+
+    if (!response.ok) {
+        throw new Error(
+            payload?.message ??
+            "The FAQ request could not be completed."
+        );
+    }
+
+    return payload?.data as T;
+}
+
+function mapFAQ(faq: FAQApiRecord): FAQ {
+    return {
+        id: faq._id ?? faq.id ?? "",
+        question: faq.question,
+        answer: faq.answer,
+        category: faq.category ?? "General",
+        status:
+            faq.status === "published"
+                ? "Published"
+                : "Draft",
+        featured: faq.featured ?? false,
+        order: faq.sortOrder,
+        createdAt: new Date(faq.createdAt)
+            .toISOString()
+            .slice(0, 10),
+    };
+}
+
+async function fetchFAQs() {
+    const result = await apiRequest<FAQListResponse>(
+        "/api/faqs?limit=100&sort=sortOrder"
+    );
+
+    return result.faqs.map(mapFAQ);
+}
+
 export default function FAQsManagement() {
     const [faqs, setFaqs] =
-        useState<FAQ[]>(initialFAQs);
+        useState<FAQ[]>([]);
+
+    const [isLoading, setIsLoading] =
+        useState(true);
+
+    const [isSaving, setIsSaving] =
+        useState(false);
+
+    const [error, setError] =
+        useState<string | null>(null);
 
     const [search, setSearch] =
         useState("");
@@ -114,6 +150,23 @@ export default function FAQsManagement() {
 
     const [featured, setFeatured] =
         useState(false);
+
+    useEffect(() => {
+        fetchFAQs()
+            .then(setFaqs)
+            .catch((requestError: unknown) => {
+                setError(
+                    requestError instanceof Error
+                        ? requestError.message
+                        : "FAQs could not be loaded."
+                );
+            })
+            .finally(() => setIsLoading(false));
+    }, []);
+
+    async function refreshFAQs() {
+        setFaqs(await fetchFAQs());
+    }
 
     const filteredFAQs = useMemo(() => {
         const query =
@@ -201,7 +254,7 @@ export default function FAQsManagement() {
         resetForm();
     }
 
-    function handleSubmit(
+    async function handleSubmit(
         event: FormEvent<HTMLFormElement>
     ) {
         event.preventDefault();
@@ -213,127 +266,173 @@ export default function FAQsManagement() {
             return;
         }
 
-        if (editing) {
-            setFaqs((current) =>
-                current.map((faq) =>
-                    faq.id === editing.id
-                        ? {
-                            ...faq,
-                            question:
-                                question.trim(),
-                            answer:
-                                answer.trim(),
-                            category,
-                            status,
-                            featured,
-                        }
-                        : faq
-                )
-            );
-        } else {
-            const nextOrder =
-                faqs.length > 0
-                    ? Math.max(
-                        ...faqs.map(
-                            (faq) =>
-                                faq.order
-                        )
-                    ) + 1
-                    : 1;
+        setIsSaving(true);
+        setError(null);
 
-            setFaqs((current) => [
-                ...current,
+        try {
+            const payload = {
+                question: question.trim(),
+                answer: answer.trim(),
+                category,
+                status:
+                    status === "Published"
+                        ? "published"
+                        : "draft",
+                featured,
+                ...(editing
+                    ? {}
+                    : {
+                        sortOrder:
+                            faqs.length > 0
+                                ? Math.max(
+                                    ...faqs.map(
+                                        (faq) =>
+                                            faq.order
+                                    )
+                                ) + 1
+                                : 1,
+                    }),
+            };
+
+            await apiRequest<FAQApiRecord>(
+                editing
+                    ? `/api/faqs/${editing.id}`
+                    : "/api/faqs",
                 {
-                    id: crypto.randomUUID(),
-                    question:
-                        question.trim(),
-                    answer:
-                        answer.trim(),
-                    category,
-                    status,
-                    featured,
-                    order: nextOrder,
-                    createdAt:
-                        new Date()
-                            .toISOString()
-                            .slice(
-                                0,
-                                10
-                            ),
-                },
-            ]);
-        }
+                    method: editing
+                        ? "PATCH"
+                        : "POST",
+                    body: JSON.stringify(
+                        payload
+                    ),
+                }
+            );
 
-        closeForm();
+            await refreshFAQs();
+            closeForm();
+        } catch (requestError) {
+            setError(
+                requestError instanceof Error
+                    ? requestError.message
+                    : "FAQ could not be saved."
+            );
+        } finally {
+            setIsSaving(false);
+        }
     }
 
-    function deleteFAQ() {
+    async function deleteFAQ() {
         if (!deleteTarget) return;
 
-        setFaqs((current) =>
-            current
+        setIsSaving(true);
+        setError(null);
+
+        try {
+            await apiRequest<null>(
+                `/api/faqs/${deleteTarget.id}`,
+                { method: "DELETE" }
+            );
+
+            const remaining = faqs
                 .filter(
                     (faq) =>
                         faq.id !==
                         deleteTarget.id
                 )
-                .map((faq, index) => ({
-                    ...faq,
-                    order: index + 1,
-                }))
-        );
+                .sort((a, b) => a.order - b.order);
 
-        setDeleteTarget(null);
+            await Promise.all(
+                remaining.map((faq, index) =>
+                    faq.order === index + 1
+                        ? Promise.resolve()
+                        : apiRequest<FAQApiRecord>(
+                            `/api/faqs/${faq.id}`,
+                            {
+                                method: "PATCH",
+                                body: JSON.stringify({
+                                    sortOrder:
+                                        index + 1,
+                                }),
+                            }
+                        )
+                )
+            );
+
+            await refreshFAQs();
+            setDeleteTarget(null);
+        } catch (requestError) {
+            setError(
+                requestError instanceof Error
+                    ? requestError.message
+                    : "FAQ could not be deleted."
+            );
+        } finally {
+            setIsSaving(false);
+        }
     }
 
-    function moveFAQ(
+    async function moveFAQ(
         id: string,
         direction: "up" | "down"
     ) {
-        setFaqs((current) => {
-            const sorted = [...current].sort(
-                (a, b) =>
-                    a.order - b.order
+        const sorted = [...faqs].sort(
+            (a, b) => a.order - b.order
+        );
+        const index = sorted.findIndex(
+            (faq) => faq.id === id
+        );
+        const targetIndex =
+            direction === "up"
+                ? index - 1
+                : index + 1;
+
+        if (
+            index === -1 ||
+            targetIndex < 0 ||
+            targetIndex >= sorted.length
+        ) {
+            return;
+        }
+
+        const currentFAQ = sorted[index];
+        const targetFAQ = sorted[targetIndex];
+
+        setIsSaving(true);
+        setError(null);
+
+        try {
+            await Promise.all([
+                apiRequest<FAQApiRecord>(
+                    `/api/faqs/${currentFAQ.id}`,
+                    {
+                        method: "PATCH",
+                        body: JSON.stringify({
+                            sortOrder:
+                                targetFAQ.order,
+                        }),
+                    }
+                ),
+                apiRequest<FAQApiRecord>(
+                    `/api/faqs/${targetFAQ.id}`,
+                    {
+                        method: "PATCH",
+                        body: JSON.stringify({
+                            sortOrder:
+                                currentFAQ.order,
+                        }),
+                    }
+                ),
+            ]);
+            await refreshFAQs();
+        } catch (requestError) {
+            setError(
+                requestError instanceof Error
+                    ? requestError.message
+                    : "FAQ order could not be updated."
             );
-
-            const index =
-                sorted.findIndex(
-                    (faq) =>
-                        faq.id === id
-                );
-
-            if (index === -1) {
-                return current;
-            }
-
-            const targetIndex =
-                direction === "up"
-                    ? index - 1
-                    : index + 1;
-
-            if (
-                targetIndex < 0 ||
-                targetIndex >=
-                sorted.length
-            ) {
-                return current;
-            }
-
-            [
-                sorted[index],
-                sorted[targetIndex],
-            ] = [
-                    sorted[targetIndex],
-                    sorted[index],
-                ];
-
-            return sorted.map(
-                (faq, faqIndex) => ({
-                    ...faq,
-                    order: faqIndex + 1,
-                })
-            );
-        });
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     return (
@@ -359,12 +458,19 @@ export default function FAQsManagement() {
 
                 <button
                     onClick={openCreate}
+                    disabled={isLoading || isSaving}
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
                 >
                     <Plus size={18} />
                     Add FAQ
                 </button>
             </section>
+
+            {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                    {error}
+                </div>
+            )}
 
             {/* Stats */}
 
@@ -476,7 +582,11 @@ export default function FAQsManagement() {
             {/* FAQ List */}
 
             <section className="space-y-3">
-                {filteredFAQs.length > 0 ? (
+                {isLoading ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white py-20 text-center text-sm font-semibold text-slate-500 shadow-sm">
+                        Loading FAQs...
+                    </div>
+                ) : filteredFAQs.length > 0 ? (
                     filteredFAQs.map(
                         (faq, index) => (
                             <article
@@ -495,6 +605,7 @@ export default function FAQsManagement() {
                                         <div className="flex flex-col gap-1">
                                             <button
                                                 disabled={
+                                                    isSaving ||
                                                     index ===
                                                     0
                                                 }
@@ -511,6 +622,7 @@ export default function FAQsManagement() {
 
                                             <button
                                                 disabled={
+                                                    isSaving ||
                                                     index ===
                                                     filteredFAQs.length -
                                                     1
@@ -576,6 +688,9 @@ export default function FAQsManagement() {
 
                                             <div className="flex shrink-0 gap-1">
                                                 <button
+                                                    disabled={
+                                                        isSaving
+                                                    }
                                                     onClick={() =>
                                                         openEdit(
                                                             faq
@@ -591,6 +706,9 @@ export default function FAQsManagement() {
                                                 </button>
 
                                                 <button
+                                                    disabled={
+                                                        isSaving
+                                                    }
                                                     onClick={() =>
                                                         setDeleteTarget(
                                                             faq
@@ -833,6 +951,7 @@ export default function FAQsManagement() {
 
                                 <button
                                     type="submit"
+                                    disabled={isSaving}
                                     className="h-11 rounded-xl bg-blue-600 px-6 text-sm font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700"
                                 >
                                     {editing
@@ -880,6 +999,7 @@ export default function FAQsManagement() {
                                 onClick={
                                     deleteFAQ
                                 }
+                                disabled={isSaving}
                                 className="h-11 rounded-xl bg-red-600 px-5 text-sm font-bold text-white hover:bg-red-700"
                             >
                                 Delete
