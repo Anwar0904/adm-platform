@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import FAQService from "@/services/faq.service";
+import { connectDB } from "@/lib/db";
 
 import {
     CreateFAQSchema,
@@ -14,6 +15,8 @@ import { PERMISSIONS } from "@/constants/permissions";
 
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
+
         await requirePermission(
             request,
             PERMISSIONS.FAQ_READ
@@ -36,6 +39,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
+
         const user = await requirePermission(
             request,
             PERMISSIONS.FAQ_CREATE

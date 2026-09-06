@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import FAQService from "@/services/faq.service";
+import { connectDB } from "@/lib/db";
 import { requirePermission } from "@/lib/auth/require-auth";
 import { ApiResponse } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/error-handler";
@@ -15,6 +16,8 @@ export async function PATCH(
     { params }: Params
 ) {
     try {
+        await connectDB();
+
         await requirePermission(
             request,
             PERMISSIONS.FAQ_UPDATE
