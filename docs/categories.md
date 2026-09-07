@@ -1,23 +1,8 @@
 const initialCategories: Category[] = [
-
-
-
     {
-
-
-
         id: "1",
-
-
-
         name: "Artificial Intelligence",
-
-
-
         slug: "artificial-intelligence",
-
-
-
         description:
 
 
