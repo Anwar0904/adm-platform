@@ -82,6 +82,7 @@ type TeamMember = {
 
     shortBio?: string;
     biography?: string;
+    cvUrl?: string;
 
     avatar?: MediaItem | null;
     gallery?: MediaItem[];
@@ -131,6 +132,7 @@ type FormState = {
     designation: string;
     shortBio: string;
     biography: string;
+    cvUrl: string;
 
     email: string;
     phone: string;
@@ -161,6 +163,7 @@ const EMPTY_FORM: FormState = {
     designation: "",
     shortBio: "",
     biography: "",
+    cvUrl: "",
 
     email: "",
     phone: "",
@@ -264,6 +267,9 @@ function buildPayload(form: FormState) {
 
         biography:
             form.biography.trim(),
+
+        cvUrl:
+            form.cvUrl.trim(),
 
         email:
             form.email.trim(),
@@ -669,6 +675,9 @@ export default function TeamManagement() {
 
             biography:
                 member.biography ?? "",
+
+            cvUrl:
+                member.cvUrl ?? "",
 
             email:
                 member.email ?? "",
@@ -2014,6 +2023,27 @@ function TeamFormModal({
                                 />
                             </Field>
                         </div>
+                    </FormSection>
+
+                    <FormSection title="CV">
+                        <Field label="CV URL (optional)">
+                            <input
+                                type="text"
+                                inputMode="url"
+                                value={form.cvUrl}
+                                onChange={(event) =>
+                                    updateForm(
+                                        "cvUrl",
+                                        event.target.value
+                                    )
+                                }
+                                placeholder="https://..."
+                                className="input"
+                            />
+                            <p className="mt-1 text-xs text-slate-500">
+                                Upload the PDF to Media Management, then paste its public URL here. The public profile shows a CV link only when this URL is set.
+                            </p>
+                        </Field>
                     </FormSection>
 
                     {/* SKILLS */}

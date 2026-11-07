@@ -11,6 +11,8 @@ import { Portfolio } from "@/models/portfolio.model";
 import { Service } from "@/models/service.model";
 import { Settings } from "@/models/settings.model";
 import { TeamMember } from "@/models/team-member.model";
+import type { IMedia } from "@/types/media.types";
+import type { IPublicTeamMember } from "@/types/team-member.types";
 import { Testimonial } from "@/models/testimonial.model";
 import LeadService from "@/services/lead.service";
 
@@ -144,19 +146,95 @@ class PublicContentService {
         return portfolio;
     }
 
-    async getTeamMembers(query: Pagination) {
+    async getTeamMembers(query: Pagination): Promise<{
+        teamMembers: IPublicTeamMember[];
+        pagination: ReturnType<typeof pagination>;
+    }> {
         const filter = contentFilter(query);
         const [teamMembers, total] = await Promise.all([
-            TeamMember.find(filter).select(publicFields).populate("avatar").sort({ sortOrder: 1, createdAt: -1 }).skip((query.page - 1) * query.limit).limit(query.limit),
+            TeamMember.find(filter)
+                .select("name slug designation shortBio biography experience avatar skills socialLinks cvUrl")
+                .populate<{
+                    avatar: Pick<IMedia, "url" | "alt"> | null;
+                }>({
+                    path: "avatar",
+                    select: "url alt",
+                    match: { isDeleted: false },
+                })
+                .sort({ sortOrder: 1, createdAt: -1 })
+                .skip((query.page - 1) * query.limit)
+                .limit(query.limit),
             TeamMember.countDocuments(filter),
         ]);
-        return { teamMembers, pagination: pagination(query.page, query.limit, total) };
+
+        return {
+            teamMembers: teamMembers.map((member) => ({
+                id: member._id.toString(),
+                name: member.name,
+                slug: member.slug,
+                designation: member.designation,
+                shortBio: member.shortBio ?? "",
+                biography: member.biography ?? "",
+                experience: member.experience,
+                avatar: member.avatar
+                    ? {
+                        url: member.avatar.url,
+                        alt: member.avatar.alt,
+                    }
+                    : null,
+                skills: member.skills.map((skill) => ({
+                    name: skill.name,
+                    level: skill.level,
+                })),
+                socialLinks: {
+                    ...member.socialLinks,
+                },
+                cvUrl: member.cvUrl || undefined,
+            })),
+            pagination: pagination(query.page, query.limit, total),
+        };
     }
 
     async getTeamMemberBySlug(slug: string) {
-        const teamMember = await TeamMember.findOne({ slug, status: CONTENT_STATUS.PUBLISHED, isDeleted: false }).select(publicFields).populate("avatar").populate("gallery");
+        const teamMember = await TeamMember.findOne({
+            slug,
+            status: CONTENT_STATUS.PUBLISHED,
+            isDeleted: false,
+        })
+            .select("name slug designation shortBio biography experience avatar skills socialLinks cvUrl")
+            .populate<{
+                avatar: Pick<IMedia, "url" | "alt"> | null;
+            }>({
+                path: "avatar",
+                select: "url alt",
+                match: { isDeleted: false },
+            });
+
         if (!teamMember) throw new ApiError(404, "Team member not found.");
-        return teamMember;
+
+        return {
+            id: teamMember._id.toString(),
+            name: teamMember.name,
+            slug: teamMember.slug,
+            designation: teamMember.designation,
+            shortBio: teamMember.shortBio ?? "",
+            biography: teamMember.biography ?? "",
+            experience: teamMember.experience,
+            avatar: teamMember.avatar
+                ? {
+                    url: teamMember.avatar.url,
+                    alt: teamMember.avatar.alt,
+                }
+                : null,
+            skills: teamMember.skills.map((skill) => ({
+                name: skill.name,
+                level: skill.level,
+            })),
+            socialLinks: {
+                ...teamMember.socialLinks,
+            },
+            cvUrl: teamMember.cvUrl || undefined,
+        } satisfies IPublicTeamMember;
     }
 
     async getTestimonials(query: Pagination) {

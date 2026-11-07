@@ -1,140 +1,91 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowRight, Users2, Award, Globe2 } from "lucide-react";
+import { ArrowDown, Code2, Compass } from "lucide-react";
 
 export default function TeamHero() {
     return (
-        <section className="relative overflow-hidden bg-slate-950">
-            <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -left-40 top-20 h-96 w-96 rounded-full bg-blue-500/15 blur-3xl" />
-                <div className="absolute right-0 top-0 h-[500px] w-[500px] rounded-full bg-cyan-400/10 blur-3xl" />
-                <div className="absolute bottom-0 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-indigo-500/10 blur-3xl" />
-            </div>
+        <section className="relative isolate overflow-hidden border-b border-white/[0.06] bg-[#050d1a]">
+            <div
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_78%_30%,rgba(43,124,255,0.16),transparent_38%),radial-gradient(ellipse_at_95%_75%,rgba(34,211,238,0.08),transparent_32%)]"
+            />
+            <div
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 opacity-[0.035] [background-image:linear-gradient(to_right,#7db4ff_1px,transparent_1px),linear-gradient(to_bottom,#7db4ff_1px,transparent_1px)] [background-size:72px_72px]"
+            />
 
-            <div className="absolute inset-0 opacity-[0.04]">
-                <div className="h-full w-full bg-[linear-gradient(to_right,#2563eb_1px,transparent_1px),linear-gradient(to_bottom,#2563eb_1px,transparent_1px)] bg-[size:70px_70px]" />
-            </div>
+            <div className="mx-auto grid min-h-[620px] max-w-7xl items-center gap-14 px-5 pb-20 pt-24 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20 lg:px-10 lg:pb-28 lg:pt-32">
+                <div className="max-w-3xl">
+                    <p className="hero-kicker">
+                        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-cyan-300" />
+                        Meet our leadership.
+                    </p>
 
-            <div className="relative container mx-auto px-4 pb-24 pt-36 lg:px-8">
-                <div className="grid items-center gap-20 lg:grid-cols-2">
-                    <motion.div
-                        initial={{ opacity: 0, x: -40 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.7 }}
-                    >
-                        <span className="inline-flex items-center rounded-full border border-blue-400/30 bg-blue-500/10 px-5 py-2 text-sm font-semibold text-blue-200">
-                            Meet The People Behind ADM
+                    <h1 className="mt-8 max-w-3xl text-[clamp(2.8rem,6vw,5.25rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-white">
+                        The People Behind{" "}
+                        <span className="bg-gradient-to-r from-brand-300 via-brand-200 to-cyan-300 bg-clip-text text-transparent">
+                            the Vision.
                         </span>
+                    </h1>
 
-                        <h1 className="mt-8 text-5xl font-black leading-tight text-white md:text-6xl xl:text-7xl">
-                            Building
-                            <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
-                                Extraordinary
-                            </span>
-                            Digital Teams.
-                        </h1>
+                    <p className="mt-7 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg sm:leading-9">
+                        At Arazi Digital Media, leadership and engineering work closely to turn business goals into thoughtful digital products—grounded in clear direction, dependable execution, and close collaboration.
+                    </p>
 
-                        <p className="mt-8 max-w-2xl text-lg leading-9 text-slate-300">
-                            Designers, engineers, AI specialists, strategists and innovators working together to transform ambitious ideas into exceptional digital products.
-                        </p>
-
-                        <div className="mt-10 flex flex-col gap-5 sm:flex-row">
-                            <Link
-                                href="/consultation"
-                                className="group inline-flex items-center justify-center rounded-2xl bg-blue-600 px-8 py-4 font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-blue-500"
-                            >
-                                Work With Our People
-                                <ArrowRight className="ml-3 h-5 w-5 transition group-hover:translate-x-1" />
-                            </Link>
-
-                            <Link
-                                href="/portfolio"
-                                className="inline-flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-900/60 px-8 py-4 font-semibold text-slate-100 transition-all hover:border-blue-500 hover:text-blue-300"
-                            >
-                                View Selected Work
-                            </Link>
-                        </div>
-
-                        <div className="mt-16 grid grid-cols-3 gap-5">
-                            <motion.div
-                                whileHover={{ y: -8 }}
-                                className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-sm"
-                            >
-                                <Users2 className="mb-5 h-9 w-9 text-cyan-300" />
-                                <h3 className="text-4xl font-black text-white">35+</h3>
-                                <p className="mt-2 text-sm text-slate-400">Experts</p>
-                            </motion.div>
-
-                            <motion.div
-                                whileHover={{ y: -8 }}
-                                className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-sm"
-                            >
-                                <Award className="mb-5 h-9 w-9 text-cyan-300" />
-                                <h3 className="text-4xl font-black text-white">50+</h3>
-                                <p className="mt-2 text-sm text-slate-400">Engagements</p>
-                            </motion.div>
-
-                            <motion.div
-                                whileHover={{ y: -8 }}
-                                className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-sm"
-                            >
-                                <Globe2 className="mb-5 h-9 w-9 text-indigo-300" />
-                                <h3 className="text-4xl font-black text-white">12</h3>
-                                <p className="mt-2 text-sm text-slate-400">Countries</p>
-                            </motion.div>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, x: 40 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
-                        className="relative"
+                    <Link
+                        href="#leadership"
+                        className="site-button-primary mt-9"
                     >
-                        <div className="overflow-hidden rounded-[36px] border border-slate-700 bg-slate-900/80 p-4 shadow-2xl backdrop-blur-xl">
-                            <Image
-                                src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1200&q=80"
-                                alt="ADM Team"
-                                width={900}
-                                height={900}
-                                className="h-[620px] w-full rounded-[28px] object-cover"
-                            />
+                        Meet the leadership
+                        <ArrowDown aria-hidden="true" size={17} />
+                    </Link>
+                </div>
+
+                <div className="relative mx-auto w-full max-w-lg lg:ml-auto">
+                    <div
+                        aria-hidden="true"
+                        className="absolute -right-7 -top-8 h-40 w-40 rounded-full border border-cyan-300/15"
+                    />
+                    <div
+                        aria-hidden="true"
+                        className="absolute -bottom-7 -left-7 h-36 w-36 rounded-full border border-brand-300/15"
+                    />
+
+                    <div className="relative space-y-4 rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 shadow-soft backdrop-blur-sm sm:p-7">
+                        <p className="text-label">How we lead</p>
+
+                        <div className="flex items-center gap-5 rounded-2xl border border-white/[0.08] bg-slate-950/60 p-5 sm:p-6">
+                            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-cyan-200">
+                                <Compass aria-hidden="true" size={23} />
+                            </span>
+                            <div>
+                                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                                    Executive leadership
+                                </p>
+                                <p className="mt-1 text-sm text-slate-400">
+                                    Vision, direction and partnership
+                                </p>
+                            </div>
                         </div>
 
-                        <motion.div
-                            animate={{ y: [0, -12, 0] }}
-                            transition={{ repeat: Infinity, duration: 4 }}
-                            className="absolute -bottom-10 left-6 rounded-3xl border border-slate-700 bg-slate-900/90 p-6 shadow-2xl backdrop-blur-xl"
-                        >
-                            <div className="flex -space-x-3">
-                                {[
-                                    "https://randomuser.me/api/portraits/women/44.jpg",
-                                    "https://randomuser.me/api/portraits/men/52.jpg",
-                                    "https://randomuser.me/api/portraits/women/68.jpg",
-                                    "https://randomuser.me/api/portraits/men/33.jpg",
-                                ].map((img) => (
-                                    <Image
-                                        key={img}
-                                        src={img}
-                                        alt=""
-                                        width={56}
-                                        height={56}
-                                        className="rounded-full border-4 border-white object-cover"
-                                    />
-                                ))}
+                        <div className="flex items-center gap-5 rounded-2xl border border-white/[0.08] bg-slate-950/60 p-5 sm:p-6">
+                            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-500/10 text-brand-200">
+                                <Code2 aria-hidden="true" size={23} />
+                            </span>
+                            <div>
+                                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-200">
+                                    Technical leadership
+                                </p>
+                                <p className="mt-1 text-sm text-slate-400">
+                                    Engineering, coordination and delivery
+                                </p>
                             </div>
+                        </div>
 
-                            <h4 className="mt-5 text-xl font-bold text-white">Collaboration First</h4>
-                            <p className="mt-2 max-w-xs text-sm leading-7 text-slate-300">
-                                Cross-functional teams delivering AI-first software, beautiful experiences and measurable business impact.
-                            </p>
-                        </motion.div>
-                    </motion.div>
+                        <div className="flex items-center gap-3 px-1 pt-2 text-sm text-slate-400">
+                            <span aria-hidden="true" className="h-px w-8 bg-gradient-to-r from-brand-400 to-cyan-300" />
+                            Thoughtful leadership. Reliable engineering.
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

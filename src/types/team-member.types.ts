@@ -35,6 +35,8 @@ export interface ITeamMember {
 
     biography?: string;
 
+    cvUrl?: string;
+
     email?: string;
 
     phone?: string;
@@ -69,6 +71,23 @@ export interface ITeamMember {
     isDeleted: boolean;
 
     deletedAt?: Date | null;
+}
+
+export interface IPublicTeamMember {
+    id: string;
+    name: string;
+    slug: string;
+    designation: string;
+    shortBio: string;
+    biography: string;
+    experience: number;
+    avatar: {
+        url: string;
+        alt?: string;
+    } | null;
+    skills: ISkill[];
+    socialLinks: ISocialLinks;
+    cvUrl?: string;
 }
 
 export interface TeamMemberMethods { }

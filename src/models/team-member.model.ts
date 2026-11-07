@@ -93,6 +93,12 @@ const TeamMemberSchema = new Schema<
             default: "",
         },
 
+        cvUrl: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+
         email: {
             type: String,
             default: "",

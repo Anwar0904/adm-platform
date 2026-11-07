@@ -45,6 +45,28 @@ export const CreateTeamMemberSchema =
             .string()
             .default(""),
 
+        cvUrl: z
+            .string()
+            .refine(
+                (value) => {
+                    if (
+                        value === "" ||
+                        /^\/uploads\/media\/[A-Za-z0-9._-]+$/.test(value)
+                    ) {
+                        return true;
+                    }
+
+                    try {
+                        const url = new URL(value);
+                        return url.protocol === "https:" || url.protocol === "http:";
+                    } catch {
+                        return false;
+                    }
+                },
+                "CV URL must be an HTTP(S) URL or an uploaded media path."
+            )
+            .optional(),
+
         avatar: z
             .string()
             .nullable()

@@ -1,19 +1,27 @@
-import BehindScenesSection from "@/components/team/BehindScenesSection";
-import JoinTeamSection from "@/components/team/JoinTeamSection";
-import TeamCultureSection from "@/components/team/TeamCultureSection";
-import TeamFAQSection from "@/components/team/TeamFAQSection";
-import TeamFinalCTA from "@/components/team/TeamFinalCTA";
-import TeamHero from "@/components/team/TeamHero";
+import { connection } from "next/server";
 
-export default function TeamPage() {
+import TeamHero from "@/components/team/TeamHero";
+import TeamLeadership from "@/components/team/TeamLeadership";
+import TeamFinalCTA from "@/components/team/TeamFinalCTA";
+import { connectDB } from "@/lib/db";
+import PublicContentService from "@/services/public-content.service";
+
+export default async function TeamPage() {
+    await connection();
+    await connectDB();
+
+    const { teamMembers } =
+        await PublicContentService.getTeamMembers({
+            page: 1,
+            limit: 2,
+            featured: true,
+        });
+
     return (
         <>
             <TeamHero />
-            <TeamCultureSection />
-            <BehindScenesSection />
-            <JoinTeamSection />
-            <TeamFAQSection />
+            <TeamLeadership members={teamMembers} />
             <TeamFinalCTA />
         </>
-    )
+    );
 }
