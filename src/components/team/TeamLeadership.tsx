@@ -33,6 +33,18 @@ function isSafeCvUrl(value?: string) {
     );
 }
 
+function getSectionTitle(designation: string) {
+    if (/\b(founder|ceo|chief executive|owner)\b/i.test(designation)) {
+        return "Executive leadership";
+    }
+
+    if (/\b(project manager|engineer|technical|developer|technology)\b/i.test(designation)) {
+        return "Technical leadership";
+    }
+
+    return "Leadership profile";
+}
+
 function ProfileLinks({ member }: { member: IPublicTeamMember }) {
     const links = [
         {
@@ -193,28 +205,24 @@ export default function TeamLeadership({ members }: Props) {
                     </p>
                 </div>
 
-                {members.length === 2 ? (
+                {members.length > 0 ? (
                     <div className="space-y-20 sm:space-y-28">
                         {members.map((member, index) => (
                             <LeadershipProfile
                                 key={member.id}
                                 member={member}
                                 index={index}
-                                sectionTitle={
-                                    index === 0
-                                        ? "Executive leadership"
-                                        : "Technical leadership"
-                                }
+                                sectionTitle={getSectionTitle(member.designation)}
                             />
                         ))}
                     </div>
                 ) : (
                     <div className="rounded-2xl border border-white/10 bg-white/[0.025] px-6 py-10 text-center sm:px-10">
                         <p className="text-lg font-medium text-white">
-                            Leadership profiles are being prepared.
+                            Leadership profiles are not published yet.
                         </p>
                         <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-400">
-                            Published leadership profiles will appear here once both featured profiles are ready.
+                            Published team profiles will appear here as soon as they are available.
                         </p>
                     </div>
                 )}

@@ -59,13 +59,25 @@ test("renders two published leadership profiles and their supplied links", () =>
     assert.match(markup, /Portrait coming soon/);
 });
 
-test("does not render a partial leadership set", () => {
+test("renders a single published technical profile without waiting for a second profile", () => {
     const markup = renderToStaticMarkup(
         createElement(TeamLeadership, {
-            members: [owner],
+            members: [{ ...technicalLead, cvUrl: undefined }],
         })
     );
 
-    assert.match(markup, /Leadership profiles are being prepared/);
-    assert.doesNotMatch(markup, /Abudullah Araz/);
+    assert.match(markup, /M\. Anwar Ul Haq/);
+    assert.match(markup, /Technical leadership/);
+    assert.doesNotMatch(markup, /Leadership profiles are not published yet/);
+    assert.doesNotMatch(markup, /Download CV/);
+});
+
+test("shows the empty state when no published profiles are returned", () => {
+    const markup = renderToStaticMarkup(
+        createElement(TeamLeadership, {
+            members: [],
+        })
+    );
+
+    assert.match(markup, /Leadership profiles are not published yet/);
 });
