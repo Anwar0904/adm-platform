@@ -10,11 +10,8 @@ export default async function TeamPage() {
     await connection();
     await connectDB();
 
-    const { teamMembers } =
-        await PublicContentService.getTeamMembers({
-            page: 1,
-            limit: 2,
-        });
+    const teamMembers =
+        await PublicContentService.getAllTeamMembers();
 
     return (
         <>

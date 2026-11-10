@@ -45,7 +45,9 @@ function pagination(page: number, limit: number, total: number) {
     };
 }
 
-function contentFilter(query: Pagination) {
+function contentFilter(
+    query: Pick<Pagination, "featured" | "search">
+) {
     const filter: Record<string, unknown> = {
         status: CONTENT_STATUS.PUBLISHED,
         isDeleted: false,
@@ -60,6 +62,61 @@ function contentFilter(query: Pagination) {
     }
 
     return filter;
+}
+
+export function teamMemberPublicFilter(
+    query: Pick<Pagination, "featured" | "search"> = {}
+) {
+    return {
+        ...contentFilter(query),
+        employmentStatus: "active" as const,
+    };
+}
+
+function publicTeamMemberQuery(
+    filter: Record<string, unknown>
+) {
+    return TeamMember.find(filter)
+        .select("name slug designation shortBio biography experience avatar skills socialLinks cvUrl")
+        .populate<{
+            avatar: Pick<IMedia, "url" | "alt"> | null;
+        }>({
+            path: "avatar",
+            select: "url alt",
+            match: { isDeleted: false },
+        })
+        .sort({ sortOrder: 1, createdAt: -1 });
+}
+
+type PublicTeamMemberRecords =
+    Awaited<ReturnType<typeof publicTeamMemberQuery>>;
+
+function mapPublicTeamMembers(
+    teamMembers: PublicTeamMemberRecords
+): IPublicTeamMember[] {
+    return teamMembers.map((member) => ({
+        id: member._id.toString(),
+        name: member.name,
+        slug: member.slug,
+        designation: member.designation,
+        shortBio: member.shortBio ?? "",
+        biography: member.biography ?? "",
+        experience: member.experience,
+        avatar: member.avatar
+            ? {
+                url: member.avatar.url,
+                alt: member.avatar.alt,
+            }
+            : null,
+        skills: member.skills.map((skill) => ({
+            name: skill.name,
+            level: skill.level,
+        })),
+        socialLinks: {
+            ...member.socialLinks,
+        },
+        cvUrl: member.cvUrl || undefined,
+    }));
 }
 
 class PublicContentService {
@@ -150,49 +207,26 @@ class PublicContentService {
         teamMembers: IPublicTeamMember[];
         pagination: ReturnType<typeof pagination>;
     }> {
-        const filter = contentFilter(query);
+        const filter = teamMemberPublicFilter(query);
         const [teamMembers, total] = await Promise.all([
-            TeamMember.find(filter)
-                .select("name slug designation shortBio biography experience avatar skills socialLinks cvUrl")
-                .populate<{
-                    avatar: Pick<IMedia, "url" | "alt"> | null;
-                }>({
-                    path: "avatar",
-                    select: "url alt",
-                    match: { isDeleted: false },
-                })
-                .sort({ sortOrder: 1, createdAt: -1 })
+            publicTeamMemberQuery(filter)
                 .skip((query.page - 1) * query.limit)
                 .limit(query.limit),
             TeamMember.countDocuments(filter),
         ]);
 
         return {
-            teamMembers: teamMembers.map((member) => ({
-                id: member._id.toString(),
-                name: member.name,
-                slug: member.slug,
-                designation: member.designation,
-                shortBio: member.shortBio ?? "",
-                biography: member.biography ?? "",
-                experience: member.experience,
-                avatar: member.avatar
-                    ? {
-                        url: member.avatar.url,
-                        alt: member.avatar.alt,
-                    }
-                    : null,
-                skills: member.skills.map((skill) => ({
-                    name: skill.name,
-                    level: skill.level,
-                })),
-                socialLinks: {
-                    ...member.socialLinks,
-                },
-                cvUrl: member.cvUrl || undefined,
-            })),
+            teamMembers: mapPublicTeamMembers(teamMembers),
             pagination: pagination(query.page, query.limit, total),
         };
+    }
+
+    async getAllTeamMembers(): Promise<IPublicTeamMember[]> {
+        const teamMembers = await publicTeamMemberQuery(
+            teamMemberPublicFilter()
+        );
+
+        return mapPublicTeamMembers(teamMembers);
     }
 
     async getTeamMemberBySlug(slug: string) {
@@ -200,6 +234,7 @@ class PublicContentService {
             slug,
             status: CONTENT_STATUS.PUBLISHED,
             isDeleted: false,
+            employmentStatus: "active",
         })
             .select("name slug designation shortBio biography experience avatar skills socialLinks cvUrl")
             .populate<{

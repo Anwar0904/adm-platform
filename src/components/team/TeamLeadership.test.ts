@@ -40,7 +40,7 @@ const technicalLead: IPublicTeamMember = {
     cvUrl: "/uploads/media/anwar-cv.pdf",
 };
 
-test("renders two published leadership profiles and their supplied links", () => {
+test("renders supplied leadership profiles and their supplied links", () => {
     const markup = renderToStaticMarkup(
         createElement(TeamLeadership, {
             members: [owner, technicalLead],
@@ -70,6 +70,28 @@ test("renders a single published technical profile without waiting for a second 
     assert.match(markup, /Technical leadership/);
     assert.doesNotMatch(markup, /Leadership profiles are not published yet/);
     assert.doesNotMatch(markup, /Download CV/);
+});
+
+test("renders more than two leadership profiles with optional media omitted", () => {
+    const thirdMember: IPublicTeamMember = {
+        ...technicalLead,
+        id: "third",
+        name: "Third Team Member",
+        slug: "third-team-member",
+        avatar: null,
+        cvUrl: undefined,
+        socialLinks: {},
+    };
+    const markup = renderToStaticMarkup(
+        createElement(TeamLeadership, {
+            members: [owner, technicalLead, thirdMember],
+        })
+    );
+
+    assert.match(markup, /M\. Anwar Ul Haq/);
+    assert.match(markup, /Third Team Member/);
+    assert.equal((markup.match(/Portrait coming soon/g) ?? []).length, 2);
+    assert.equal((markup.match(/Download CV/g) ?? []).length, 1);
 });
 
 test("shows the empty state when no published profiles are returned", () => {
