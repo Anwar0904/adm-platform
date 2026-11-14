@@ -8,6 +8,7 @@ import {
 import { SeoSchema } from "./seo.validator";
 import { SocialLinkSchema } from "./social-link.validator";
 import { SkillSchema } from "./skill.validator";
+import { TEAM_GOVERNANCE_GROUPS } from "@/types/team-member.types";
 
 export const TEAM_MEMBER_EMPLOYMENT_STATUS = {
     ACTIVE: "active",
@@ -31,6 +32,11 @@ export const CreateTeamMemberSchema =
             .min(2)
             .max(120)
             .default("Team Member"),
+
+        governanceGroup: z
+            .enum(TEAM_GOVERNANCE_GROUPS)
+            .nullable()
+            .optional(),
 
         slug: z
             .string()

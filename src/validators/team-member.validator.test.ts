@@ -50,3 +50,35 @@ test("CreateTeamMemberSchema rejects non-HTTP CV URLs", () => {
         );
     }
 });
+
+test("governance group is optional but limited to approved groups", () => {
+    const base = {
+        name: "Approved ADM Leader",
+        designation: "Approved designation",
+    };
+
+    assert.equal(
+        CreateTeamMemberSchema.parse(base).governanceGroup,
+        undefined
+    );
+    assert.equal(
+        CreateTeamMemberSchema.parse({
+            ...base,
+            governanceGroup: "board",
+        }).governanceGroup,
+        "board"
+    );
+    assert.equal(
+        CreateTeamMemberSchema.parse({
+            ...base,
+            governanceGroup: null,
+        }).governanceGroup,
+        null
+    );
+    assert.throws(() =>
+        CreateTeamMemberSchema.parse({
+            ...base,
+            governanceGroup: "founder",
+        })
+    );
+});

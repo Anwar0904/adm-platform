@@ -7,6 +7,15 @@ import {
 import { ContentStatus } from "@/enums";
 import { ISeo } from "./seo.types";
 
+export const TEAM_GOVERNANCE_GROUPS = [
+    "board",
+    "executive",
+    "management",
+] as const;
+
+export type TeamGovernanceGroup =
+    (typeof TEAM_GOVERNANCE_GROUPS)[number];
+
 export type TeamMemberEmploymentStatus =
     "active" | "inactive";
 
@@ -30,6 +39,8 @@ export interface ITeamMember {
     slug: string;
 
     designation: string;
+
+    governanceGroup?: TeamGovernanceGroup | null;
 
     shortBio?: string;
 
@@ -78,6 +89,7 @@ export interface IPublicTeamMember {
     name: string;
     slug: string;
     designation: string;
+    governanceGroup?: TeamGovernanceGroup;
     shortBio: string;
     biography: string;
     experience: number;

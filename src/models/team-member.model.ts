@@ -10,6 +10,7 @@ import {
 
 import {
     ITeamMember,
+    TEAM_GOVERNANCE_GROUPS,
     TeamMemberModel,
 } from "@/types/team-member.types";
 
@@ -80,6 +81,12 @@ const TeamMemberSchema = new Schema<
             required: true,
             trim: true,
             maxlength: 150,
+        },
+
+        governanceGroup: {
+            type: String,
+            enum: TEAM_GOVERNANCE_GROUPS,
+            default: null,
         },
 
         shortBio: {

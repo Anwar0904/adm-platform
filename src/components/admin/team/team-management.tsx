@@ -22,6 +22,10 @@ import {
     UserRound,
     X,
 } from "lucide-react";
+import {
+    TEAM_GOVERNANCE_GROUPS,
+    type TeamGovernanceGroup,
+} from "@/types/team-member.types";
 
 /* ==========================================================================
    TYPES
@@ -79,6 +83,7 @@ type TeamMember = {
     slug?: string;
 
     designation: string;
+    governanceGroup?: TeamGovernanceGroup | null;
 
     shortBio?: string;
     biography?: string;
@@ -130,6 +135,7 @@ type ApiResponse<T> = {
 type FormState = {
     name: string;
     designation: string;
+    governanceGroup: TeamGovernanceGroup | "";
     shortBio: string;
     biography: string;
     cvUrl: string;
@@ -161,6 +167,7 @@ type FormState = {
 const EMPTY_FORM: FormState = {
     name: "",
     designation: "",
+    governanceGroup: "",
     shortBio: "",
     biography: "",
     cvUrl: "",
@@ -261,6 +268,9 @@ function buildPayload(form: FormState) {
 
         designation:
             form.designation.trim(),
+
+        governanceGroup:
+            form.governanceGroup || null,
 
         shortBio:
             form.shortBio.trim(),
@@ -669,6 +679,9 @@ export default function TeamManagement() {
             designation:
                 member.designation ??
                 "",
+
+            governanceGroup:
+                member.governanceGroup ?? "",
 
             shortBio:
                 member.shortBio ?? "",
@@ -1731,6 +1744,35 @@ function TeamFormModal({
                                     placeholder="e.g. Senior Developer"
                                     className="input"
                                 />
+                            </Field>
+
+                            <Field label="Governance Group">
+                                <select
+                                    value={form.governanceGroup}
+                                    onChange={(event) => {
+                                        const group =
+                                            TEAM_GOVERNANCE_GROUPS.find(
+                                                (value) => value === event.target.value
+                                            ) ?? "";
+
+                                        updateForm("governanceGroup", group);
+                                    }}
+                                    className="input"
+                                >
+                                    <option value="">Not assigned</option>
+                                    <option value="board">
+                                        Board of Arazi Digital Media
+                                    </option>
+                                    <option value="executive">
+                                        Executive Committee
+                                    </option>
+                                    <option value="management">
+                                        Management Committee
+                                    </option>
+                                </select>
+                                <p className="mt-1 text-xs text-text-soft">
+                                    Assign only after the person’s official role and committee membership are approved.
+                                </p>
                             </Field>
 
                             <Field label="Email">

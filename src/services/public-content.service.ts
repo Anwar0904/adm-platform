@@ -77,7 +77,7 @@ function publicTeamMemberQuery(
     filter: Record<string, unknown>
 ) {
     return TeamMember.find(filter)
-        .select("name slug designation shortBio biography experience avatar skills socialLinks cvUrl")
+        .select("name slug designation governanceGroup shortBio biography experience avatar skills socialLinks cvUrl")
         .populate<{
             avatar: Pick<IMedia, "url" | "alt"> | null;
         }>({
@@ -99,6 +99,7 @@ function mapPublicTeamMembers(
         name: member.name,
         slug: member.slug,
         designation: member.designation,
+        governanceGroup: member.governanceGroup ?? undefined,
         shortBio: member.shortBio ?? "",
         biography: member.biography ?? "",
         experience: member.experience,
@@ -236,7 +237,7 @@ class PublicContentService {
             isDeleted: false,
             employmentStatus: "active",
         })
-            .select("name slug designation shortBio biography experience avatar skills socialLinks cvUrl")
+            .select("name slug designation governanceGroup shortBio biography experience avatar skills socialLinks cvUrl")
             .populate<{
                 avatar: Pick<IMedia, "url" | "alt"> | null;
             }>({
@@ -252,6 +253,7 @@ class PublicContentService {
             name: teamMember.name,
             slug: teamMember.slug,
             designation: teamMember.designation,
+            governanceGroup: teamMember.governanceGroup ?? undefined,
             shortBio: teamMember.shortBio ?? "",
             biography: teamMember.biography ?? "",
             experience: teamMember.experience,

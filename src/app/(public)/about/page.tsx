@@ -1,30 +1,18 @@
-import { connection } from "next/server";
+import type { Metadata } from "next";
 
-import TeamHero from "@/components/team/TeamHero";
-import TeamLeadership from "@/components/team/TeamLeadership";
-import TeamFinalCTA from "@/components/team/TeamFinalCTA";
-import { connectDB } from "@/lib/db";
-import PublicContentService from "@/services/public-content.service";
-import LeadershipSection from "@/components/team/leadership";
-import LeadershipOverview from "@/components/team/leadershipsecondsection";
-import TeamGallery from "@/components/team/leadershipGallery";
+import CompanyOverview from "@/components/about/CompanyOverview";
 
-export default async function TeamPage() {
-    await connection();
-    await connectDB();
+export const metadata: Metadata = {
+    title: "Our Company",
+    description:
+        "Arazi Digital Media is a global Technology, Marketing, AI and Data company.",
+    openGraph: {
+        title: "Our Company",
+        description:
+            "Explore Arazi Digital Media's connected Technology, Marketing, AI and Data capabilities.",
+    },
+};
 
-    const teamMembers =
-        await PublicContentService.getAllTeamMembers();
-
-    return (
-        <>
-            <TeamHero />
-            <LeadershipOverview/>
-            <TeamGallery/>
-
-            <LeadershipSection/>
-            <TeamLeadership members={teamMembers} />
-            <TeamFinalCTA />
-        </>
-    );
+export default function AboutPage() {
+    return <CompanyOverview />;
 }

@@ -14,7 +14,8 @@ export default function TeamFinalCTA() {
                     Reliable products start with thoughtful collaboration.
                 </h2>
                 <p className="mx-auto mt-5 max-w-2xl leading-7 text-slate-300">
-                    We bring clear leadership and considered engineering to every digital product we build.
+                    For questions about Arazi Digital Media&apos;s leadership
+                    and governance, start a conversation with our team.
                 </p>
                 <Link
                     href="/consultation"

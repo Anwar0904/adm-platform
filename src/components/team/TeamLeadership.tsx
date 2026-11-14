@@ -7,7 +7,10 @@ import {
 } from "lucide-react";
 import { FaGithub, FaLinkedinIn } from "react-icons/fa";
 
-import type { IPublicTeamMember } from "@/types/team-member.types";
+import type {
+    IPublicTeamMember,
+    TeamGovernanceGroup,
+} from "@/types/team-member.types";
 
 type Props = {
     members: IPublicTeamMember[];
@@ -31,18 +34,6 @@ function isSafeCvUrl(value?: string) {
         isSafeExternalUrl(value) ||
         Boolean(value && /^\/uploads\/media\/[A-Za-z0-9._-]+$/.test(value))
     );
-}
-
-function getSectionTitle(designation: string) {
-    if (/\b(founder|ceo|chief executive|owner)\b/i.test(designation)) {
-        return "Executive leadership";
-    }
-
-    if (/\b(project manager|engineer|technical|developer|technology)\b/i.test(designation)) {
-        return "Technical leadership";
-    }
-
-    return "Leadership profile";
 }
 
 function ProfileLinks({ member }: { member: IPublicTeamMember }) {
@@ -185,47 +176,78 @@ function LeadershipProfile({
 }
 
 export default function TeamLeadership({ members }: Props) {
+    const groups: {
+        governanceGroup: Extract<TeamGovernanceGroup, "executive" | "management">;
+        id: string;
+        title: string;
+    }[] = [
+        {
+            governanceGroup: "executive",
+            id: "executive-committee",
+            title: "Executive Committee",
+        },
+        {
+            governanceGroup: "management",
+            id: "management-committee",
+            title: "Management Committee",
+        },
+    ];
+
     return (
         <section
-            id="leadership"
-            aria-labelledby="leadership-heading"
+            id="leadership-committees"
+            aria-label="Executive and management committees"
             className="scroll-mt-24 bg-[#050d1a] py-20 sm:py-24 lg:py-28"
         >
             <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-                <div className="mb-14 max-w-2xl sm:mb-20">
-                    <p className="text-label">Leadership at ADM</p>
-                    <h2
-                        id="leadership-heading"
-                        className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl"
-                    >
-                        Direction shaped by people.
-                    </h2>
-                    <p className="mt-4 max-w-xl leading-7 text-slate-400">
-                        Meet the leaders guiding our strategy and the engineering behind the products we build.
-                    </p>
-                </div>
+                <div className="space-y-20 sm:space-y-28">
+                    {groups.map((group) => {
+                        const groupMembers = members.filter(
+                            (member) =>
+                                member.governanceGroup === group.governanceGroup
+                        );
 
-                {members.length > 0 ? (
-                    <div className="space-y-20 sm:space-y-28">
-                        {members.map((member, index) => (
-                            <LeadershipProfile
-                                key={member.id}
-                                member={member}
-                                index={index}
-                                sectionTitle={getSectionTitle(member.designation)}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.025] px-6 py-10 text-center sm:px-10">
-                        <p className="text-lg font-medium text-white">
-                            Leadership profiles are not published yet.
-                        </p>
-                        <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-400">
-                            Published team profiles will appear here as soon as they are available.
-                        </p>
-                    </div>
-                )}
+                        return (
+                            <section
+                                key={group.id}
+                                id={group.id}
+                                aria-labelledby={`${group.id}-heading`}
+                                className="scroll-mt-24"
+                            >
+                                <div className="mb-10 max-w-2xl">
+                                    <p className="text-label">
+                                        Leadership &amp; Governance
+                                    </p>
+                                    <h2
+                                        id={`${group.id}-heading`}
+                                        className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+                                    >
+                                        {group.title}
+                                    </h2>
+                                    {!groupMembers.length && (
+                                        <p className="mt-4 leading-7 text-slate-400">
+                                            Approved profiles will appear here
+                                            after official records are assigned.
+                                        </p>
+                                    )}
+                                </div>
+
+                                {groupMembers.length > 0 ? (
+                                    <div className="space-y-20 sm:space-y-28">
+                                        {groupMembers.map((member, index) => (
+                                            <LeadershipProfile
+                                                key={member.id}
+                                                member={member}
+                                                index={index}
+                                                sectionTitle={group.title}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </section>
+                        );
+                    })}
+                </div>
             </div>
         </section>
     );

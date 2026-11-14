@@ -35,6 +35,7 @@ test("getAllTeamMembers returns more than two records without pagination", async
         name: `Team Member ${index + 1}`,
         slug: `team-member-${index + 1}`,
         designation: "Project Manager",
+        governanceGroup: index === 0 ? "executive" : undefined,
         shortBio: "",
         biography: "",
         experience: 0,
@@ -71,4 +72,6 @@ test("getAllTeamMembers returns more than two records without pagination", async
 
     assert.equal(teamMembers.length, 3);
     assert.equal(teamMembers[2].name, "Team Member 3");
+    assert.equal(teamMembers[0].governanceGroup, "executive");
+    assert.equal(teamMembers[1].governanceGroup, undefined);
 });

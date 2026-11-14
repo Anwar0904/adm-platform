@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { ChevronDown, Menu, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { navigation } from "./menu";
+import { navigation, type NavigationChild } from "./menu";
 
 function NavLogo({ compact = false }: { compact?: boolean }) {
     return (
@@ -37,9 +37,23 @@ function NavLogo({ compact = false }: { compact?: boolean }) {
     );
 }
 
-function MegaMenu({ items }: { items: { title: string; description: string; href: string; icon: any }[] }) {
+function MegaMenu({
+    id,
+    items,
+    open,
+    onNavigate,
+}: {
+    id: string;
+    items: NavigationChild[];
+    open: boolean;
+    onNavigate?: () => void;
+}) {
     return (
-        <div className="absolute left-1/2 top-full hidden w-[31rem] -translate-x-1/2 rounded-2xl border border-white/10 bg-slate-950/95 p-6 shadow-[0_30px_60px_rgba(2,6,23,0.5)] backdrop-blur-md group-hover:block">
+        <div
+            id={id}
+            hidden={!open}
+            className="absolute left-1/2 top-full w-[31rem] -translate-x-1/2 rounded-2xl border border-white/10 bg-slate-950/95 p-6 shadow-[0_30px_60px_rgba(2,6,23,0.5)] backdrop-blur-md"
+        >
             <div className="grid grid-cols-2 gap-4">
                 {items.map((item) => {
                     const Icon = item.icon;
@@ -48,13 +62,23 @@ function MegaMenu({ items }: { items: { title: string; description: string; href
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex gap-4 rounded-xl border border-transparent p-4 transition hover:border-blue-400/30 hover:bg-blue-500/10"
+                            onClick={onNavigate}
+                            className="flex gap-4 rounded-xl border border-transparent p-4 transition hover:border-blue-400/30 hover:bg-blue-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
                         >
-                            <Icon className="mt-1 h-5 w-5 text-cyan-300" />
+                            {Icon && (
+                                <Icon
+                                    aria-hidden="true"
+                                    className="mt-1 h-5 w-5 shrink-0 text-cyan-300"
+                                />
+                            )}
 
                             <div>
                                 <h4 className="font-semibold text-white">{item.title}</h4>
-                                <p className="mt-1 text-sm text-slate-300">{item.description}</p>
+                                {item.description && (
+                                    <p className="mt-1 text-sm text-slate-300">
+                                        {item.description}
+                                    </p>
+                                )}
                             </div>
                         </Link>
                     );
@@ -66,8 +90,18 @@ function MegaMenu({ items }: { items: { title: string; description: string; href
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
+    const [aboutOpen, setAboutOpen] = useState(false);
     const [servicesOpen, setServicesOpen] = useState(false);
+    const [desktopOpenMenu, setDesktopOpenMenu] = useState<string | null>(null);
     const [scrolled, setScrolled] = useState(false);
+    const desktopTriggerRefs = useRef<Record<string, HTMLElement | null>>({});
+    const suppressDesktopFocusOpen = useRef(false);
+    const primaryNavigationItem = navigation.find(
+        (item) => "primary" in item && item.primary
+    );
+    const desktopNavigation = navigation.filter(
+        (item) => item !== primaryNavigationItem
+    );
 
     useEffect(() => {
         const onScroll = () => {
@@ -94,6 +128,7 @@ export default function Navbar() {
 
     const closeMenu = () => {
         setOpen(false);
+        setAboutOpen(false);
         setServicesOpen(false);
     };
 
@@ -108,33 +143,145 @@ export default function Navbar() {
                     aria-label="Main navigation"
                     className="hidden items-center gap-5 lg:flex xl:gap-7"
                 >
-                    {navigation.map((item) => {
-                        const hasMegaMenu = "mega" in item && item.mega;
+                    {desktopNavigation.map((item) => {
+                        const hasMegaMenu = item.mega === true;
+                        const submenuId = `desktop-${item.title
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-")}-submenu`;
+                        const submenuOpen = desktopOpenMenu === item.title;
 
                         return (
                             <div
                                 key={item.title}
                                 className="group relative flex h-20 items-center"
+                                onMouseEnter={() => {
+                                    if (hasMegaMenu) {
+                                        setDesktopOpenMenu(item.title);
+                                    }
+                                }}
+                                onMouseLeave={(event) => {
+                                    if (
+                                        !hasMegaMenu ||
+                                        event.currentTarget.contains(document.activeElement)
+                                    ) {
+                                        return;
+                                    }
+
+                                    setDesktopOpenMenu((activeMenu) =>
+                                        activeMenu === item.title ? null : activeMenu
+                                    );
+                                }}
+                                onFocus={() => {
+                                    if (!hasMegaMenu) {
+                                        return;
+                                    }
+
+                                    if (suppressDesktopFocusOpen.current) {
+                                        suppressDesktopFocusOpen.current = false;
+                                        return;
+                                    }
+
+                                    setDesktopOpenMenu(item.title);
+                                }}
+                                onBlur={(event) => {
+                                    const nextTarget = event.relatedTarget;
+
+                                    if (
+                                        !hasMegaMenu ||
+                                        (nextTarget instanceof Node &&
+                                            event.currentTarget.contains(nextTarget))
+                                    ) {
+                                        return;
+                                    }
+
+                                    setDesktopOpenMenu((activeMenu) =>
+                                        activeMenu === item.title ? null : activeMenu
+                                    );
+                                }}
+                                onKeyDown={(event) => {
+                                    if (
+                                        !hasMegaMenu ||
+                                        event.key !== "Escape" ||
+                                        desktopOpenMenu !== item.title
+                                    ) {
+                                        return;
+                                    }
+
+                                    event.preventDefault();
+                                    setDesktopOpenMenu(null);
+                                    const trigger = desktopTriggerRefs.current[item.title];
+
+                                    if (trigger && document.activeElement !== trigger) {
+                                        suppressDesktopFocusOpen.current = true;
+                                        trigger.focus();
+                                    }
+                                }}
                             >
                                 {hasMegaMenu ? (
                                     <>
-                                        <Link
-                                            href={item.href ?? "#"}
-                                            className="site-nav-link flex items-center gap-1.5"
-                                        >
-                                            <span>{item.title}</span>
-                                            <ChevronDown
-                                                size={15}
-                                                strokeWidth={2}
-                                                className="transition-transform duration-200 group-hover:rotate-180"
-                                            />
-                                        </Link>
-                                        <MegaMenu items={item.items ?? []} />
+                                        {item.href ? (
+                                            <Link
+                                                ref={(element) => {
+                                                    desktopTriggerRefs.current[item.title] = element;
+                                                }}
+                                                href={item.href}
+                                                aria-expanded={submenuOpen}
+                                                aria-controls={submenuId}
+                                                className="site-nav-link flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
+                                            >
+                                                <span>{item.title}</span>
+                                                <ChevronDown
+                                                    aria-hidden="true"
+                                                    size={15}
+                                                    strokeWidth={2}
+                                                    className={`transition-transform duration-200 ${
+                                                        submenuOpen ? "rotate-180" : ""
+                                                    }`}
+                                                />
+                                            </Link>
+                                        ) : (
+                                            <button
+                                                ref={(element) => {
+                                                    desktopTriggerRefs.current[item.title] = element;
+                                                }}
+                                                type="button"
+                                                aria-expanded={submenuOpen}
+                                                aria-controls={submenuId}
+                                                onClick={(event) => {
+                                                    if (event.detail === 0 && submenuOpen) {
+                                                        setDesktopOpenMenu(null);
+                                                    } else {
+                                                        setDesktopOpenMenu(item.title);
+                                                    }
+                                                }}
+                                                className="site-nav-link flex items-center gap-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
+                                            >
+                                                <span>{item.title}</span>
+                                                <ChevronDown
+                                                    aria-hidden="true"
+                                                    size={15}
+                                                    strokeWidth={2}
+                                                    className={`transition-transform duration-200 ${
+                                                        submenuOpen ? "rotate-180" : ""
+                                                    }`}
+                                                />
+                                            </button>
+                                        )}
+                                        <MegaMenu
+                                            id={submenuId}
+                                            items={item.items}
+                                            open={submenuOpen}
+                                            onNavigate={() => setDesktopOpenMenu(null)}
+                                        />
                                     </>
                                 ) : (
                                     <Link
-                                        href={item.href ?? "#"}
-                                        className="site-nav-link"
+                                        href={item.href}
+                                        className={
+                                            item.primary
+                                                ? "site-button-primary inline-flex focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300 xl:px-5 xl:py-2.5"
+                                                : "site-nav-link focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
+                                        }
                                     >
                                         {item.title}
                                     </Link>
@@ -145,18 +292,20 @@ export default function Navbar() {
                 </nav>
 
                 <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                    <Link
-                        href="/consultation"
-                        className="site-button-primary hidden lg:inline-flex xl:px-5 xl:py-2.5"
-                    >
-                        Book Consultation
-                    </Link>
+                    {primaryNavigationItem && !primaryNavigationItem.mega && (
+                        <Link
+                            href={primaryNavigationItem.href}
+                            className="site-button-primary hidden lg:inline-flex focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300 xl:px-5 xl:py-2.5"
+                        >
+                            {primaryNavigationItem.title}
+                        </Link>
+                    )}
 
                     <button
                         type="button"
                         aria-label={open ? "Close navigation menu" : "Open navigation menu"}
                         aria-expanded={open}
-                        onClick={() => setOpen((value) => !value)}
+                        onClick={() => (open ? closeMenu() : setOpen(true))}
                         className="relative z-[70] inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-surface text-text shadow-sm transition hover:bg-surface-alt focus:outline-none focus:ring-2 focus:ring-brand-500/20 lg:hidden"
                     >
                         {open ? <X size={21} strokeWidth={2} /> : <Menu size={21} strokeWidth={2} />}
@@ -189,66 +338,112 @@ export default function Navbar() {
                             </button>
                         </div>
 
-                        <nav className="flex-1 overflow-y-auto px-5 py-6 sm:px-6">
+                        <nav
+                            aria-label="Mobile navigation"
+                            className="flex-1 overflow-y-auto px-5 py-6 sm:px-6"
+                        >
                             <div className="space-y-1">
                                 {navigation.map((item) => {
-                                    const isMega = "mega" in item && item.mega;
+                                    const isMega = item.mega === true;
 
                                     if (isMega) {
+                                        const isAboutDropdown = !item.href;
+                                        const isExpanded = isAboutDropdown
+                                            ? aboutOpen
+                                            : servicesOpen;
+                                        const submenuId = `mobile-${item.title
+                                            .toLowerCase()
+                                            .replace(/[^a-z0-9]+/g, "-")}-submenu`;
+                                        const toggleSubmenu = isAboutDropdown
+                                            ? () => setAboutOpen((value) => !value)
+                                            : () => setServicesOpen((value) => !value);
+
                                         return (
                                             <div key={item.title}>
-                                                <div className="flex items-center">
-                                                    <Link
-                                                        href={item.href!}
-                                                        onClick={closeMenu}
-                                                        className="flex min-h-12 flex-1 items-center rounded-xl px-3 text-base font-semibold text-text transition hover:bg-surface-alt"
-                                                    >
-                                                        {item.title}
-                                                    </Link>
+                                                {item.href ? (
+                                                    <div className="flex items-center">
+                                                        <Link
+                                                            href={item.href}
+                                                            onClick={closeMenu}
+                                                            className="flex min-h-12 flex-1 items-center rounded-xl px-3 text-base font-semibold text-text transition hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                                                        >
+                                                            {item.title}
+                                                        </Link>
 
+                                                        <button
+                                                            type="button"
+                                                            aria-label={`Toggle ${item.title} submenu`}
+                                                            aria-expanded={isExpanded}
+                                                            aria-controls={submenuId}
+                                                            onClick={toggleSubmenu}
+                                                            className="flex h-11 w-11 items-center justify-center rounded-xl text-text-soft transition hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                                                        >
+                                                            <ChevronDown
+                                                                aria-hidden="true"
+                                                                size={19}
+                                                                className={`transition-transform duration-200 ${
+                                                                    isExpanded ? "rotate-180" : ""
+                                                                }`}
+                                                            />
+                                                        </button>
+                                                    </div>
+                                                ) : (
                                                     <button
                                                         type="button"
-                                                        aria-label="Toggle services"
-                                                        aria-expanded={servicesOpen}
-                                                        onClick={() => setServicesOpen((value) => !value)}
-                                                        className="flex h-11 w-11 items-center justify-center rounded-xl text-text-soft transition hover:bg-surface-alt"
+                                                        aria-expanded={isExpanded}
+                                                        aria-controls={submenuId}
+                                                        onClick={toggleSubmenu}
+                                                        className="flex min-h-12 w-full items-center justify-between rounded-xl px-3 text-left text-base font-semibold text-text transition hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
                                                     >
+                                                        {item.title}
                                                         <ChevronDown
+                                                            aria-hidden="true"
                                                             size={19}
-                                                            className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`}
+                                                            className={`transition-transform duration-200 ${
+                                                                isExpanded ? "rotate-180" : ""
+                                                            }`}
                                                         />
                                                     </button>
-                                                </div>
-
-                                                {servicesOpen && (
-                                                    <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-3">
-                                                        {item.items?.map((child) => {
-                                                            const Icon = child.icon;
-
-                                                            return (
-                                                                <Link
-                                                                    key={child.href}
-                                                                    href={child.href}
-                                                                    onClick={closeMenu}
-                                                                    className="flex items-start gap-3 rounded-xl px-3 py-3 transition hover:border hover:border-blue-400/30 hover:bg-blue-500/10"
-                                                                >
-                                                                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/15 text-cyan-300">
-                                                                        {Icon && <Icon size={17} />}
-                                                                    </span>
-
-                                                                    <span className="min-w-0">
-                                                                        <span className="block text-sm font-semibold text-white">{child.title}</span>
-                                                                        {child.description && (
-                                                                            <span className="mt-0.5 block text-xs leading-5 text-slate-300">
-                                                                                {child.description}
-                                                                            </span>
-                                                                        )}
-                                                                    </span>
-                                                                </Link>
-                                                            );
-                                                        })}
-                                                    </div>
                                                 )}
+
+                                                <div
+                                                    id={submenuId}
+                                                    hidden={!isExpanded}
+                                                    className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-3"
+                                                >
+                                                    {item.items.map((child) => {
+                                                        const Icon = child.icon;
+
+                                                        return (
+                                                            <Link
+                                                                key={child.href}
+                                                                href={child.href}
+                                                                onClick={closeMenu}
+                                                                className="flex items-start gap-3 rounded-xl px-3 py-3 transition hover:border hover:border-blue-400/30 hover:bg-blue-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                                                            >
+                                                                <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/15 text-cyan-300">
+                                                                    {Icon && (
+                                                                        <Icon
+                                                                            aria-hidden="true"
+                                                                            size={17}
+                                                                        />
+                                                                    )}
+                                                                </span>
+
+                                                                <span className="min-w-0">
+                                                                    <span className="block text-sm font-semibold text-white">
+                                                                        {child.title}
+                                                                    </span>
+                                                                    {child.description && (
+                                                                        <span className="mt-0.5 block text-xs leading-5 text-slate-300">
+                                                                            {child.description}
+                                                                        </span>
+                                                                    )}
+                                                                </span>
+                                                            </Link>
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
                                         );
                                     }
@@ -256,24 +451,18 @@ export default function Navbar() {
                                     return (
                                         <Link
                                             key={item.title}
-                                            href={item.href!}
+                                            href={item.href}
                                             onClick={closeMenu}
-                                            className="site-nav-link flex min-h-12 items-center rounded-xl px-3 text-base font-semibold text-text transition hover:bg-surface-alt"
+                                            className={
+                                                item.primary
+                                                    ? "site-button-primary mt-4 flex h-12 w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                                                    : "site-nav-link flex min-h-12 items-center rounded-xl px-3 text-base font-semibold text-text transition hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                                            }
                                         >
                                             {item.title}
                                         </Link>
                                     );
                                 })}
-                            </div>
-
-                            <div className="mt-6 border-t border-border pt-6">
-                                <Link
-                                    href="/consultation"
-                                    onClick={closeMenu}
-                                    className="site-button-primary flex h-12 w-full"
-                                >
-                                    Book Consultation
-                                </Link>
                             </div>
                         </nav>
                     </div>
