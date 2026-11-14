@@ -81,9 +81,40 @@ export const navigation: NavigationItem[] = [
     },
 
     {
-        title: "People & Expertise",
-        href: "/team",
+        title: "About",
+        href: "/about",
         icon: Users,
+        mega: true,
+        items: [
+            {
+                title: "Digital Platforms & Engineering",
+                description:
+                    "Modern, scalable websites and web applications",
+                href: "/services/web-development",
+                icon: Briefcase,
+            },
+            {
+                title: "Mobile Apps",
+                description:
+                    "High-quality Android and iOS applications",
+                href: "/services/mobile-apps",
+                icon: Smartphone,
+            },
+            {
+                title: "AI & Intelligent Systems",
+                description:
+                    "AI-powered tools for modern businesses",
+                href: "/services/ai-solutions",
+                icon: BrainCircuit,
+            },
+            {
+                title: "UI / UX Design",
+                description:
+                    "Beautiful and intuitive digital experiences",
+                href: "/services/ui-ux",
+                icon: Palette,
+            },
+        ],
     },
 
     {
