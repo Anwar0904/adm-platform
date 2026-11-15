@@ -10,16 +10,6 @@ import {
   Code2,
 } from "lucide-react";
 
-/* ------------------------------------------------------------------ */
-/*  NOTE ON IMAGES                                                     */
-/*  Swap every `src="/images/hero/*"` below for your real assets.      */
-/*  Recommended source sizes:                                          */
-/*    - laptop-dashboard.jpg  -> 900x700  (landscape)                  */
-/*    - building.jpg          -> 900x1100 (portrait, tall)             */
-/*    - team.jpg               -> 800x700  (landscape)                 */
-/*    - app-screen.jpg         -> 600x1200 (phone screenshot)          */
-/* ------------------------------------------------------------------ */
-
 
 const TRUSTED_BY = [
   { name: "Uneed", icon: "u" },
@@ -44,7 +34,7 @@ export default function Hero() {
       ============================================================= */}
       <div className="relative z-10 mx-auto grid max-w-7xl gap-14 px-4 pb-24 pt-8 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-6 lg:pb-32 lg:pt-14 lg:px-8">
         {/* ---------------- LEFT: copy ---------------- */}
-        <div className="relative z-10">
+        <div className="relative z-10 pt-20">
           <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-blue-400/30 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-100 shadow-sm shadow-blue-500/10 backdrop-blur-sm">
             <span className="h-2 w-2 rounded-full bg-cyan-400" />
             Digital solutions that drive real growth

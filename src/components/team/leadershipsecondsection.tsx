@@ -6,47 +6,67 @@ const governanceGroups = [
     {
         id: "leadership-board",
         title: "Board of Arazi Digital Media",
-        description:
-            "Approved Board profiles will appear here after official records are assigned.",
+        href: "/about/leadership-governance/leadership-board",
+        description: "View the published profiles assigned to this group.",
     },
     {
         id: "executive-committee",
         title: "Executive Committee",
-        description:
-            "Approved Executive Committee profiles will appear here after official records are assigned.",
+        href: "/about/leadership-governance/executive-committee",
+        description: "View the published profiles assigned to this group.",
     },
     {
         id: "management-committee",
         title: "Management Committee",
-        description:
-            "Approved Management Committee profiles will appear here after official records are assigned.",
+        href: "/about/leadership-governance/management-committee",
+        description: "View the published profiles assigned to this group.",
     },
 ];
 
 export default function LeadershipOverview() {
     return (
         <section className="bg-[#050d1a]">
-            <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-24 lg:px-10 lg:py-28">
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
-                    {governanceGroups.map((group) => (
-                        <article key={group.id}>
-                            <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+            <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
+
+                <div className="grid grid-cols-1 gap-y-12 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-14 lg:grid-cols-3 lg:gap-x-12">
+
+                    {governanceGroups.map((group, index) => (
+                        <article
+                            key={group.id}
+                            className={`flex flex-col ${
+                                index > 0
+                                    ? "sm:border-l sm:border-white/[0.09] sm:pl-8 lg:pl-10"
+                                    : ""
+                            }`}
+                        >
+                            {/* Heading */}
+                            <h2 className="max-w-sm text-2xl font-semibold leading-tight tracking-[-0.035em] text-white sm:text-[26px] lg:text-[27px]">
                                 {group.title}
                             </h2>
 
-                            <p className="mt-5 max-w-xl text-sm leading-8 text-slate-400 sm:text-base">
+                            {/* Description */}
+                            <p className="mt-5 max-w-sm text-sm leading-7 text-slate-400 sm:text-[15px] sm:leading-8">
                                 {group.description}
                             </p>
 
-                            <Link
-                                href={`#${group.id}`}
-                                className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
-                            >
-                                View profiles
-                                <ArrowUpRight aria-hidden="true" size={17} />
-                            </Link>
+                            {/* Link */}
+                            <div className="mt-auto pt-7">
+                                <Link
+                                    href={group.href}
+                                    className="group inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-cyan-300 transition-colors duration-200 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300"
+                                >
+                                    View profiles
+
+                                    <ArrowUpRight
+                                        aria-hidden="true"
+                                        size={17}
+                                        className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                                    />
+                                </Link>
+                            </div>
                         </article>
                     ))}
+
                 </div>
             </div>
         </section>

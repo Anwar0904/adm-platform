@@ -12,7 +12,10 @@ import { Service } from "@/models/service.model";
 import { Settings } from "@/models/settings.model";
 import { TeamMember } from "@/models/team-member.model";
 import type { IMedia } from "@/types/media.types";
-import type { IPublicTeamMember } from "@/types/team-member.types";
+import type {
+    IPublicTeamMember,
+    TeamGovernanceGroup,
+} from "@/types/team-member.types";
 import { Testimonial } from "@/models/testimonial.model";
 import LeadService from "@/services/lead.service";
 
@@ -24,6 +27,10 @@ type Pagination = {
     limit: number;
     featured?: boolean;
     search?: string;
+};
+
+type TeamMemberPagination = Pagination & {
+    governanceGroup?: TeamGovernanceGroup;
 };
 
 type PublicContactInput = {
@@ -65,12 +72,19 @@ function contentFilter(
 }
 
 export function teamMemberPublicFilter(
-    query: Pick<Pagination, "featured" | "search"> = {}
+    query: Pick<Pagination, "featured" | "search"> &
+        Pick<TeamMemberPagination, "governanceGroup"> = {}
 ) {
-    return {
+    const filter: Record<string, unknown> = {
         ...contentFilter(query),
         employmentStatus: "active" as const,
     };
+
+    if (query.governanceGroup) {
+        filter.governanceGroup = query.governanceGroup;
+    }
+
+    return filter;
 }
 
 function publicTeamMemberQuery(
@@ -102,19 +116,19 @@ function mapPublicTeamMembers(
         governanceGroup: member.governanceGroup ?? undefined,
         shortBio: member.shortBio ?? "",
         biography: member.biography ?? "",
-        experience: member.experience,
+        experience: member.experience ?? 0,
         avatar: member.avatar
             ? {
                 url: member.avatar.url,
                 alt: member.avatar.alt,
             }
             : null,
-        skills: member.skills.map((skill) => ({
+        skills: (member.skills ?? []).map((skill) => ({
             name: skill.name,
             level: skill.level,
         })),
         socialLinks: {
-            ...member.socialLinks,
+            ...(member.socialLinks ?? {}),
         },
         cvUrl: member.cvUrl || undefined,
     }));
@@ -204,7 +218,7 @@ class PublicContentService {
         return portfolio;
     }
 
-    async getTeamMembers(query: Pagination): Promise<{
+    async getTeamMembers(query: TeamMemberPagination): Promise<{
         teamMembers: IPublicTeamMember[];
         pagination: ReturnType<typeof pagination>;
     }> {
@@ -256,19 +270,19 @@ class PublicContentService {
             governanceGroup: teamMember.governanceGroup ?? undefined,
             shortBio: teamMember.shortBio ?? "",
             biography: teamMember.biography ?? "",
-            experience: teamMember.experience,
+            experience: teamMember.experience ?? 0,
             avatar: teamMember.avatar
                 ? {
                     url: teamMember.avatar.url,
                     alt: teamMember.avatar.alt,
                 }
                 : null,
-            skills: teamMember.skills.map((skill) => ({
+            skills: (teamMember.skills ?? []).map((skill) => ({
                 name: skill.name,
                 level: skill.level,
             })),
             socialLinks: {
-                ...teamMember.socialLinks,
+                ...(teamMember.socialLinks ?? {}),
             },
             cvUrl: teamMember.cvUrl || undefined,
         } satisfies IPublicTeamMember;

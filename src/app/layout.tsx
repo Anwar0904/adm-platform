@@ -6,6 +6,9 @@ import { SITE_URL } from "@/config/site";
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
+    alternates: {
+        canonical: SITE_URL,
+    },
     title: {
         default: "ADM | Digital Company - AI-Powered Web & Mobile Solutions",
         template: "%s | Arazi Digital Media",
@@ -70,9 +73,6 @@ export default function RootLayout({
             suppressHydrationWarning
             data-scroll-behavior="smooth"
         >
-            <head>
-                <link rel="canonical" href={SITE_URL} />
-            </head>
             <body className="app-shell">
                 <QueryClientProviderWrapper>
                     {children}

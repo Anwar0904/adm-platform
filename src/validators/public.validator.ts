@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TEAM_GOVERNANCE_GROUPS } from "@/types/team-member.types";
 
 export const PublicPaginationSchema = z.object({
     page: z.coerce.number().int().min(1).default(1),
@@ -9,6 +10,11 @@ export const PublicPaginationSchema = z.object({
 export const PublicContentQuerySchema =
     PublicPaginationSchema.extend({
         search: z.string().trim().min(1).optional(),
+    });
+
+export const PublicTeamMemberQuerySchema =
+    PublicContentQuerySchema.extend({
+        governanceGroup: z.enum(TEAM_GOVERNANCE_GROUPS).optional(),
     });
 
 export const PublicBlogQuerySchema =
