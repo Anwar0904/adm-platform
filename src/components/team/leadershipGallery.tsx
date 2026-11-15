@@ -11,13 +11,18 @@ import {
 import { ArrowLeft, ArrowRight, UserRound } from "lucide-react";
 import type { IPublicTeamMember } from "@/types/team-member.types";
 
+type GalleryMember = Pick<
+    IPublicTeamMember,
+    "id" | "name" | "designation" | "avatar"
+>;
+
 const mod = (value: number, length: number) =>
     ((value % length) + length) % length;
 
 export default function TeamGallery({
     members,
 }: {
-    members: IPublicTeamMember[];
+    members: GalleryMember[];
 }) {
     const teamMembers = members.slice(0, 6);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -220,6 +225,7 @@ export default function TeamGallery({
                                             fill
                                             draggable={false}
                                             sizes="(max-width: 640px) 84vw, 390px"
+                                            unoptimized
                                             className="pointer-events-none select-none object-cover"
                                             priority={isTop}
                                         />

@@ -40,6 +40,10 @@ const SessionSchema =
         required: true,
       },
 
+      lastActivityAt: {
+        type: Date,
+      },
+
       lastUsedAt: {
         type: Date,
         default: Date.now,

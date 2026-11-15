@@ -13,18 +13,29 @@ import {
 
 import type { IPublicTeamMember } from "@/types/team-member.types";
 
+type DirectoryMember = Pick<
+    IPublicTeamMember,
+    | "id"
+    | "name"
+    | "designation"
+    | "shortBio"
+    | "biography"
+    | "avatar"
+    | "socialLinks"
+>;
+
 type Props = {
     groupTitle: string;
-    members: IPublicTeamMember[];
+    members: DirectoryMember[];
 };
 
 function safeExternalUrl(value?: string) {
-    if (!value) {
+    if (typeof value !== "string" || !value.trim()) {
         return undefined;
     }
 
     try {
-        const url = new URL(value);
+        const url = new URL(value.trim());
         return url.protocol === "https:" || url.protocol === "http:"
             ? url.href
             : undefined;
@@ -41,7 +52,7 @@ const socialLinks = [
     { key: "github", label: "GitHub", Icon: FaGithub },
 ] as const;
 
-function ProfileLinks({ member }: { member: IPublicTeamMember }) {
+function ProfileLinks({ member }: { member: DirectoryMember }) {
     const links = socialLinks.flatMap(({ key, label, Icon }) => {
         const href = safeExternalUrl(member.socialLinks[key]);
         return href ? [{ key, label, Icon, href }] : [];
@@ -86,7 +97,7 @@ function Portrait({
     member,
     priority = false,
 }: {
-    member: IPublicTeamMember;
+    member: DirectoryMember;
     priority?: boolean;
 }) {
     return member.avatar?.url ? (
@@ -96,6 +107,7 @@ function Portrait({
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             priority={priority}
+            unoptimized
             className="object-cover"
         />
     ) : (
@@ -110,7 +122,7 @@ export default function LeadershipDirectory({
     members,
 }: Props) {
     const [selectedMember, setSelectedMember] =
-        useState<IPublicTeamMember | null>(null);
+        useState<DirectoryMember | null>(null);
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {

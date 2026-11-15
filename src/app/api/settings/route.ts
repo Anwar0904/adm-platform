@@ -7,7 +7,6 @@ import { handleApiError } from "@/lib/api/error-handler";
 
 import {
     requirePermission,
-    requireAuth,
 } from "@/lib/auth/require-auth";
 
 import { PERMISSIONS } from "@/constants/permissions";
@@ -42,13 +41,10 @@ export async function POST(
     request: NextRequest
 ) {
     try {
-        await requirePermission(
+        const user = await requirePermission(
             request,
             PERMISSIONS.SETTINGS_MANAGE
         );
-
-        const user =
-            await requireAuth(request);
 
         const body =
             await request.json();
@@ -77,13 +73,10 @@ export async function PATCH(
     request: NextRequest
 ) {
     try {
-        await requirePermission(
+        const user = await requirePermission(
             request,
             PERMISSIONS.SETTINGS_MANAGE
         );
-
-        const user =
-            await requireAuth(request);
 
         const body =
             await request.json();

@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+    SESSION_ACTIVITY_DEBOUNCE_MS,
+    SESSION_ACTIVITY_SYNC_INTERVAL_MS,
+} from "@/constants/auth";
 
 import {
     BarChart3,
@@ -77,6 +81,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
+    const [logoutError, setLogoutError] = useState(false);
+    const [sessionRenewalError, setSessionRenewalError] = useState(false);
 
     useEffect(() => {
         setUser(getUser());
@@ -86,17 +92,199 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         setSidebarOpen(false);
     }, [pathname]);
 
+    useEffect(() => {
+        if (pathname === "/admin/login") {
+            return;
+        }
+
+        let lastActivityAt: number | undefined;
+        let debounceTimer: number | undefined;
+        let maxSyncTimer: number | undefined;
+        let retryTimer: number | undefined;
+        let retryScheduledFor: number | undefined;
+        let refreshInFlight = false;
+
+        const clearTimer = (timer: number | undefined) => {
+            if (timer !== undefined) {
+                window.clearTimeout(timer);
+            }
+        };
+
+        const retrySoon = (activityAt: number) => {
+            setSessionRenewalError(true);
+
+            if (
+                retryTimer !== undefined ||
+                retryScheduledFor === activityAt
+            ) {
+                return;
+            }
+
+            retryScheduledFor = activityAt;
+            retryTimer = window.setTimeout(() => {
+                retryTimer = undefined;
+                void syncActivity();
+            }, 60_000);
+        };
+
+        const syncActivity = async () => {
+            if (refreshInFlight || lastActivityAt === undefined) {
+                return;
+            }
+
+            refreshInFlight = true;
+            const activityAt = lastActivityAt;
+            clearTimer(debounceTimer);
+            clearTimer(maxSyncTimer);
+            debounceTimer = undefined;
+            maxSyncTimer = undefined;
+
+            try {
+                const sendActivityRequest = () =>
+                    fetch("/api/auth/refresh", {
+                        method: "POST",
+                        cache: "no-store",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            activityAt: new Date(activityAt).toISOString(),
+                        }),
+                    });
+                const response = navigator.locks
+                    ? await navigator.locks.request(
+                        "adm-auth-session",
+                        sendActivityRequest
+                    )
+                    : await sendActivityRequest();
+
+                if (response.ok) {
+                    setSessionRenewalError(false);
+                    retryScheduledFor = undefined;
+                    clearTimer(retryTimer);
+                    retryTimer = undefined;
+                }
+
+                if (response.status === 401 || response.status === 403) {
+                    const userResponse = await fetch("/api/auth/me", {
+                        cache: "no-store",
+                    });
+
+                    if (
+                        userResponse.status === 401 ||
+                        userResponse.status === 403
+                    ) {
+                        sessionStorage.removeItem("adm_user");
+                        router.replace("/admin/login");
+                        router.refresh();
+                    } else if (userResponse.ok) {
+                        setSessionRenewalError(false);
+                        retryScheduledFor = undefined;
+                    } else {
+                        retrySoon(activityAt);
+                    }
+                } else if (!response.ok) {
+                    retrySoon(activityAt);
+                }
+            } catch {
+                retrySoon(activityAt);
+            } finally {
+                refreshInFlight = false;
+
+                if (
+                    lastActivityAt !== undefined &&
+                    lastActivityAt > activityAt
+                ) {
+                    scheduleActivitySync();
+                }
+            }
+        };
+
+        const scheduleActivitySync = () => {
+            clearTimer(debounceTimer);
+            debounceTimer = window.setTimeout(() => {
+                debounceTimer = undefined;
+                void syncActivity();
+            }, SESSION_ACTIVITY_DEBOUNCE_MS);
+
+            if (maxSyncTimer === undefined) {
+                maxSyncTimer = window.setTimeout(() => {
+                    maxSyncTimer = undefined;
+                    clearTimer(debounceTimer);
+                    debounceTimer = undefined;
+                    void syncActivity();
+                }, SESSION_ACTIVITY_SYNC_INTERVAL_MS);
+            }
+        };
+
+        const handleActivity = (event: Event) => {
+            if (
+                event.target instanceof Element &&
+                event.target.closest("[data-session-refresh-ignore]")
+            ) {
+                return;
+            }
+
+            lastActivityAt = Date.now();
+
+            if (retryTimer !== undefined) {
+                clearTimer(retryTimer);
+                retryTimer = undefined;
+            }
+            retryScheduledFor = undefined;
+            scheduleActivitySync();
+        };
+        const activityEvents = [
+            "pointerdown",
+            "keydown",
+            "touchstart",
+            "wheel",
+        ] as const;
+
+        for (const eventName of activityEvents) {
+            window.addEventListener(eventName, handleActivity, {
+                passive: true,
+            });
+        }
+
+        return () => {
+            clearTimer(debounceTimer);
+            clearTimer(maxSyncTimer);
+            clearTimer(retryTimer);
+
+            for (const eventName of activityEvents) {
+                window.removeEventListener(eventName, handleActivity);
+            }
+        };
+    }, [pathname, router]);
+
     if (pathname === "/admin/login") {
         return <>{children}</>;
     }
 
     async function logout() {
+        setLogoutError(false);
+
         try {
-            await fetch("/api/auth/logout", { method: "POST" });
-        } finally {
+            const sendLogoutRequest = () =>
+                fetch("/api/auth/logout", { method: "POST" });
+            const response = navigator.locks
+                ? await navigator.locks.request(
+                    "adm-auth-session",
+                    sendLogoutRequest
+                )
+                : await sendLogoutRequest();
+
+            if (!response.ok && response.status !== 401) {
+                setLogoutError(true);
+                return;
+            }
+
             sessionStorage.removeItem("adm_user");
             router.replace("/admin/login");
             router.refresh();
+        } catch {
+            setLogoutError(true);
         }
     }
 
@@ -219,6 +407,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
                 {!collapsed && (
                     <div className="border-t border-slate-800 p-4">
+                        {logoutError && (
+                            <p
+                                role="alert"
+                                className="mb-3 text-xs text-red-300"
+                            >
+                                Unable to sign out. Please try again.
+                            </p>
+                        )}
                         <div className="flex items-center gap-3 rounded-2xl bg-slate-900 p-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/15 font-bold text-blue-300">
                                 {user?.name?.charAt(0).toUpperCase() || "A"}
@@ -235,6 +431,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
                             <button
                                 onClick={logout}
+                                data-session-refresh-ignore
                                 title="Sign out"
                                 className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-red-400"
                             >
@@ -290,6 +487,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 </header>
 
                 <main className="p-4 sm:p-6 lg:p-8">
+                    {sessionRenewalError && (
+                        <p
+                            role="status"
+                            className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200"
+                        >
+                            Session renewal is temporarily unavailable. Your page will stay open while we retry.
+                        </p>
+                    )}
                     <div className="rounded-[28px] border border-slate-800 bg-slate-900/70 p-4 shadow-2xl shadow-slate-950/30 sm:p-6">
                         {children}
                     </div>

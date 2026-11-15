@@ -39,8 +39,6 @@ export const env = {
 
   JWT_ACCESS_EXPIRES: getEnvValue("JWT_ACCESS_EXPIRES", "24h"),
 
-  JWT_REFRESH_EXPIRES: getEnvValue("JWT_REFRESH_EXPIRES", "7d"),
-
   BCRYPT_SALT_ROUNDS: Number(getEnvValue("BCRYPT_SALT_ROUNDS", "10")),
 };
 

@@ -4,9 +4,11 @@ import { connection } from "next/server";
 import TeamFinalCTA from "@/components/team/TeamFinalCTA";
 import TeamGallery from "@/components/team/leadershipGallery";
 import LeadershipOverview from "@/components/team/leadershipsecondsection";
+import LeadershipDataError from "@/components/about/leadership/LeadershipDataError";
 import { connectDB } from "@/lib/db";
 import PublicContentService from "@/services/public-content.service";
 import LeadershipHero from "@/components/about/leadership/LeadershipHero";
+import type { IPublicTeamMember } from "@/types/team-member.types";
 
 export const metadata: Metadata = {
     title: "Leadership & Governance",
@@ -21,21 +23,55 @@ export const metadata: Metadata = {
 
 export default async function LeadershipGovernancePage() {
     await connection();
-    await connectDB();
 
-    const { teamMembers } = await PublicContentService.getTeamMembers({
-        page: 1,
-        limit: 100,
-    });
-    const assignedMembers = teamMembers.filter(
-        (member) => member.governanceGroup
-    );
+    let assignedMembers: IPublicTeamMember[] | undefined;
+    let databaseUnavailable = false;
+
+    try {
+        await connectDB();
+        const { teamMembers } =
+            await PublicContentService.getTeamMembers({
+                page: 1,
+                limit: 100,
+            });
+        assignedMembers = teamMembers.filter(
+            (member) => member.governanceGroup
+        );
+    } catch (error) {
+        const isDatabaseUnavailable =
+            typeof error === "object" &&
+            error !== null &&
+            "statusCode" in error &&
+            error.statusCode === 503;
+
+        if (!isDatabaseUnavailable) {
+            throw error;
+        }
+
+        console.error(
+            "Unable to load leadership overview profiles (database unavailable)."
+        );
+        databaseUnavailable = true;
+    }
 
     return (
         <>
             <LeadershipHero />
             <LeadershipOverview />
-            <TeamGallery members={assignedMembers} />
+            {databaseUnavailable ? (
+                <LeadershipDataError retryHref="/about/leadership-governance" />
+            ) : (
+                <TeamGallery
+                    members={(assignedMembers ?? []).map(
+                        ({ id, name, designation, avatar }) => ({
+                            id,
+                            name,
+                            designation,
+                            avatar,
+                        })
+                    )}
+                />
+            )}
             <TeamFinalCTA />
         </>
     );

@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 
+import { JwtService } from "./jwt";
+
 const ACCESS_TOKEN_COOKIE =
     "adm_access_token";
 
@@ -13,9 +15,28 @@ const COOKIE_OPTIONS = {
     path: "/",
 };
 
-export async function setAuthCookies(
-    accessToken: string,
-    refreshToken: string
+function getTokenMaxAge(
+    token: string,
+    expiresAt?: Date
+) {
+    const tokenExpiresAt =
+        JwtService.getTokenExpiryDate(token);
+    const effectiveExpiry =
+        expiresAt &&
+        expiresAt.getTime() < tokenExpiresAt.getTime()
+            ? expiresAt
+            : tokenExpiresAt;
+
+    return Math.max(
+        0,
+        Math.floor(
+            (effectiveExpiry.getTime() - Date.now()) / 1000
+        )
+    );
+}
+
+export async function setAccessTokenCookie(
+    accessToken: string
 ) {
     const cookieStore = await cookies();
 
@@ -24,18 +45,34 @@ export async function setAuthCookies(
         accessToken,
         {
             ...COOKIE_OPTIONS,
-            maxAge: 60 * 15,
+            maxAge: getTokenMaxAge(accessToken),
         }
     );
+}
+
+export async function setRefreshTokenCookie(
+    refreshToken: string,
+    expiresAt?: Date
+) {
+    const cookieStore = await cookies();
 
     cookieStore.set(
         REFRESH_TOKEN_COOKIE,
         refreshToken,
         {
             ...COOKIE_OPTIONS,
-            maxAge: 60 * 60 * 24 * 30,
+            maxAge: getTokenMaxAge(refreshToken, expiresAt),
         }
     );
+}
+
+export async function setAuthCookies(
+    accessToken: string,
+    refreshToken: string,
+    sessionExpiresAt?: Date
+) {
+    await setAccessTokenCookie(accessToken);
+    await setRefreshTokenCookie(refreshToken, sessionExpiresAt);
 }
 
 export async function clearAuthCookies() {

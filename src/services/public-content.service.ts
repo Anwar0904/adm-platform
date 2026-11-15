@@ -13,6 +13,7 @@ import { Settings } from "@/models/settings.model";
 import { TeamMember } from "@/models/team-member.model";
 import type { IMedia } from "@/types/media.types";
 import type {
+    ISocialLinks,
     IPublicTeamMember,
     TeamGovernanceGroup,
 } from "@/types/team-member.types";
@@ -105,6 +106,26 @@ function publicTeamMemberQuery(
 type PublicTeamMemberRecords =
     Awaited<ReturnType<typeof publicTeamMemberQuery>>;
 
+function publicSocialLinks(links?: ISocialLinks | null): ISocialLinks {
+    const publicLinks: ISocialLinks = {};
+
+    for (const key of [
+        "facebook",
+        "linkedin",
+        "twitter",
+        "instagram",
+        "github",
+        "website",
+    ] as const) {
+        const value = links?.[key];
+        if (typeof value === "string") {
+            publicLinks[key] = value;
+        }
+    }
+
+    return publicLinks;
+}
+
 function mapPublicTeamMembers(
     teamMembers: PublicTeamMemberRecords
 ): IPublicTeamMember[] {
@@ -127,9 +148,7 @@ function mapPublicTeamMembers(
             name: skill.name,
             level: skill.level,
         })),
-        socialLinks: {
-            ...(member.socialLinks ?? {}),
-        },
+        socialLinks: publicSocialLinks(member.socialLinks),
         cvUrl: member.cvUrl || undefined,
     }));
 }

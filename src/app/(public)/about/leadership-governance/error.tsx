@@ -10,7 +10,11 @@ export default function Error({
     retry: () => void;
 }) {
     useEffect(() => {
-        console.error("Unable to load leadership governance content.", error);
+        console.error(
+            "Unable to load leadership governance content.",
+            error.message,
+            error.digest
+        );
     }, [error]);
 
     return (

@@ -1,6 +1,7 @@
 import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
 
 import { env } from "@/config/env";
+import { SESSION_IDLE_TIMEOUT_SECONDS } from "@/constants/auth";
 
 import { JwtPayload } from "@/types/auth";
 
@@ -18,10 +19,14 @@ export class JwtService {
   }
 
   static signAccessToken(
-    payload: JwtPayload
+    payload: JwtPayload,
+    now = new Date()
   ) {
     return jwt.sign(
-      payload,
+      {
+        ...payload,
+        iat: Math.floor(now.getTime() / 1000),
+      },
       this.getSecret("access"),
       {
         expiresIn: env.JWT_ACCESS_EXPIRES,
@@ -30,13 +35,17 @@ export class JwtService {
   }
 
   static signRefreshToken(
-    payload: JwtPayload
+    payload: JwtPayload,
+    now = new Date()
   ) {
     return jwt.sign(
-      payload,
+      {
+        ...payload,
+        iat: Math.floor(now.getTime() / 1000),
+      },
       this.getSecret("refresh"),
       {
-        expiresIn: env.JWT_REFRESH_EXPIRES,
+        expiresIn: SESSION_IDLE_TIMEOUT_SECONDS,
       } as SignOptions
     );
   }
@@ -59,23 +68,27 @@ export class JwtService {
     ) as JwtPayload;
   }
 
-  static getExpiryDate(expiresIn: string): Date {
-    const now = Date.now();
+  static decodeRefreshToken(
+    token: string
+  ): JwtPayload | null {
+    const payload = jwt.decode(token);
 
-    const value = parseInt(expiresIn);
+    return typeof payload === "object" && payload !== null
+      ? payload as JwtPayload
+      : null;
+  }
 
-    if (expiresIn.endsWith("m")) {
-      return new Date(now + value * 60 * 1000);
+  static getTokenExpiryDate(token: string): Date {
+    const payload = jwt.decode(token);
+
+    if (
+      typeof payload !== "object" ||
+      payload === null ||
+      typeof payload.exp !== "number"
+    ) {
+      throw new Error("The generated JWT has no expiration claim.");
     }
 
-    if (expiresIn.endsWith("h")) {
-      return new Date(now + value * 60 * 60 * 1000);
-    }
-
-    if (expiresIn.endsWith("d")) {
-      return new Date(now + value * 24 * 60 * 60 * 1000);
-    }
-
-    throw new Error(`Invalid expiresIn value: ${expiresIn}`);
+    return new Date(payload.exp * 1000);
   }
 }

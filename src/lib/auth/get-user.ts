@@ -2,6 +2,8 @@ import { User } from "@/models/user.model";
 import "@/models/role.model";
 import { JwtService } from "@/lib/auth/jwt";
 import { ApiError } from "@/lib/api/api-error";
+import SessionRepository from "@/repositories/session.repository";
+import mongoose from "mongoose";
 
 export async function getUserFromToken(
     authorization?: string | null
@@ -43,6 +45,24 @@ export async function getUserFromToken(
             401,
             message
         );
+    }
+
+    if (!payload.userId || payload.sub !== payload.userId) {
+        throw new ApiError(401, "Invalid access token.");
+    }
+
+    if (!payload.sid || !mongoose.Types.ObjectId.isValid(payload.sid)) {
+        throw new ApiError(401, "Invalid session.");
+    }
+
+    const session =
+        await SessionRepository.findActiveSessionById(
+            payload.sid,
+            payload.userId
+        );
+
+    if (!session) {
+        throw new ApiError(401, "Session has expired or been revoked.");
     }
 
     const user = await User.findById(payload.userId)

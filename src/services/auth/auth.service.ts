@@ -1,12 +1,15 @@
 import { PasswordService } from "@/lib/auth/bcrypt";
 import { ApiError } from "@/lib/api/api-error";
 import SessionRepository from "@/repositories/session.repository";
-import { env } from "@/config/env";
 import { RegisterInput, LoginInput } from "@/types/auth";
 import crypto from "crypto"
 import { User } from "@/models/user.model";
 import { Role } from "@/models/role.model";
 import mongoose from "mongoose";
+import {
+    getSessionExpiresAt,
+    normalizeSessionActivityAt,
+} from "@/lib/auth/session-policy";
 import { JwtService } from "@/lib/auth/jwt";
 import { ResetTokenService } from "@/lib/auth/reset-token";
 import { ResetPasswordInput } from "@/validators/auth";
@@ -18,6 +21,102 @@ export function clearEmailVerificationFields(user: {
 }) {
     user.emailVerificationToken = null;
     user.emailVerificationExpires = null;
+}
+
+async function findActiveRefreshSession(
+    refreshToken: string,
+    payload: ReturnType<typeof JwtService.verifyRefreshToken>,
+    now: Date
+) {
+    if (!payload.userId || payload.sub !== payload.userId) {
+        throw new ApiError(401, "Invalid refresh token.");
+    }
+
+    const sessions = payload.sid
+        ? mongoose.Types.ObjectId.isValid(payload.sid)
+            ? [
+                await SessionRepository.findActiveSessionById(
+                    payload.sid,
+                    payload.userId,
+                    now
+                ),
+            ].filter(Boolean)
+            : []
+        : await SessionRepository.find({
+            user: payload.userId,
+            isRevoked: false,
+            expiresAt: { $gt: now },
+        });
+
+    for (const session of sessions) {
+        if (
+            await PasswordService.compare(
+                refreshToken,
+                session.refreshToken
+            )
+        ) {
+            return session;
+        }
+    }
+
+    if (payload.sid && sessions.length > 0) {
+        throw new ApiError(
+            409,
+            "Refresh token was rotated by another request."
+        );
+    }
+
+    throw new ApiError(401, "Refresh session not found or expired.");
+}
+
+async function getActiveRefreshSession(
+    refreshToken: string,
+    now: Date
+) {
+    let payload: ReturnType<typeof JwtService.verifyRefreshToken>;
+
+    try {
+        payload = JwtService.verifyRefreshToken(refreshToken);
+    } catch {
+        throw new ApiError(401, "Invalid or expired refresh token.");
+    }
+
+    const session = await findActiveRefreshSession(
+        refreshToken,
+        payload,
+        now
+    );
+    const user = await User.findById(payload.userId).populate("role");
+
+    if (!user || user.isDeleted || user.status !== "active") {
+        throw new ApiError(401, "User account is inactive.");
+    }
+
+    return { payload, session, user };
+}
+
+function getSessionJwtPayload(
+    session: { _id: mongoose.Types.ObjectId },
+    user: {
+        _id: mongoose.Types.ObjectId;
+        email: string;
+        role: unknown;
+    }
+) {
+    const roleId =
+        typeof user.role === "object" &&
+            user.role !== null &&
+            "_id" in user.role
+            ? String(user.role._id)
+            : String(user.role);
+
+    return {
+        userId: user._id.toString(),
+        sub: user._id.toString(),
+        email: user.email,
+        role: roleId,
+        sid: session._id.toString(),
+    };
 }
 
 class AuthService {
@@ -158,47 +257,47 @@ class AuthService {
                 ? user.role._id.toString()
                 : String(user.role);
 
-        // JWT Payload
+        const now = new Date();
+        const sessionStartedAt = normalizeSessionActivityAt(now);
+        const sessionId = new mongoose.Types.ObjectId();
+
         const payload = {
             sub: user._id.toString(),
             userId: user._id.toString(),
             email: user.email,
             role: roleId,
+            sid: sessionId.toString(),
         };
 
-        // Generate Tokens
         const accessToken =
-            JwtService.signAccessToken(payload);
+            JwtService.signAccessToken(payload, now);
 
         const refreshToken =
-            JwtService.signRefreshToken(payload);
+            JwtService.signRefreshToken(
+                payload,
+                sessionStartedAt
+            );
 
-        // Store Hashed Refresh Token
         const hashedRefreshToken =
             await PasswordService.hash(refreshToken);
 
-        const expiresAt = new Date(
-            Date.now() + 7 * 24 * 60 * 60 * 1000
-        );
-
-        await SessionRepository.create({
+        await SessionRepository.createSession(sessionId, {
             user: user._id,
             refreshToken: hashedRefreshToken,
-            expiresAt,
+            expiresAt: getSessionExpiresAt(sessionStartedAt),
+            lastActivityAt: sessionStartedAt,
+            lastUsedAt: sessionStartedAt,
             isRevoked: false,
-
-            // We'll populate these later when we
-            // have access to request headers.
             userAgent: "",
             ipAddress: "",
         });
 
-        // Update last login
-        user.lastLogin = new Date();
+        user.lastLogin = now;
         await user.save();
 
         return {
             user,
+            sessionExpiresAt: getSessionExpiresAt(sessionStartedAt),
             tokens: {
                 accessToken,
                 refreshToken,
@@ -206,142 +305,219 @@ class AuthService {
         };
     }
 
-    async refresh(
-        refreshToken: string
+    async getUserFromRefreshToken(
+        refreshToken: string,
+        now = new Date()
     ) {
-        // 1. Verify JWT
+        const { user } = await getActiveRefreshSession(
+            refreshToken,
+            now
+        );
 
-        const payload =
-            JwtService.verifyRefreshToken(
-                refreshToken
+        return user;
+    }
+
+    async refresh(
+        refreshToken: string,
+        activityAt: Date,
+        now = new Date()
+    ) {
+        const { session, user } = await getActiveRefreshSession(
+            refreshToken,
+            now
+        );
+        if (
+            !(activityAt instanceof Date) ||
+            !Number.isFinite(activityAt.getTime())
+        ) {
+            throw new ApiError(400, "Invalid activity timestamp.");
+        }
+
+        if (activityAt.getTime() > now.getTime() + 5_000) {
+            throw new ApiError(400, "Activity timestamp is in the future.");
+        }
+
+        const normalizedActivityAt = normalizeSessionActivityAt(
+            activityAt.getTime() > now.getTime()
+                ? now
+                : activityAt
+        );
+        const previousActivityAt =
+            session.lastActivityAt ??
+            session.lastUsedAt ??
+            session.createdAt;
+
+        if (
+            normalizedActivityAt.getTime() <=
+            previousActivityAt.getTime()
+        ) {
+            const accessToken = JwtService.signAccessToken(
+                getSessionJwtPayload(session, user),
+                now
             );
 
-        // 2. Find user
+            return {
+                accessToken,
+                refreshToken: undefined,
+                sessionExpiresAt: session.expiresAt,
+            };
+        }
 
-        const user = await User.findById(
-            payload.sub
-        ).populate("role");
+        const sessionExpiresAt =
+            getSessionExpiresAt(normalizedActivityAt);
+        const updatedSession =
+            await SessionRepository.recordSessionActivity(
+                session._id,
+                user._id.toString(),
+                normalizedActivityAt,
+                sessionExpiresAt,
+                now
+            );
 
-        if (!user) {
+        if (!updatedSession) {
             throw new ApiError(
                 401,
-                "Invalid refresh token."
+                "Refresh session is no longer active."
             );
         }
 
-        // 3. Find all active sessions
-
-        const sessions =
-            await SessionRepository.find({
-                user: user._id,
-                isRevoked: false,
-            });
-
-        // 4. Match refresh token
-
-        let matchedSession = null;
-
-        for (const session of sessions) {
-            const matched =
-                await PasswordService.compare(
-                    refreshToken,
-                    session.refreshToken
-                );
-
-            if (matched) {
-                matchedSession = session;
-                break;
-            }
-        }
-
-        if (!matchedSession) {
+        if (
+            updatedSession.lastActivityAt &&
+            updatedSession.lastActivityAt.getTime() >
+                normalizedActivityAt.getTime()
+        ) {
             throw new ApiError(
-                401,
-                "Refresh session not found."
+                409,
+                "A newer activity update was already recorded."
             );
         }
 
-        // 5. Generate new tokens
+        const jwtPayload = getSessionJwtPayload(session, user);
 
-        const roleId =
-            typeof user.role === "object" &&
-                user.role !== null &&
-                "_id" in user.role
-                ? String(user.role._id)
-                : String(user.role);
-
-        const jwtPayload = {
-            userId: user._id.toString(),
-            sub: user._id.toString(),
-            email: user.email,
-            role: roleId,
-        };
-
-        const newAccessToken =
-            JwtService.signAccessToken(
-                jwtPayload
-            );
-
-        const newRefreshToken =
+        const accessToken =
+            JwtService.signAccessToken(jwtPayload, now);
+        const nextRefreshToken =
             JwtService.signRefreshToken(
-                jwtPayload
+                jwtPayload,
+                normalizedActivityAt
+            );
+        const nextHash =
+            await PasswordService.hash(nextRefreshToken);
+        const rotatedSession =
+            await SessionRepository.rotateRefreshToken(
+                session._id,
+                session.refreshToken,
+                nextHash,
+                now,
+                sessionExpiresAt,
+                normalizedActivityAt
             );
 
-        // 6. Rotate refresh token
-
-        matchedSession.refreshToken =
-            await PasswordService.hash(
-                newRefreshToken
+        if (!rotatedSession) {
+            throw new ApiError(
+                409,
+                "Refresh token was rotated by another request."
             );
-
-        matchedSession.expiresAt =
-            JwtService.getExpiryDate(
-                env.JWT_REFRESH_EXPIRES
-            );
-
-        await matchedSession.save();
+        }
 
         return {
-            accessToken:
-                newAccessToken,
-            refreshToken:
-                newRefreshToken,
+            accessToken,
+            refreshToken: nextRefreshToken,
+            sessionExpiresAt: rotatedSession.expiresAt,
+        };
+    }
+
+    async refreshAccessToken(
+        refreshToken: string,
+        now = new Date()
+    ) {
+        const { session, user } = await getActiveRefreshSession(
+            refreshToken,
+            now
+        );
+
+        return {
+            accessToken: JwtService.signAccessToken(
+                getSessionJwtPayload(session, user),
+                now
+            ),
         };
     }
 
     async logout(
         refreshToken: string
     ) {
-        const sessions =
-            await SessionRepository.find({
+        let payload;
+
+        try {
+            payload = JwtService.verifyRefreshToken(refreshToken);
+        } catch {
+            throw new ApiError(401, "Invalid or expired refresh token.");
+        }
+
+        if (!payload?.userId || payload.sub !== payload.userId) {
+            throw new ApiError(401, "Invalid refresh token.");
+        }
+
+        if (payload.sid) {
+            if (!mongoose.Types.ObjectId.isValid(payload.sid)) {
+                throw new ApiError(401, "Invalid session.");
+            }
+
+            const revoked =
+                await SessionRepository.revokeActiveSessionById(
+                    payload.sid,
+                    payload.userId
+                );
+
+            if (!revoked) {
+                throw new ApiError(401, "Session is no longer active.");
+            }
+
+            return true;
+        }
+
+        const sessions = payload.sid
+            ? mongoose.Types.ObjectId.isValid(payload.sid)
+                ? [
+                    await SessionRepository.findOne({
+                        _id: payload.sid,
+                        user: payload.userId,
+                        isRevoked: false,
+                    }),
+                ].filter(Boolean)
+                : []
+            : await SessionRepository.find({
+                user: payload.userId,
                 isRevoked: false,
             });
 
-        let matchedSession = null;
-
+        let matchedSession;
         for (const session of sessions) {
-            const matched =
+            if (
                 await PasswordService.compare(
                     refreshToken,
                     session.refreshToken
-                );
-
-            if (matched) {
+                )
+            ) {
                 matchedSession = session;
                 break;
             }
         }
 
         if (!matchedSession) {
-            throw new ApiError(
-                401,
-                "Session not found."
-            );
+            throw new ApiError(401, "Session not found.");
         }
 
-        matchedSession.isRevoked = true;
+        const revoked =
+            await SessionRepository.revokeActiveSession(
+                matchedSession._id,
+                matchedSession.refreshToken
+            );
 
-        await matchedSession.save();
+        if (!revoked) {
+            throw new ApiError(401, "Session is no longer active.");
+        }
 
         return true;
     }

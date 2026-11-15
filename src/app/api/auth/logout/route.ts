@@ -4,6 +4,7 @@ import {
     clearAuthCookies,
     getRefreshToken,
 } from "@/lib/auth/auth-cookies";
+import { ApiErrorHandler } from "@/lib/api/api-error";
 import { connectDB } from "@/lib/db";
 import AuthService from "@/services/auth/auth.service";
 
@@ -15,14 +16,15 @@ export async function POST() {
             await connectDB();
             await AuthService.logout(refreshToken);
         }
+
+        await clearAuthCookies();
+
+        return NextResponse.json({
+            success: true,
+            message: "Logged out successfully.",
+        });
     } catch (error) {
-        console.error("POST /api/auth/logout error:", error);
+        await clearAuthCookies();
+        return ApiErrorHandler.handle(error);
     }
-
-    await clearAuthCookies();
-
-    return NextResponse.json({
-        success: true,
-        message: "Logged out successfully.",
-    });
 }

@@ -3,8 +3,13 @@ import { redirect } from "next/navigation";
 
 import AdminDashboard from "@/components/admin/dashboard/admin-dashboard";
 import { connectDB } from "@/lib/db";
-import { getAccessToken } from "@/lib/auth/auth-cookies";
+import {
+    getAccessToken,
+    getRefreshToken,
+} from "@/lib/auth/auth-cookies";
 import { getUserFromToken } from "@/lib/auth/get-user";
+import { ApiError } from "@/lib/api/api-error";
+import AuthService from "@/services/auth/auth.service";
 import { AuthorizationService } from "@/lib/auth/authorization";
 import { PERMISSIONS } from "@/constants/permissions";
 
@@ -51,12 +56,6 @@ export default async function DashboardPage() {
      * ------------------------------------------------------------
      */
 
-    const accessToken = await getAccessToken();
-
-    if (!accessToken) {
-        redirect("/admin/login");
-    }
-
     /*
      * ------------------------------------------------------------
      * 2. Connect to MongoDB
@@ -71,7 +70,29 @@ export default async function DashboardPage() {
      * ------------------------------------------------------------
      */
 
-    const user = await getUserFromToken(`Bearer ${accessToken}`);
+    const accessToken = await getAccessToken();
+    const refreshToken = await getRefreshToken();
+    let user: Awaited<ReturnType<typeof getUserFromToken>> | undefined;
+
+    if (accessToken) {
+        try {
+            user = await getUserFromToken(`Bearer ${accessToken}`);
+        } catch (error) {
+            if (!(error instanceof ApiError) || error.statusCode !== 401) {
+                throw error;
+            }
+        }
+    }
+
+    if (!user && refreshToken) {
+        try {
+            user = await AuthService.getUserFromRefreshToken(refreshToken);
+        } catch (error) {
+            if (!(error instanceof ApiError) || error.statusCode !== 401) {
+                throw error;
+            }
+        }
+    }
 
     if (!user) {
         redirect("/admin/login");

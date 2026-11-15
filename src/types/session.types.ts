@@ -11,6 +11,8 @@ export interface ISession {
 
   expiresAt: Date;
 
+  lastActivityAt?: Date;
+
   lastUsedAt: Date;
 
   isRevoked: boolean;

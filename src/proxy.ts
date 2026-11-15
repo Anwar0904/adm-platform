@@ -3,6 +3,8 @@ import {
     NextResponse,
 } from "next/server";
 
+const REFRESH_TOKEN_COOKIE =
+    "adm_refresh_token";
 const ACCESS_TOKEN_COOKIE =
     "adm_access_token";
 
@@ -25,30 +27,24 @@ export function proxy(
         return NextResponse.next();
     }
 
-    const token =
+    const accessToken =
         request.cookies.get(
             ACCESS_TOKEN_COOKIE
         )?.value;
+    const refreshToken =
+        request.cookies.get(
+            REFRESH_TOKEN_COOKIE
+        )?.value;
+    const hasSessionCookie =
+        Boolean(accessToken || refreshToken);
 
     if (
-        !token &&
+        !hasSessionCookie &&
         !isLoginRoute
     ) {
         return NextResponse.redirect(
             new URL(
                 "/admin/login",
-                request.url
-            )
-        );
-    }
-
-    if (
-        token &&
-        isLoginRoute
-    ) {
-        return NextResponse.redirect(
-            new URL(
-                "/admin/dashboard",
                 request.url
             )
         );

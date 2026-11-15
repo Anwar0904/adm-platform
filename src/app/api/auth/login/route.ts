@@ -45,7 +45,8 @@ export async function POST(
 
     await setAuthCookies(
       accessToken,
-      refreshToken
+      refreshToken,
+      result.sessionExpiresAt
     );
 
     return ApiResponse.success(

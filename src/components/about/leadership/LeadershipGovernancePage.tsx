@@ -2,14 +2,24 @@ import Link from "next/link";
 import { connection } from "next/server";
 
 import LeadershipDirectory from "@/components/about/leadership/LeadershipDirectory";
+import LeadershipDataError from "@/components/about/leadership/LeadershipDataError";
 import { connectDB } from "@/lib/db";
 import PublicContentService from "@/services/public-content.service";
-import type { TeamGovernanceGroup } from "@/types/team-member.types";
+import type {
+    IPublicTeamMember,
+    TeamGovernanceGroup,
+} from "@/types/team-member.types";
 
 type Props = {
     group: TeamGovernanceGroup;
     title: string;
     description: string;
+};
+
+const governancePaths: Record<TeamGovernanceGroup, string> = {
+    board: "leadership-board",
+    executive: "executive-committee",
+    management: "management-committee",
 };
 
 export default async function LeadershipGovernancePage({
@@ -18,13 +28,33 @@ export default async function LeadershipGovernancePage({
     description,
 }: Props) {
     await connection();
-    await connectDB();
 
-    const { teamMembers } = await PublicContentService.getTeamMembers({
-        page: 1,
-        limit: 100,
-        governanceGroup: group,
-    });
+    let teamMembers: IPublicTeamMember[] | undefined;
+    let databaseUnavailable = false;
+
+    try {
+        await connectDB();
+        ({ teamMembers } = await PublicContentService.getTeamMembers({
+            page: 1,
+            limit: 100,
+            governanceGroup: group,
+        }));
+    } catch (error) {
+        const isDatabaseUnavailable =
+            typeof error === "object" &&
+            error !== null &&
+            "statusCode" in error &&
+            error.statusCode === 503;
+
+        if (!isDatabaseUnavailable) {
+            throw error;
+        }
+
+        console.error(
+            `Unable to load ${title} profiles (database unavailable).`
+        );
+        databaseUnavailable = true;
+    }
 
     return (
         <main className="min-h-screen bg-[#050d1a]">
@@ -79,7 +109,34 @@ export default async function LeadershipGovernancePage({
                 </div>
             </section>
 
-            <LeadershipDirectory groupTitle={title} members={teamMembers} />
+            {databaseUnavailable ? (
+                <LeadershipDataError
+                    retryHref={`/about/leadership-governance/${governancePaths[group]}`}
+                />
+            ) : (
+                <LeadershipDirectory
+                    groupTitle={title}
+                    members={(teamMembers ?? []).map(
+                        ({
+                            id,
+                            name,
+                            designation,
+                            shortBio,
+                            biography,
+                            avatar,
+                            socialLinks,
+                        }) => ({
+                            id,
+                            name,
+                            designation,
+                            shortBio,
+                            biography,
+                            avatar,
+                            socialLinks,
+                        })
+                    )}
+                />
+            )}
         </main>
     );
 }

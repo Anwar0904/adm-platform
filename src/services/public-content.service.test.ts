@@ -120,3 +120,42 @@ test("public team member mapping tolerates missing optional fields", async (cont
     assert.deepEqual(teamMember.socialLinks, {});
     assert.equal(teamMember.biography, "");
 });
+
+test("public team member mapping excludes non-string social links", async (context) => {
+    const record = {
+        _id: new Types.ObjectId(),
+        name: "Team Member",
+        slug: "team-member",
+        designation: "Project Manager",
+        shortBio: "",
+        biography: "",
+        avatar: null,
+        socialLinks: {
+            facebook: "https://facebook.com/example",
+            linkedin: Buffer.from("https://linkedin.com/example"),
+        },
+    };
+
+    const query = {
+        select() {
+            return this;
+        },
+        populate() {
+            return this;
+        },
+        sort() {
+            return this;
+        },
+        then(resolve: (value: typeof record[]) => unknown) {
+            return Promise.resolve([record]).then(resolve);
+        },
+    };
+
+    context.mock.method(TeamMember, "find", () => query as never);
+
+    const [teamMember] = await PublicContentService.getAllTeamMembers();
+
+    assert.deepEqual(teamMember.socialLinks, {
+        facebook: "https://facebook.com/example",
+    });
+});
