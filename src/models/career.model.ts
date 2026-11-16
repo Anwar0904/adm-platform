@@ -11,6 +11,8 @@ import {
 
 import {
   CONTENT_STATUS,
+  EMPLOYMENT_TYPE,
+  Workplace,
 } from "@/enums";
 
 import { SeoSchema } from "@/schemas/seo.schema";
@@ -43,11 +45,13 @@ const CareerSchema = new Schema<ICareer, CareerModel>(
     employmentType: {
       type: String,
       required: true,
+      enum: Object.values(EMPLOYMENT_TYPE),
     },
 
     workplace: {
       type: String,
       required: true,
+      enum: Object.values(Workplace),
     },
 
     location: {
@@ -223,6 +227,17 @@ CareerSchema.virtual("isExpired").get(function () {
   return this.expiresAt < new Date();
 });
 
+export function getOpenCareerFilter() {
+  return {
+    status: CONTENT_STATUS.PUBLISHED,
+    isDeleted: false,
+    $or: [
+      { expiresAt: null },
+      { expiresAt: { $gte: new Date() } },
+    ],
+  };
+}
+
 CareerSchema.static("findPublished", function () {
   return this.find({
     status: CONTENT_STATUS.PUBLISHED,
@@ -231,20 +246,13 @@ CareerSchema.static("findPublished", function () {
 });
 
 CareerSchema.static("findOpenJobs", function () {
-  return this.find({
-    status: CONTENT_STATUS.PUBLISHED,
-    isDeleted: false,
-    $or: [
-      { expiresAt: null },
-      { expiresAt: { $gte: new Date() } },
-    ],
-  });
+  return this.find(getOpenCareerFilter());
 });
 
 CareerSchema.static("findBySlug", function (slug: string) {
   return this.findOne({
     slug,
-    isDeleted: false,
+    ...getOpenCareerFilter(),
   });
 });
 export const Career =

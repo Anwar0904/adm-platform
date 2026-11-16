@@ -66,7 +66,7 @@ export interface ICareer {
   updatedAt: Date;
 }
 
-export interface CareerMethods {}
+export type CareerMethods = Record<string, never>;
 
 export interface CareerStatics {
   findPublished(): Promise<CareerDocument[]>;
@@ -82,5 +82,5 @@ export type CareerDocument =
   HydratedDocument<ICareer, CareerMethods>;
 
 export type CareerModel =
-  Model<ICareer, {}, CareerMethods> &
+  Model<ICareer, Record<string, never>, CareerMethods> &
   CareerStatics;

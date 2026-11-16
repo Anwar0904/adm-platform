@@ -12,6 +12,7 @@ import {
     Users,
     type LucideIcon,
 } from "lucide-react";
+import { publicRoutes } from "@/config/site";
 
 export type NavigationChild = {
     title: string;
@@ -66,7 +67,7 @@ export const navigation: NavigationItem[] = [
             },
             {
                 title: "Careers",
-                href: "/careers",
+                href: publicRoutes.careers,
                 icon: Briefcase,
             },
         ],

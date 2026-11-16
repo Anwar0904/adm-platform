@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { publicRoutes } from "@/config/site";
 import {
     Mail,
     MapPin,
@@ -43,6 +44,10 @@ const company = [
     {
         name: "People & Expertise",
         href: "/team",
+    },
+    {
+        name: "Careers",
+        href: publicRoutes.careers,
     },
     {
         name: "Insights",
@@ -99,7 +104,7 @@ export default function Footer() {
 
                             <h2 className="max-w-2xl text-2xl font-bold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
 
-                                Let's create digital experiences your customers will love.
+                                Let&apos;s create digital experiences your customers will love.
 
                             </h2>
 

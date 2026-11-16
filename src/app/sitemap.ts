@@ -1,10 +1,37 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/config/site";
+import { connection } from "next/server";
+import { CAREERS_CANONICAL_URL, SITE_URL } from "@/config/site";
 import { connectDB } from "@/lib/db";
 import PublicContentService from "@/services/public-content.service";
+import CareerService from "@/services/career.service";
 import { CONTENT_STATUS } from "@/enums";
 
+type SitemapContentRecord = {
+  slug: string;
+  status: string;
+  createdAt: Date | string;
+  updatedAt?: Date | string;
+};
+
+function getSitemapContentRecords(value: unknown): SitemapContentRecord[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter((item): item is SitemapContentRecord => {
+    if (typeof item !== "object" || item === null) return false;
+    const record = item as Record<string, unknown>;
+    const validDate = (date: unknown) => date instanceof Date || typeof date === "string";
+
+    return (
+      typeof record.slug === "string" &&
+      typeof record.status === "string" &&
+      validDate(record.createdAt) &&
+      (record.updatedAt === undefined || validDate(record.updatedAt))
+    );
+  });
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await connection();
   const baseUrl = SITE_URL;
 
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -23,6 +50,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: `${baseUrl}/about/sustainability`,
       changeFrequency: "monthly",
+      priority: 0.7,
+      lastModified: new Date(),
+    },
+    {
+      url: CAREERS_CANONICAL_URL,
+      changeFrequency: "weekly",
       priority: 0.7,
       lastModified: new Date(),
     },
@@ -102,9 +135,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       limit: 1000,
     });
 
-    const blogRoutes: MetadataRoute.Sitemap = (blogsResult.blogs || [])
-      .filter((blog: any) => blog.status === CONTENT_STATUS.PUBLISHED)
-      .map((blog: any) => ({
+    const blogRoutes: MetadataRoute.Sitemap = getSitemapContentRecords(blogsResult.blogs)
+      .filter((blog) => blog.status === CONTENT_STATUS.PUBLISHED)
+      .map((blog) => ({
         url: `${baseUrl}/blogs/${blog.slug}`,
         changeFrequency: "weekly" as const,
         priority: 0.7,
@@ -116,9 +149,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       limit: 1000,
     });
 
-    const serviceRoutes: MetadataRoute.Sitemap = (servicesResult.services || [])
-      .filter((service: any) => service.status === CONTENT_STATUS.PUBLISHED)
-      .map((service: any) => ({
+    const serviceRoutes: MetadataRoute.Sitemap = getSitemapContentRecords(servicesResult.services)
+      .filter((service) => service.status === CONTENT_STATUS.PUBLISHED)
+      .map((service) => ({
         url: `${baseUrl}/services/${service.slug}`,
         changeFrequency: "monthly" as const,
         priority: 0.8,
@@ -130,9 +163,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       limit: 1000,
     });
 
-    const portfolioRoutes: MetadataRoute.Sitemap = (portfolioResult.portfolio || [])
-      .filter((item: any) => item.status === CONTENT_STATUS.PUBLISHED)
-      .map((item: any) => ({
+    const portfolioRoutes: MetadataRoute.Sitemap = getSitemapContentRecords(portfolioResult.portfolio)
+      .filter((item) => item.status === CONTENT_STATUS.PUBLISHED)
+      .map((item) => ({
         url: `${baseUrl}/portfolio/${item.slug}`,
         changeFrequency: "monthly" as const,
         priority: 0.7,
@@ -144,14 +177,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       limit: 1000,
     });
 
-    const industryRoutes: MetadataRoute.Sitemap = (industriesResult.industries || [])
-      .filter((industry: any) => industry.status === CONTENT_STATUS.PUBLISHED)
-      .map((industry: any) => ({
+    const industryRoutes: MetadataRoute.Sitemap = getSitemapContentRecords(industriesResult.industries)
+      .filter((industry) => industry.status === CONTENT_STATUS.PUBLISHED)
+      .map((industry) => ({
         url: `${baseUrl}/industries/${industry.slug}`,
         changeFrequency: "monthly" as const,
         priority: 0.7,
         lastModified: new Date(industry.updatedAt || industry.createdAt),
       }));
+
+    let careerRoutes: MetadataRoute.Sitemap = [];
+    try {
+      const careers = await CareerService.getPublicCareers();
+      careerRoutes = careers.map((career) => ({
+        url: `${CAREERS_CANONICAL_URL}/${encodeURIComponent(career.slug)}`,
+        changeFrequency: "weekly" as const,
+        priority: 0.6,
+        lastModified: new Date(career.updatedAt || career.createdAt),
+      }));
+    } catch (error) {
+      console.error("Career sitemap generation error:", error);
+    }
 
     return [
       ...staticRoutes,
@@ -159,6 +205,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...serviceRoutes,
       ...portfolioRoutes,
       ...industryRoutes,
+      ...careerRoutes,
     ];
   } catch (error) {
     console.error("Sitemap generation error:", error);
