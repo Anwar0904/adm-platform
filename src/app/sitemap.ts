@@ -21,6 +21,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
     },
     {
+      url: `${baseUrl}/about/sustainability`,
+      changeFrequency: "monthly",
+      priority: 0.7,
+      lastModified: new Date(),
+    },
+    {
       url: `${baseUrl}/`,
       changeFrequency: "weekly",
       priority: 1,
