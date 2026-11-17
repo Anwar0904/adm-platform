@@ -18,6 +18,12 @@ export const metadata: Metadata = {
     title: "Careers at ADM | Build What's Next for the Digital Economy",
     description:
       "Explore careers at Arazi Digital Media and discover our work across technology, marketing, AI and data.",
+    images: [
+      {
+        url: "/home/team.jpeg",
+        alt: "Colleagues collaborating around a table in a bright office",
+      },
+    ],
     siteName: "Arazi Digital Media",
   },
   twitter: {
@@ -25,6 +31,7 @@ export const metadata: Metadata = {
     title: "Careers at ADM | Build What's Next for the Digital Economy",
     description:
       "Explore careers at Arazi Digital Media and discover our work across technology, marketing, AI and data.",
+    images: ["/home/team.jpeg"],
   },
   robots: {
     index: true,

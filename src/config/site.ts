@@ -1,5 +1,5 @@
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://arazidigitalmedia.com";
-export const CAREERS_CANONICAL_URL = "https://www.arazidigitalmedia.com/careers";
+export const CAREERS_CANONICAL_URL = `${SITE_URL.replace(/\/+$/, "")}/careers`;
 
 export const publicRoutes = {
     home: "/",

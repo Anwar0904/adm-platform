@@ -46,12 +46,19 @@ export async function generateMetadata({ params }: RouteProps): Promise<Metadata
       url: canonical,
       title: career.seo?.ogTitle?.trim() || title,
       description: career.seo?.ogDescription?.trim() || description,
+      images: [
+        {
+          url: "/home/team.jpeg",
+          alt: "Colleagues collaborating around a table in a bright office",
+        },
+      ],
       siteName: "Arazi Digital Media",
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: ["/home/team.jpeg"],
     },
     robots: { index: true, follow: true },
   };
@@ -88,7 +95,6 @@ function getJobPostingSchema(career: NonNullable<Awaited<ReturnType<typeof getCa
     "@type": "JobPosting",
     title: career.title,
     description: career.description,
-    datePosted: career.createdAt.toISOString(),
     hiringOrganization: {
       "@type": "Organization",
       name: "Arazi Digital Media",
@@ -137,19 +143,19 @@ export default async function CareerDetailRoute({ params }: RouteProps) {
         dangerouslySetInnerHTML={{ __html: getJobPostingSchema(career) }}
       />
       <section aria-labelledby="position-heading" className="bg-surface-alt">
-        <div className="mx-auto max-w-[1440px] px-5 pb-12 pt-12 sm:px-8 sm:pb-16 sm:pt-16 lg:px-12 lg:pb-20">
+        <div className="mx-auto max-w-[1440px] px-5 pb-10 pt-8 sm:px-8 sm:pb-14 sm:pt-12 lg:px-12 lg:pb-16">
           <Link href="/careers" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-text-muted transition-colors hover:text-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-300">
             <ArrowLeft aria-hidden="true" size={16} />
             All careers
           </Link>
-          <p className="mt-10 text-xs font-semibold uppercase tracking-[0.22em] text-brand-300">Position at ADM</p>
-          <h1 id="position-heading" className="mt-4 max-w-5xl text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1.03] tracking-[-0.055em]">
+          <p className="mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-brand-300 sm:mt-10">Position at ADM</p>
+          <h1 id="position-heading" className="mt-4 max-w-5xl text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1.03] tracking-[-0.055em] text-text">
             {career.title}
           </h1>
           <ul aria-label="Position details" className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-text-muted sm:text-base">
             {details.map((value, index) => (
               <li key={`${value}-${index}`} className="flex items-center gap-2">
-                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-[#55AD35]" />
+                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-cyan-400" />
                 {value}
               </li>
             ))}
@@ -157,45 +163,45 @@ export default async function CareerDetailRoute({ params }: RouteProps) {
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20 lg:px-12 lg:py-20">
+      <div className="mx-auto grid max-w-[1440px] gap-10 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-20 lg:px-12 lg:py-20">
         <article className="min-w-0">
           <section aria-labelledby="position-overview-heading">
-            <h2 id="position-overview-heading" className="text-2xl font-medium tracking-tight sm:text-3xl">About this position</h2>
+            <h2 id="position-overview-heading" className="text-2xl font-medium tracking-tight text-text sm:text-3xl">About this position</h2>
             <div className="mt-5 max-w-3xl space-y-4 text-base leading-8 text-text-muted sm:text-lg sm:leading-9">
               {splitParagraphs(career.description).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
             </div>
           </section>
 
           {career.responsibilities?.length > 0 && (
-            <section aria-labelledby="responsibilities-heading" className="mt-12 border-t border-border pt-8">
-              <h2 id="responsibilities-heading" className="text-2xl font-medium tracking-tight sm:text-3xl">Responsibilities</h2>
+            <section aria-labelledby="responsibilities-heading" className="mt-10 border-t border-border pt-7 sm:mt-12 sm:pt-8">
+              <h2 id="responsibilities-heading" className="text-2xl font-medium tracking-tight text-text sm:text-3xl">Responsibilities</h2>
               <ul className="mt-5 max-w-3xl space-y-3 text-base leading-7 text-text-muted">
-                {career.responsibilities.map((item, index) => <li key={`${index}-${item}`} className="flex gap-3"><span aria-hidden="true" className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[#55AD35]" />{item}</li>)}
+                {career.responsibilities.map((item, index) => <li key={`${index}-${item}`} className="flex gap-3"><span aria-hidden="true" className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />{item}</li>)}
               </ul>
             </section>
           )}
 
           {career.requirements?.length > 0 && (
-            <section aria-labelledby="requirements-heading" className="mt-12 border-t border-border pt-8">
-              <h2 id="requirements-heading" className="text-2xl font-medium tracking-tight sm:text-3xl">What the role requires</h2>
+            <section aria-labelledby="requirements-heading" className="mt-10 border-t border-border pt-7 sm:mt-12 sm:pt-8">
+              <h2 id="requirements-heading" className="text-2xl font-medium tracking-tight text-text sm:text-3xl">What the role requires</h2>
               <ul className="mt-5 max-w-3xl space-y-3 text-base leading-7 text-text-muted">
-                {career.requirements.map((item, index) => <li key={`${index}-${item}`} className="flex gap-3"><span aria-hidden="true" className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[#55AD35]" />{item}</li>)}
+                {career.requirements.map((item, index) => <li key={`${index}-${item}`} className="flex gap-3"><span aria-hidden="true" className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />{item}</li>)}
               </ul>
             </section>
           )}
 
           {career.benefits?.length > 0 && (
-            <section aria-labelledby="role-details-heading" className="mt-12 border-t border-border pt-8">
-              <h2 id="role-details-heading" className="text-2xl font-medium tracking-tight sm:text-3xl">Additional information</h2>
+            <section aria-labelledby="role-details-heading" className="mt-10 border-t border-border pt-7 sm:mt-12 sm:pt-8">
+              <h2 id="role-details-heading" className="text-2xl font-medium tracking-tight text-text sm:text-3xl">Benefits</h2>
               <ul className="mt-5 max-w-3xl space-y-3 text-base leading-7 text-text-muted">
-                {career.benefits.map((item, index) => <li key={`${index}-${item}`} className="flex gap-3"><span aria-hidden="true" className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[#55AD35]" />{item}</li>)}
+                {career.benefits.map((item, index) => <li key={`${index}-${item}`} className="flex gap-3"><span aria-hidden="true" className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />{item}</li>)}
               </ul>
             </section>
           )}
         </article>
 
         <aside className="h-fit border-t border-border pt-6 lg:sticky lg:top-28 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-soft">Application information</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-300">Application information</p>
           <p className="mt-4 text-sm leading-7 text-text-muted">
             The website does not accept application submissions or resume uploads. To ask ADM about this position, use the contact page and include the role title in your message.
           </p>
