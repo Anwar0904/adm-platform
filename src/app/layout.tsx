@@ -29,6 +29,9 @@ export const metadata: Metadata = {
     authors: [{ name: "Arazi Digital Media" }],
     creator: "Arazi Digital Media",
     publisher: "Arazi Digital Media",
+    verification: {
+        google: "2Vrpc5o8xq8NNajUgrM8GFAisW4WdLXtkliSC7Urk70",
+    },
     robots: {
         index: true,
         follow: true,
