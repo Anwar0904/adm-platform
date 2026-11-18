@@ -194,7 +194,7 @@ export default async function ServiceDetailPage({ params }: Props) {
               </span>
 
               <div
-                className="mt-8 space-y-5 text-base leading-8 text-slate-300"
+                className="service-rich-content mt-8 min-w-0 space-y-5 text-base leading-8 text-slate-300"
                 dangerouslySetInnerHTML={{ __html: currentService.content || "<p>We deliver tailored digital solutions designed for growth and performance.</p>" }}
               />
             </div>

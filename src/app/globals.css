@@ -237,6 +237,47 @@ a {
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
+/* Keep CMS-authored service layouts readable on narrow screens. */
+.service-rich-content {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.service-rich-content img,
+.service-rich-content video,
+.service-rich-content iframe {
+    max-width: 100%;
+}
+
+.service-rich-content img {
+    height: auto;
+}
+
+.service-rich-content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+    .service-rich-content [style*="display:flex"],
+    .service-rich-content [style*="display: flex"],
+    .service-rich-content [style*="flex-direction:row"],
+    .service-rich-content [style*="flex-direction: row"],
+    .service-rich-content [class~="flex"],
+    .service-rich-content [class~="flex-row"],
+    .service-rich-content [class*=" flex-row"],
+    .service-rich-content [class^="flex-row"] {
+        flex-direction: column !important;
+    }
+
+    .service-rich-content [style*="display:grid"],
+    .service-rich-content [style*="display: grid"],
+    .service-rich-content [class*="grid-cols-"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
 /* =========================================================
    Marquee
    ========================================================= */
