@@ -7,36 +7,36 @@ import { motion } from "framer-motion";
 
 const services = [
   {
-    title: "AI & Intelligent Systems",
+    title: "Technology",
     description:
-      "Custom AI systems, chatbots, automation, LLM integrations and intelligent business workflows.",
-    image:
-      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=900&q=80",
-    href: "/services/ai-solutions",
-  },
-  {
-    title: "Digital Platforms & Engineering",
-    description:
-      "Modern websites and enterprise web applications using Next.js, React and scalable architecture.",
+      "Digital platforms and engineering, web and software development, mobile applications, UI/UX design and integrations.",
     image:
       "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
-    href: "/services/web-development",
+    href: "/services/technology",
   },
   {
-    title: "Mobile Applications",
+    title: "Marketing",
     description:
-      "Cross-platform mobile apps with beautiful UI, excellent performance and native experience.",
+      "Search engine optimization, paid media, social media marketing, content marketing and campaign strategy.",
     image:
-      "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=900&q=80",
-    href: "/services/mobile-apps",
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=900&q=80",
+    href: "/services/marketing",
   },
   {
-    title: "UI / UX Design",
+    title: "AI",
     description:
-      "Research-driven interfaces focused on usability, accessibility and premium user experience.",
+      "AI applications, knowledge assistants, workflow automation and language-model integrations planned with responsible data handling and human oversight.",
     image:
-      "https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=900&q=80",
-    href: "/services/ui-ux",
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=900&q=80",
+    href: "/services/ai",
+  },
+  {
+    title: "Data",
+    description:
+      "Data analytics, data science, predictive analytics and business intelligence to support clearer, informed business decisions.",
+    image:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80",
+    href: "/services/data",
   },
 ];
 
@@ -63,9 +63,7 @@ export default function ServicesGridSection() {
           </h2>
 
           <p className="mt-6 text-lg leading-8 text-slate-300">
-            Every service is carefully engineered to deliver measurable
-            business value with outstanding performance, scalability and
-            exceptional user experience.
+            Explore ADM&apos;s connected Technology, Marketing, AI and Data capabilities. Each engagement is shaped around the organization&apos;s goals and requirements.
           </p>
         </motion.div>
 
@@ -73,6 +71,7 @@ export default function ServicesGridSection() {
           {services.map((service, index) => (
             <motion.div
               key={service.title}
+              id={service.title.toLowerCase()}
               initial={{ opacity: 0, y: 35 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -80,7 +79,7 @@ export default function ServicesGridSection() {
                 duration: 0.6,
                 delay: index * 0.08,
               }}
-              className="group overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 shadow-[0_22px_60px_rgba(15,23,42,0.45)] transition-all duration-500 hover:-translate-y-2 hover:border-blue-400/50 hover:shadow-[0_25px_80px_rgba(37,99,235,0.25)]"
+              className="group scroll-mt-28 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 shadow-[0_22px_60px_rgba(15,23,42,0.45)] transition-all duration-500 hover:-translate-y-2 hover:border-blue-400/50 hover:shadow-[0_25px_80px_rgba(37,99,235,0.25)]"
             >
               <div className="relative overflow-hidden">
                 <img

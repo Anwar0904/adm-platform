@@ -7,16 +7,16 @@ import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 const highlights = [
-  "AI-Powered Solutions",
-  "Enterprise Software",
-  "Cloud Native",
-  "Modern UX/UI",
+  "Technology",
+  "Marketing",
+  "AI",
+  "Data",
 ];
 
 const stats = [
-  { value: "50+", label: "Engagements Delivered" },
-  { value: "98%", label: "Organization Satisfaction" },
-  { value: "24/7", label: "Support" },
+  { value: "01", label: "Technology" },
+  { value: "02", label: "Marketing" },
+  { value: "03", label: "AI & Data" },
 ];
 
 export default function ServicesHeroSection() {
@@ -37,20 +37,18 @@ export default function ServicesHeroSection() {
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/25 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200">
               <Sparkles className="h-4 w-4" />
-              Professional Digital Solutions
+              Technology, Marketing, AI & Data
             </div>
 
             <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Build Digital Products
+              Connected Digital Capabilities
               <span className="block bg-linear-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                That Scale With Your Business
+                For What&apos;s Next
               </span>
             </h1>
 
             <p className="mt-8 max-w-2xl text-lg leading-8 text-slate-300">
-              ADM designs and develops high-performance digital products,
-              enterprise platforms, AI-powered solutions, and modern web
-              applications that help businesses grow faster.
+              Arazi Digital Media is a global Technology, Marketing, AI and Data company helping organizations create demand, build digital products, understand performance and scale with confidence.
             </p>
 
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -99,10 +97,10 @@ export default function ServicesHeroSection() {
 
             <div className="absolute -left-4 top-8 rounded-2xl border border-white/10 bg-slate-950/80 p-5 shadow-xl backdrop-blur md:left-0">
               <p className="text-xs font-semibold uppercase tracking-wide text-blue-300">
-                AI Ready
+                Four Capabilities
               </p>
               <h3 className="mt-1 text-lg font-bold text-white">
-                Enterprise Solutions
+                Technology · Marketing · AI · Data
               </h3>
               <p className="mt-2 text-sm text-slate-300">
                 Secure • Scalable • Reliable

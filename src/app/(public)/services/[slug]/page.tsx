@@ -4,11 +4,17 @@ import { SITE_URL } from "@/config/site";
 
 import Hero from "@/components/service-detail/Hero";
 import { RelatedServices } from "@/components/service-detail/related-services";
+import PillarServicePage from "@/components/services/PillarServicePage";
+import { pillarServices, type PillarSlug } from "@/components/services/pillar-services";
 import { connectDB } from "@/lib/db";
 import PublicContentService from "@/services/public-content.service";
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+function isPillarSlug(slug: string): slug is PillarSlug {
+  return Object.prototype.hasOwnProperty.call(pillarServices, slug);
 }
 
 function deepPlain(value: unknown): unknown {
@@ -81,6 +87,29 @@ function normalizeService(service: any): any {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
+  if (isPillarSlug(slug)) {
+    const service = pillarServices[slug];
+    const url = `${SITE_URL}/services/${service.slug}`;
+
+    return {
+      title: { absolute: service.seo.metaTitle },
+      description: service.seo.metaDescription,
+      keywords: [...service.seo.keywords],
+      alternates: { canonical: url },
+      openGraph: {
+        type: "website",
+        title: service.seo.metaTitle,
+        description: service.seo.metaDescription,
+        url,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: service.seo.metaTitle,
+        description: service.seo.metaDescription,
+      },
+    };
+  }
+
   await connectDB();
 
   try {
@@ -125,6 +154,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ServiceDetailPage({ params }: Props) {
   const { slug } = await params;
+
+  if (isPillarSlug(slug)) {
+    return <PillarServicePage service={pillarServices[slug]} />;
+  }
 
   await connectDB();
 

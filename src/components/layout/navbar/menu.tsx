@@ -1,14 +1,15 @@
 import {
     BrainCircuit,
+    BarChart3,
     Briefcase,
     Building2,
+    Code2,
     FolderKanban,
     Leaf,
+    Megaphone,
     Newspaper,
-    Palette,
     Phone,
     Scale,
-    Smartphone,
     Users,
     type LucideIcon,
 } from "lucide-react";
@@ -78,32 +79,32 @@ export const navigation: NavigationItem[] = [
         mega: true,
         items: [
             {
-                title: "Digital Platforms & Engineering",
+                title: "Technology",
                 description:
-                    "Modern, scalable websites and web applications",
-                href: "/services/web-development",
-                icon: Briefcase,
+                    "Digital platforms, software and engineering",
+                href: "/services/technology",
+                icon: Code2,
             },
             {
-                title: "Mobile Apps",
+                title: "Marketing",
                 description:
-                    "High-quality Android and iOS applications",
-                href: "/services/mobile-apps",
-                icon: Smartphone,
+                    "SEO, paid media, social media and content",
+                href: "/services/marketing",
+                icon: Megaphone,
             },
             {
-                title: "AI & Intelligent Systems",
+                title: "AI",
                 description:
-                    "AI-powered tools for modern businesses",
-                href: "/services/ai-solutions",
+                    "Applied AI, agents, integrations and automation",
+                href: "/services/ai",
                 icon: BrainCircuit,
             },
             {
-                title: "UI / UX Design",
+                title: "Data",
                 description:
-                    "Beautiful and intuitive digital experiences",
-                href: "/services/ui-ux",
-                icon: Palette,
+                    "Analytics, business intelligence and reporting",
+                href: "/services/data",
+                icon: BarChart3,
             },
         ],
     },

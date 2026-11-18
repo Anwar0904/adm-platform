@@ -78,36 +78,36 @@ export default function WhyADMSection() {
 
             <p className="mt-8 text-lg leading-8 text-slate-300">
               We combine strategy, engineering, artificial intelligence and
-              design into one complete digital ecosystem that helps companies
-              innovate faster and stay ahead of competitors.
+              marketing and data capabilities to help organizations address
+              connected digital challenges with a clearer view of their goals.
             </p>
 
             <div className="mt-12 grid grid-cols-2 gap-6">
               <div>
-                <h3 className="text-5xl font-black text-blue-400">50+</h3>
+                <h3 className="text-5xl font-black text-blue-400">01</h3>
                 <p className="mt-2 text-slate-400">
-                  Successful Projects
+                  Technology
                 </p>
               </div>
 
               <div>
-                <h3 className="text-5xl font-black text-blue-400">98%</h3>
+                <h3 className="text-5xl font-black text-blue-400">02</h3>
                 <p className="mt-2 text-slate-400">
-                  Organization Satisfaction
+                  Marketing
                 </p>
               </div>
 
               <div>
-                <h3 className="text-5xl font-black text-blue-400">10+</h3>
+                <h3 className="text-5xl font-black text-blue-400">03</h3>
                 <p className="mt-2 text-slate-400">
-                  Technologies
+                  AI
                 </p>
               </div>
 
               <div>
-                <h3 className="text-5xl font-black text-blue-400">24/7</h3>
+                <h3 className="text-5xl font-black text-blue-400">04</h3>
                 <p className="mt-2 text-slate-400">
-                  Technical Support
+                  Data
                 </p>
               </div>
             </div>

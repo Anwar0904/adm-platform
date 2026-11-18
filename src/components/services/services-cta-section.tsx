@@ -36,7 +36,8 @@ export default function ServicesCTASection() {
         <div className="mt-12 flex flex-col justify-center gap-5 sm:flex-row">
           <Link
             href="/consultation"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 font-bold text-blue-700 transition hover:scale-105"
+            style={{"color":"#1D4ED8"}}
+            className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 font-bold transition hover:scale-105"
           >
             Book Free Consultation
 

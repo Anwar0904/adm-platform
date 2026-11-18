@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import * as Icons from "lucide-react";
 
 export type PublicService = {
@@ -45,6 +44,57 @@ export type PublicService = {
   featured?: boolean;
   sortOrder?: number;
 };
+
+const capabilities: PublicService[] = [
+  {
+    _id: "technology",
+    title: "Technology",
+    slug: "technology",
+    shortDescription:
+      "Web and software development, mobile applications, digital platforms, UI/UX and integrations shaped around business needs.",
+    icon: "Code2",
+    featuredImage:
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
+    status: "published",
+    sortOrder: 1,
+  },
+  {
+    _id: "marketing",
+    title: "Marketing",
+    slug: "marketing",
+    shortDescription:
+      "SEO, paid media, social media, content marketing and campaign strategy connected to audience needs and business goals.",
+    icon: "Megaphone",
+    featuredImage:
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=900&q=80",
+    status: "published",
+    sortOrder: 2,
+  },
+  {
+    _id: "ai",
+    title: "AI",
+    slug: "ai",
+    shortDescription:
+      "AI applications, knowledge assistants, workflow automation and language-model integrations with attention to data handling and human oversight.",
+    icon: "BrainCircuit",
+    featuredImage:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=900&q=80",
+    status: "published",
+    sortOrder: 3,
+  },
+  {
+    _id: "data",
+    title: "Data",
+    slug: "data",
+    shortDescription:
+      "Business intelligence, data analytics, data science and reporting to help teams understand performance and make informed decisions.",
+    icon: "BarChart3",
+    featuredImage:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80",
+    status: "published",
+    sortOrder: 4,
+  },
+];
 
 function mediaUrl(
   value:
@@ -90,6 +140,7 @@ function ServiceCard({
 
   return (
     <article
+      id={service.slug}
       className="
         group
         flex
@@ -311,78 +362,7 @@ function ServiceCard({
 }
 
 export default function ServicesSection() {
-  const [services, setServices] = useState<PublicService[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function loadServices() {
-      try {
-        setLoading(true);
-
-        const response = await fetch(
-          "/api/public/services",
-          {
-            method: "GET",
-            cache: "no-store",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to load services (${response.status})`
-          );
-        }
-
-        const result = await response.json();
-
-        const data: PublicService[] =
-          Array.isArray(result?.data)
-            ? result.data
-            : Array.isArray(result?.data?.services)
-              ? result.data.services
-              : [];
-
-        if (!mounted) return;
-
-        const sortedServices = data
-          .filter(
-            (service) =>
-              service &&
-              !["draft", "archived"].includes(
-                service.status?.toLowerCase()
-              )
-          )
-          .sort(
-            (a, b) =>
-              (a.sortOrder ?? 0) -
-              (b.sortOrder ?? 0)
-          );
-
-        setServices(sortedServices);
-      } catch (error) {
-        console.error(
-          "ServicesSection:",
-          error
-        );
-
-        if (mounted) {
-          setServices([]);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void loadServices();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const services = capabilities;
 
   return (
     <section
@@ -485,10 +465,9 @@ export default function ServicesSection() {
               text-white
             "
           >
-            Digital Capabilities Built
+            Technology, Marketing, AI
             <span className="text-cyan-300">
-              {" "}
-              For Growth
+              {" "}&amp; Data
             </span>
           </h2>
 
@@ -509,64 +488,12 @@ export default function ServicesSection() {
               md:leading-8
             "
           >
-            From AI automation to enterprise
-            software, ADM delivers practical
-            digital solutions that help
-            businesses innovate faster.
+            ADM brings four connected capabilities together to help organizations create demand, build digital products, understand performance and scale with confidence.
           </p>
         </div>
 
-        {/* Loading state */}
-        {loading ? (
-          <div
-            className="
-              grid
-              grid-cols-1
-              gap-5
-              sm:grid-cols-2
-              sm:gap-6
-              lg:grid-cols-3
-              lg:gap-8
-            "
-          >
-            {Array.from({ length: 6 }).map(
-              (_, index) => (
-                <div
-                  key={index}
-                  className="
-                    overflow-hidden
-                    rounded-2xl
-                    border
-                    border-slate-200
-                    bg-white
-                    sm:rounded-3xl
-                  "
-                >
-                  <div
-                    className="
-                      h-48
-                      animate-pulse
-                      bg-slate-100
-                      sm:h-56
-                      lg:h-60
-                    "
-                  />
-
-                  <div className="space-y-4 p-5 sm:p-6 lg:p-7">
-                    <div className="h-6 w-3/4 animate-pulse rounded-lg bg-slate-100" />
-
-                    <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
-
-                    <div className="h-4 w-5/6 animate-pulse rounded bg-slate-100" />
-
-                    <div className="h-4 w-24 animate-pulse rounded bg-slate-100" />
-                  </div>
-                </div>
-              )
-            )}
-          </div>
-        ) : services.length > 0 ? (
-          /* Services */
+        {/* Capabilities */}
+        {services.length > 0 ? (
           <div
             className="
               grid
