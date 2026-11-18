@@ -1,0 +1,470 @@
+{
+  "base": "http://127.0.0.1:4174/",
+  "createdAt": "2026-11-18T15:08:14.757Z",
+  "visited": 30,
+  "records": [
+    {
+      "url": "http://127.0.0.1:4174/",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/",
+      "ms": 44,
+      "title": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "description": "Arazi Digital Media brings together technology, marketing, AI and data to help organizations build digital products, reach audiences and make better use of information.",
+      "canonical": "http://127.0.0.1:4174",
+      "robots": "index, follow",
+      "h1": [
+        "We Drive Businesses"
+      ],
+      "ogTitle": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "ogDescription": "Building What&#x27;s Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
+      "structuredData": 0,
+      "internalLinks": 44
+    },
+    {
+      "url": "http://127.0.0.1:4174/about",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/about",
+      "ms": 86,
+      "title": "Our Company | Arazi Digital Media",
+      "description": "Arazi Digital Media brings together Technology, Marketing, AI and Data as connected capabilities.",
+      "canonical": "http://127.0.0.1:4174/about",
+      "robots": "index, follow",
+      "h1": [
+        "Our Company"
+      ],
+      "ogTitle": "Our Company",
+      "ogDescription": "Explore Arazi Digital Media&#x27;s connected Technology, Marketing, AI and Data capabilities.",
+      "structuredData": 0,
+      "internalLinks": 32
+    },
+    {
+      "url": "http://127.0.0.1:4174/services",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/services",
+      "ms": 91,
+      "title": "Technology, Marketing, AI & Data Capabilities | ADM",
+      "description": "Explore Arazi Digital Media&#x27;s Technology, Marketing, AI and Data capabilities, including software development, SEO, paid media, AI automation and business analytics.",
+      "canonical": "http://127.0.0.1:4174/services",
+      "robots": "index, follow",
+      "h1": [
+        "Connected Digital Capabilities For What&#x27;s Next"
+      ],
+      "ogTitle": "Technology, Marketing, AI & Data Capabilities | ADM",
+      "ogDescription": "Connected digital services across technology, marketing, artificial intelligence and data from Arazi Digital Media.",
+      "structuredData": 0,
+      "internalLinks": 38
+    },
+    {
+      "url": "http://127.0.0.1:4174/portfolio",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/portfolio",
+      "ms": 91,
+      "title": "Selected Work | Arazi Digital Media",
+      "description": "Explore work presented by Arazi Digital Media across digital products, technology, marketing, AI and data.",
+      "canonical": "http://127.0.0.1:4174/portfolio",
+      "robots": "index, follow",
+      "h1": [
+        "Digital Products That Deliver Real Business Impact"
+      ],
+      "ogTitle": "Selected Work | Arazi Digital Media",
+      "ogDescription": "Explore work presented by Arazi Digital Media across its four capabilities.",
+      "structuredData": 0,
+      "internalLinks": 39
+    },
+    {
+      "url": "http://127.0.0.1:4174/industries",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/industries",
+      "ms": 93,
+      "title": "Industries | Arazi Digital Media",
+      "description": "Explore industry perspectives and digital solutions presented by Arazi Digital Media across technology, marketing, AI and data.",
+      "canonical": "http://127.0.0.1:4174/industries",
+      "robots": "index, follow",
+      "h1": [
+        "Solutions Built For Your Industry."
+      ],
+      "ogTitle": "Industries | Arazi Digital Media",
+      "ogDescription": "Explore the industries and business contexts addressed across ADM&#x27;s capabilities.",
+      "structuredData": 0,
+      "internalLinks": 40
+    },
+    {
+      "url": "http://127.0.0.1:4174/blogs",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/blogs",
+      "ms": 423,
+      "title": "Insights on Technology, Marketing, AI & Data | Arazi Digital Media",
+      "description": "Read ADM insights on technology, digital marketing, artificial intelligence and data, with practical ideas for digital teams.",
+      "canonical": "http://127.0.0.1:4174/blogs",
+      "robots": "index, follow",
+      "h1": [
+        "Ideas That Build The Future"
+      ],
+      "ogTitle": "Insights on Technology, Marketing, AI & Data",
+      "ogDescription": "Practical perspectives from Arazi Digital Media on technology, marketing, AI and data.",
+      "structuredData": 0,
+      "internalLinks": 45
+    },
+    {
+      "url": "http://127.0.0.1:4174/contact",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/contact",
+      "ms": 432,
+      "title": "Contact Arazi Digital Media",
+      "description": "Contact Arazi Digital Media to discuss a technology, marketing, AI or data challenge and explore a possible next step.",
+      "canonical": "http://127.0.0.1:4174/contact",
+      "robots": "index, follow",
+      "h1": [
+        "Start Your Digital Journey"
+      ],
+      "ogTitle": "Contact Arazi Digital Media",
+      "ogDescription": "Start a conversation with Arazi Digital Media about your digital goals.",
+      "structuredData": 0,
+      "internalLinks": 30
+    },
+    {
+      "url": "http://127.0.0.1:4174/about/sustainability",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/about/sustainability",
+      "ms": 435,
+      "title": "Sustainability | Arazi Digital Media",
+      "description": "Explore Arazi Digital Media&#x27;s perspective on responsible technology, people, environmental awareness and continuous improvement.",
+      "canonical": "http://127.0.0.1:4174/about/sustainability",
+      "robots": "index, follow",
+      "h1": [
+        "Responsible Digital Growth"
+      ],
+      "ogTitle": "Sustainability | Arazi Digital Media",
+      "ogDescription": "Explore Arazi Digital Media&#x27;s perspective on responsible technology, people, environmental awareness and continuous improvement.",
+      "structuredData": 0,
+      "internalLinks": 34
+    },
+    {
+      "url": "http://127.0.0.1:4174/services/technology",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/services/technology",
+      "ms": 257,
+      "title": "Technology & Software Development Services | ADM",
+      "description": "Explore ADM technology services for web and software development, mobile apps, digital platforms, UI/UX design and integrations.",
+      "canonical": "http://127.0.0.1:4174/services/technology",
+      "robots": "index, follow",
+      "h1": [
+        "Technology & Digital Product Development"
+      ],
+      "ogTitle": "Technology & Software Development Services | ADM",
+      "ogDescription": "Explore ADM technology services for web and software development, mobile apps, digital platforms, UI/UX design and integrations.",
+      "structuredData": 0,
+      "internalLinks": 37
+    },
+    {
+      "url": "http://127.0.0.1:4174/services/marketing",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/services/marketing",
+      "ms": 257,
+      "title": "Digital Marketing & SEO Services | ADM",
+      "description": "Explore ADM digital marketing services across SEO, paid media, social media, content marketing, campaign strategy and measurement.",
+      "canonical": "http://127.0.0.1:4174/services/marketing",
+      "robots": "index, follow",
+      "h1": [
+        "Digital Marketing & SEO Services"
+      ],
+      "ogTitle": "Digital Marketing & SEO Services | ADM",
+      "ogDescription": "Explore ADM digital marketing services across SEO, paid media, social media, content marketing, campaign strategy and measurement.",
+      "structuredData": 0,
+      "internalLinks": 37
+    },
+    {
+      "url": "http://127.0.0.1:4174/services/data",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/services/data",
+      "ms": 256,
+      "title": "Data Analytics & Business Intelligence Services | ADM",
+      "description": "Explore ADM data analytics, business intelligence, reporting, visualization and data strategy services for clearer business decisions.",
+      "canonical": "http://127.0.0.1:4174/services/data",
+      "robots": "index, follow",
+      "h1": [
+        "Data Analytics & Business Intelligence"
+      ],
+      "ogTitle": "Data Analytics & Business Intelligence Services | ADM",
+      "ogDescription": "Explore ADM data analytics, business intelligence, reporting, visualization and data strategy services for clearer business decisions.",
+      "structuredData": 0,
+      "internalLinks": 37
+    },
+    {
+      "url": "http://127.0.0.1:4174/services/ai",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/services/ai",
+      "ms": 259,
+      "title": "AI Solutions & Workflow Automation Services | ADM",
+      "description": "Explore practical AI applications, AI agents, workflow automation and language-model integrations with human oversight from ADM.",
+      "canonical": "http://127.0.0.1:4174/services/ai",
+      "robots": "index, follow",
+      "h1": [
+        "AI Solutions, Agents & Workflow Automation"
+      ],
+      "ogTitle": "AI Solutions & Workflow Automation Services | ADM",
+      "ogDescription": "Explore practical AI applications, AI agents, workflow automation and language-model integrations with human oversight from ADM.",
+      "structuredData": 0,
+      "internalLinks": 37
+    },
+    {
+      "url": "http://127.0.0.1:4174/testimonials",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/testimonials",
+      "ms": 261,
+      "title": "Testimonials | Arazi Digital Media",
+      "description": "Read testimonials and perspectives published by Arazi Digital Media about client experiences and project work.",
+      "canonical": "http://127.0.0.1:4174/testimonials",
+      "robots": "index, follow",
+      "h1": [
+        "Trusted by Businesses Worldwide"
+      ],
+      "ogTitle": "Testimonials | Arazi Digital Media",
+      "ogDescription": "Testimonials and perspectives published by Arazi Digital Media.",
+      "structuredData": 0,
+      "internalLinks": 35
+    },
+    {
+      "url": "http://127.0.0.1:4174/faqs",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/faqs",
+      "ms": 69,
+      "title": "Frequently Asked Questions | Arazi Digital Media",
+      "description": "Find answers to common questions about working with Arazi Digital Media across technology, marketing, AI and data.",
+      "canonical": "http://127.0.0.1:4174/faqs",
+      "robots": "index, follow",
+      "h1": [
+        "Frequently Asked Questions"
+      ],
+      "ogTitle": "Frequently Asked Questions | Arazi Digital Media",
+      "ogDescription": "Answers to common questions about ADM&#x27;s capabilities and ways of working.",
+      "structuredData": 0,
+      "internalLinks": 34
+    },
+    {
+      "url": "http://127.0.0.1:4174/consultation",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/consultation",
+      "ms": 72,
+      "title": "Request a Consultation | Arazi Digital Media",
+      "description": "Share your goals with Arazi Digital Media and request a conversation about technology, marketing, AI or data.",
+      "canonical": "http://127.0.0.1:4174/consultation",
+      "robots": "index, follow",
+      "h1": [
+        "Book A Strategy Session"
+      ],
+      "ogTitle": "Request a Consultation | Arazi Digital Media",
+      "ogDescription": "Request a conversation with Arazi Digital Media about your project or business challenge.",
+      "structuredData": 0,
+      "internalLinks": 31
+    },
+    {
+      "url": "http://127.0.0.1:4174/terms",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/terms",
+      "ms": 77,
+      "title": "Terms of Service | Arazi Digital Media",
+      "description": "The terms that guide use of the Arazi Digital Media website and services.",
+      "canonical": "http://127.0.0.1:4174/terms",
+      "robots": "index, follow",
+      "h1": [
+        "Clear expectations make better work."
+      ],
+      "ogTitle": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "ogDescription": "Building What&#x27;s Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
+      "structuredData": 0,
+      "internalLinks": 35
+    },
+    {
+      "url": "http://127.0.0.1:4174/cookies",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/cookies",
+      "ms": 77,
+      "title": "Cookie Policy | Arazi Digital Media",
+      "description": "Understand how Arazi Digital Media uses cookies and similar technologies.",
+      "canonical": "http://127.0.0.1:4174/cookies",
+      "robots": "index, follow",
+      "h1": [
+        "A quieter, more useful web experience."
+      ],
+      "ogTitle": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "ogDescription": "Building What&#x27;s Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
+      "structuredData": 0,
+      "internalLinks": 35
+    },
+    {
+      "url": "http://127.0.0.1:4174/privacy-policy",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/privacy-policy",
+      "ms": 80,
+      "title": "Privacy Policy | Arazi Digital Media",
+      "description": "Learn how Arazi Digital Media collects, uses, and protects personal information.",
+      "canonical": "http://127.0.0.1:4174/privacy-policy",
+      "robots": "index, follow",
+      "h1": [
+        "Your information, handled with care."
+      ],
+      "ogTitle": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "ogDescription": "Building What&#x27;s Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
+      "structuredData": 0,
+      "internalLinks": 35
+    },
+    {
+      "url": "http://127.0.0.1:4174/blogs?topic=Digital%20Platforms%20&%20Engineering",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/blogs?topic=Digital%20Platforms%20&%20Engineering",
+      "ms": 28,
+      "title": "Insights on Technology, Marketing, AI & Data | Arazi Digital Media",
+      "description": "Read ADM insights on technology, digital marketing, artificial intelligence and data, with practical ideas for digital teams.",
+      "canonical": "http://127.0.0.1:4174/blogs",
+      "robots": "index, follow",
+      "h1": [
+        "Ideas That Build The Future"
+      ],
+      "ogTitle": "Insights on Technology, Marketing, AI & Data",
+      "ogDescription": "Practical perspectives from Arazi Digital Media on technology, marketing, AI and data.",
+      "structuredData": 0,
+      "internalLinks": 45
+    },
+    {
+      "url": "http://127.0.0.1:4174/blogs?topic=Artificial%20Intelligence",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/blogs?topic=Artificial%20Intelligence",
+      "ms": 29,
+      "title": "Insights on Technology, Marketing, AI & Data | Arazi Digital Media",
+      "description": "Read ADM insights on technology, digital marketing, artificial intelligence and data, with practical ideas for digital teams.",
+      "canonical": "http://127.0.0.1:4174/blogs",
+      "robots": "index, follow",
+      "h1": [
+        "Ideas That Build The Future"
+      ],
+      "ogTitle": "Insights on Technology, Marketing, AI & Data",
+      "ogDescription": "Practical perspectives from Arazi Digital Media on technology, marketing, AI and data.",
+      "structuredData": 0,
+      "internalLinks": 45
+    },
+    {
+      "url": "http://127.0.0.1:4174/blogs?topic=Cyber%20Security",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/blogs?topic=Cyber%20Security",
+      "ms": 28,
+      "title": "Insights on Technology, Marketing, AI & Data | Arazi Digital Media",
+      "description": "Read ADM insights on technology, digital marketing, artificial intelligence and data, with practical ideas for digital teams.",
+      "canonical": "http://127.0.0.1:4174/blogs",
+      "robots": "index, follow",
+      "h1": [
+        "Ideas That Build The Future"
+      ],
+      "ogTitle": "Insights on Technology, Marketing, AI & Data",
+      "ogDescription": "Practical perspectives from Arazi Digital Media on technology, marketing, AI and data.",
+      "structuredData": 0,
+      "internalLinks": 45
+    },
+    {
+      "url": "http://127.0.0.1:4174/blogs?topic=Cloud%20Computing",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/blogs?topic=Cloud%20Computing",
+      "ms": 30,
+      "title": "Insights on Technology, Marketing, AI & Data | Arazi Digital Media",
+      "description": "Read ADM insights on technology, digital marketing, artificial intelligence and data, with practical ideas for digital teams.",
+      "canonical": "http://127.0.0.1:4174/blogs",
+      "robots": "index, follow",
+      "h1": [
+        "Ideas That Build The Future"
+      ],
+      "ogTitle": "Insights on Technology, Marketing, AI & Data",
+      "ogDescription": "Practical perspectives from Arazi Digital Media on technology, marketing, AI and data.",
+      "structuredData": 0,
+      "internalLinks": 45
+    },
+    {
+      "url": "http://127.0.0.1:4174/blogs?topic=UI%20/%20UX",
+      "status": 200,
+      "effective": "http://127.0.0.1:4174/blogs?topic=UI%20/%20UX",
+      "ms": 30,
+      "title": "Insights on Technology, Marketing, AI & Data | Arazi Digital Media",
+      "description": "Read ADM insights on technology, digital marketing, artificial intelligence and data, with practical ideas for digital teams.",
+      "canonical": "http://127.0.0.1:4174/blogs",
+      "robots": "index, follow",
+      "h1": [
+        "Ideas That Build The Future"
+      ],
+      "ogTitle": "Insights on Technology, Marketing, AI & Data",
+      "ogDescription": "Practical perspectives from Arazi Digital Media on technology, marketing, AI and data.",
+      "structuredData": 0,
+      "internalLinks": 45
+    }
+  ],
+  "issues": [
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4174/about/leadership-governance",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4174/blogs/building-enterprise-ai-applications",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4174/careers",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4174/services/ai-solutions",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4174/services/mobile-apps",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4174/services/ui-ux",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4174/services/web-development",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4174/sitemap.xml",
+      "msg": "Unavailable: The operation was aborted due to timeout"
+    },
+    {
+      "level": "OWNER",
+      "url": "http://127.0.0.1:4174/cookies",
+      "msg": "Potential placeholder email or phone detected; verify before launch."
+    },
+    {
+      "level": "OWNER",
+      "url": "http://127.0.0.1:4174/privacy-policy",
+      "msg": "Potential placeholder email or phone detected; verify before launch."
+    },
+    {
+      "level": "OWNER",
+      "url": "http://127.0.0.1:4174/terms",
+      "msg": "Potential placeholder email or phone detected; verify before launch."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4174/blogs, http://127.0.0.1:4174/blogs?topic=Digital%20Platforms%20&%20Engineering, http://127.0.0.1:4174/blogs?topic=Artificial%20Intelligence, http://127.0.0.1:4174/blogs?topic=Cyber%20Security, http://127.0.0.1:4174/blogs?topic=Cloud%20Computing, http://127.0.0.1:4174/blogs?topic=UI%20/%20UX",
+      "msg": "Duplicate title on 6 URLs: insights on technology, marketing, ai & data | arazi digital media"
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4174/blogs, http://127.0.0.1:4174/blogs?topic=Digital%20Platforms%20&%20Engineering, http://127.0.0.1:4174/blogs?topic=Artificial%20Intelligence, http://127.0.0.1:4174/blogs?topic=Cyber%20Security, http://127.0.0.1:4174/blogs?topic=Cloud%20Computing, http://127.0.0.1:4174/blogs?topic=UI%20/%20UX",
+      "msg": "Duplicate description on 6 URLs: read adm insights on technology, digital marketing, artificial intelligence and data, with practical"
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4174/robots.txt",
+      "msg": "Review disallow rules for accidental blocking of public pages."
+    }
+  ]
+}

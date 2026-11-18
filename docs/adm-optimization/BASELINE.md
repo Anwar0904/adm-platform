@@ -67,3 +67,7 @@ Admin and API routes live under `src/app/admin/` and `src/app/api/`; authenticat
 | P1 | `/team` was linked from the footer but no public `/team` route exists. | `src/components/layout/Footer.tsx` | Route visitors to the existing governance page. | Low; one internal link/label change. |
 | P1 | Static metadata used “global”; footer/contact/legal claims and portfolio/testimonial figures have no verification evidence in the repository. | About/home/portfolio/contact/footer/legal components | Avoid adding unsupported claims; produce concrete approval tasks. | Public business claims are left unchanged pending owner/legal verification. |
 | P2 | No mobile/desktop screenshots, browser crawl, Search Console data or Core Web Vitals were available. | Public templates | Capture evidence for later visual/performance decisions. | No visual changes made without comparisons. |
+
+## Phase 2 checkpoint
+
+The Phase 2 follow-up began from a clean `main` worktree at `d0ff6bbeeb3740df5de147b9b8703145c636fe6d` on 18 November 2026. This supplements the historical baseline above; it does not replace its original checkout commit. Final build, test, lint and local crawl evidence is recorded in `PHASE2_COMPLETION.md`. Workspace `.git` remains read-only, so there is no new branch or commit. The crawl was local only; production behavior remains unverified.

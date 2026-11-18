@@ -8,7 +8,7 @@ import TechnologyExpertise from "@/components/industries/TechnologyExpertise";
 import IndustriesShowcase from "@/components/portfolio/IndustriesShowcase";
 
 export const metadata: Metadata = {
-    title: "Industries | Arazi Digital Media",
+    title: { absolute: "Industries | Arazi Digital Media" },
     description:
         "Explore industry perspectives and digital solutions presented by Arazi Digital Media across technology, marketing, AI and data.",
     alternates: { canonical: `${SITE_URL}/industries` },

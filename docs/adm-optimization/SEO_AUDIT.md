@@ -39,3 +39,7 @@ Local code audit only. No production host, HTTP status, redirect chain, Search C
 2. Submit `/sitemap.xml` in Search Console and inspect representative home, service, article, portfolio, contact and career URLs.
 3. Review indexed/canonical selections, query-to-page mapping, duplicate titles and excluded URLs. Treat keyword targets as hypotheses until supported by Search Console/SERP evidence.
 4. Confirm Vercel Analytics and any consent requirements with the privacy owner. Do not send contact details or message text as event properties.
+
+## Phase 2 local crawl update — 18 November 2026
+
+The supplied audit kit fixture self-test passed. A crawl against an isolated local production build recorded 24 pages / 51 flags before the Phase 2 link and metadata corrections and 23 pages / 14 flags after them (8 HIGH timeouts, 3 OWNER legal-copy flags, 3 REVIEW groups). The after-crawl evidence is in `phase2-local-audit-after/`; it is not a production crawl. `/faq` and nonexistent portfolio/industry detail links were corrected. The audit's remaining database-backed route and `/sitemap.xml` requests timed out while MongoDB was unavailable. See `PHASE2_COMPLETION.md` for the full gate and verification details. Production host, redirects, sitemap response, indexing and Search Console remain unverified.

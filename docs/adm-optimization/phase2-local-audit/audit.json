@@ -1,0 +1,672 @@
+{
+  "base": "http://127.0.0.1:4173/",
+  "createdAt": "2026-11-18T14:58:38.725Z",
+  "visited": 30,
+  "records": [
+    {
+      "url": "http://127.0.0.1:4173/about",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/about",
+      "ms": 102,
+      "title": "Our Company | Arazi Digital Media",
+      "description": "Arazi Digital Media brings together Technology, Marketing, AI and Data as connected capabilities.",
+      "canonical": "https://arazidigitalmedia.com/about",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Our Company"
+      ],
+      "ogTitle": "Our Company",
+      "ogDescription": "Explore Arazi Digital Media&#x27;s connected Technology, Marketing, AI and Data capabilities.",
+      "structuredData": 0,
+      "internalLinks": 32
+    },
+    {
+      "url": "http://127.0.0.1:4173/services",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/services",
+      "ms": 108,
+      "title": "Technology, Marketing, AI & Data Capabilities | ADM",
+      "description": "Explore Arazi Digital Media&#x27;s Technology, Marketing, AI and Data capabilities, including software development, SEO, paid media, AI automation and business analytics.",
+      "canonical": "https://arazidigitalmedia.com/services",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Connected Digital Capabilities For What&#x27;s Next"
+      ],
+      "ogTitle": "Technology, Marketing, AI & Data Capabilities | ADM",
+      "ogDescription": "Connected digital services across technology, marketing, artificial intelligence and data from Arazi Digital Media.",
+      "structuredData": 0,
+      "internalLinks": 38
+    },
+    {
+      "url": "http://127.0.0.1:4173/portfolio",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/portfolio",
+      "ms": 109,
+      "title": "Selected Work | Arazi Digital Media | Arazi Digital Media",
+      "description": "Explore work presented by Arazi Digital Media across digital products, technology, marketing, AI and data.",
+      "canonical": "https://arazidigitalmedia.com/portfolio",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Digital Products That Deliver Real Business Impact"
+      ],
+      "ogTitle": "Selected Work | Arazi Digital Media",
+      "ogDescription": "Explore work presented by Arazi Digital Media across its four capabilities.",
+      "structuredData": 0,
+      "internalLinks": 45
+    },
+    {
+      "url": "http://127.0.0.1:4173/industries",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/industries",
+      "ms": 112,
+      "title": "Industries | Arazi Digital Media | Arazi Digital Media",
+      "description": "Explore industry perspectives and digital solutions presented by Arazi Digital Media across technology, marketing, AI and data.",
+      "canonical": "https://arazidigitalmedia.com/industries",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Solutions Built For Your Industry."
+      ],
+      "ogTitle": "Industries | Arazi Digital Media",
+      "ogDescription": "Explore the industries and business contexts addressed across ADM&#x27;s capabilities.",
+      "structuredData": 0,
+      "internalLinks": 48
+    },
+    {
+      "url": "http://127.0.0.1:4173/",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/",
+      "ms": 116,
+      "title": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "description": "Arazi Digital Media brings together technology, marketing, AI and data to help organizations build digital products, reach audiences and make better use of information.",
+      "canonical": "https://arazidigitalmedia.com",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "We Drive Businesses"
+      ],
+      "ogTitle": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "ogDescription": "Building What&#x27;s Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
+      "structuredData": 0,
+      "internalLinks": 44
+    },
+    {
+      "url": "http://127.0.0.1:4173/blogs",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/blogs",
+      "ms": 170,
+      "title": "Insights on Technology, Marketing, AI & Data | Arazi Digital Media",
+      "description": "Read ADM insights on technology, digital marketing, artificial intelligence and data, with practical ideas for digital teams.",
+      "canonical": "https://arazidigitalmedia.com/blogs",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Ideas That Build The Future"
+      ],
+      "ogTitle": "Insights on Technology, Marketing, AI & Data",
+      "ogDescription": "Practical perspectives from Arazi Digital Media on technology, marketing, AI and data.",
+      "structuredData": 0,
+      "internalLinks": 45
+    },
+    {
+      "url": "http://127.0.0.1:4173/contact",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/contact",
+      "ms": 172,
+      "title": "Contact Arazi Digital Media | Arazi Digital Media",
+      "description": "Contact Arazi Digital Media to discuss a technology, marketing, AI or data challenge and explore a possible next step.",
+      "canonical": "https://arazidigitalmedia.com/contact",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Start Your Digital Journey"
+      ],
+      "ogTitle": "Contact Arazi Digital Media",
+      "ogDescription": "Start a conversation with Arazi Digital Media about your digital goals.",
+      "structuredData": 0,
+      "internalLinks": 30
+    },
+    {
+      "url": "http://127.0.0.1:4173/about/sustainability",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/about/sustainability",
+      "ms": 174,
+      "title": "Sustainability | Arazi Digital Media",
+      "description": "Explore Arazi Digital Media&#x27;s perspective on responsible technology, people, environmental awareness and continuous improvement.",
+      "canonical": "https://arazidigitalmedia.com/about/sustainability",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Responsible Digital Growth"
+      ],
+      "ogTitle": "Sustainability | Arazi Digital Media",
+      "ogDescription": "Explore Arazi Digital Media&#x27;s perspective on responsible technology, people, environmental awareness and continuous improvement.",
+      "structuredData": 0,
+      "internalLinks": 34
+    },
+    {
+      "url": "http://127.0.0.1:4173/services/technology",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/services/technology",
+      "ms": 122,
+      "title": "Technology & Software Development Services | ADM",
+      "description": "Explore ADM technology services for web and software development, mobile apps, digital platforms, UI/UX design and integrations.",
+      "canonical": "https://arazidigitalmedia.com/services/technology",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Technology & Digital Product Development"
+      ],
+      "ogTitle": "Technology & Software Development Services | ADM",
+      "ogDescription": "Explore ADM technology services for web and software development, mobile apps, digital platforms, UI/UX design and integrations.",
+      "structuredData": 0,
+      "internalLinks": 37
+    },
+    {
+      "url": "http://127.0.0.1:4173/services/marketing",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/services/marketing",
+      "ms": 123,
+      "title": "Digital Marketing & SEO Services | ADM",
+      "description": "Explore ADM digital marketing services across SEO, paid media, social media, content marketing, campaign strategy and measurement.",
+      "canonical": "https://arazidigitalmedia.com/services/marketing",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Digital Marketing & SEO Services"
+      ],
+      "ogTitle": "Digital Marketing & SEO Services | ADM",
+      "ogDescription": "Explore ADM digital marketing services across SEO, paid media, social media, content marketing, campaign strategy and measurement.",
+      "structuredData": 0,
+      "internalLinks": 37
+    },
+    {
+      "url": "http://127.0.0.1:4173/services/data",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/services/data",
+      "ms": 123,
+      "title": "Data Analytics & Business Intelligence Services | ADM",
+      "description": "Explore ADM data analytics, business intelligence, reporting, visualization and data strategy services for clearer business decisions.",
+      "canonical": "https://arazidigitalmedia.com/services/data",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Data Analytics & Business Intelligence"
+      ],
+      "ogTitle": "Data Analytics & Business Intelligence Services | ADM",
+      "ogDescription": "Explore ADM data analytics, business intelligence, reporting, visualization and data strategy services for clearer business decisions.",
+      "structuredData": 0,
+      "internalLinks": 37
+    },
+    {
+      "url": "http://127.0.0.1:4173/services/ai",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/services/ai",
+      "ms": 125,
+      "title": "AI Solutions & Workflow Automation Services | ADM",
+      "description": "Explore practical AI applications, AI agents, workflow automation and language-model integrations with human oversight from ADM.",
+      "canonical": "https://arazidigitalmedia.com/services/ai",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "AI Solutions, Agents & Workflow Automation"
+      ],
+      "ogTitle": "AI Solutions & Workflow Automation Services | ADM",
+      "ogDescription": "Explore practical AI applications, AI agents, workflow automation and language-model integrations with human oversight from ADM.",
+      "structuredData": 0,
+      "internalLinks": 37
+    },
+    {
+      "url": "http://127.0.0.1:4173/consultation",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/consultation",
+      "ms": 129,
+      "title": "Request a Consultation | Arazi Digital Media | Arazi Digital Media",
+      "description": "Share your goals with Arazi Digital Media and request a conversation about technology, marketing, AI or data.",
+      "canonical": "https://arazidigitalmedia.com/consultation",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Book A Strategy Session"
+      ],
+      "ogTitle": "Request a Consultation | Arazi Digital Media",
+      "ogDescription": "Request a conversation with Arazi Digital Media about your project or business challenge.",
+      "structuredData": 0,
+      "internalLinks": 31
+    },
+    {
+      "url": "http://127.0.0.1:4173/privacy-policy",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/privacy-policy",
+      "ms": 41,
+      "title": "Privacy Policy | Arazi Digital Media",
+      "description": "Learn how Arazi Digital Media collects, uses, and protects personal information.",
+      "canonical": "https://arazidigitalmedia.com/privacy-policy",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Your information, handled with care."
+      ],
+      "ogTitle": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "ogDescription": "Building What&#x27;s Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
+      "structuredData": 0,
+      "internalLinks": 35
+    },
+    {
+      "url": "http://127.0.0.1:4173/faq",
+      "status": 404,
+      "effective": "http://127.0.0.1:4173/faq",
+      "ms": 107,
+      "title": "",
+      "description": "",
+      "canonical": "",
+      "robots": "",
+      "h1": [],
+      "ogTitle": "",
+      "ogDescription": "",
+      "structuredData": 0,
+      "internalLinks": 0
+    },
+    {
+      "url": "http://127.0.0.1:4173/portfolio/adm-ai-crm",
+      "status": 404,
+      "effective": "http://127.0.0.1:4173/portfolio/adm-ai-crm",
+      "ms": 108,
+      "title": "",
+      "description": "",
+      "canonical": "",
+      "robots": "",
+      "h1": [],
+      "ogTitle": "",
+      "ogDescription": "",
+      "structuredData": 0,
+      "internalLinks": 0
+    },
+    {
+      "url": "http://127.0.0.1:4173/portfolio/medical-dashboard",
+      "status": 404,
+      "effective": "http://127.0.0.1:4173/portfolio/medical-dashboard",
+      "ms": 107,
+      "title": "",
+      "description": "",
+      "canonical": "",
+      "robots": "",
+      "h1": [],
+      "ogTitle": "",
+      "ogDescription": "",
+      "structuredData": 0,
+      "internalLinks": 0
+    },
+    {
+      "url": "http://127.0.0.1:4173/terms",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/terms",
+      "ms": 113,
+      "title": "Terms of Service | Arazi Digital Media",
+      "description": "The terms that guide use of the Arazi Digital Media website and services.",
+      "canonical": "https://arazidigitalmedia.com/terms",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "Clear expectations make better work."
+      ],
+      "ogTitle": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "ogDescription": "Building What&#x27;s Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
+      "structuredData": 0,
+      "internalLinks": 35
+    },
+    {
+      "url": "http://127.0.0.1:4173/cookies",
+      "status": 200,
+      "effective": "http://127.0.0.1:4173/cookies",
+      "ms": 113,
+      "title": "Cookie Policy | Arazi Digital Media",
+      "description": "Understand how Arazi Digital Media uses cookies and similar technologies.",
+      "canonical": "https://arazidigitalmedia.com/cookies",
+      "robots": "index, follow",
+      "h1": [
+        "Arazi Digital Media",
+        "A quieter, more useful web experience."
+      ],
+      "ogTitle": "Arazi Digital Media | Technology, Marketing, AI & Data",
+      "ogDescription": "Building What&#x27;s Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
+      "structuredData": 0,
+      "internalLinks": 35
+    },
+    {
+      "url": "http://127.0.0.1:4173/industries/healthcare",
+      "status": 404,
+      "effective": "http://127.0.0.1:4173/industries/healthcare",
+      "ms": 16,
+      "title": "",
+      "description": "",
+      "canonical": "",
+      "robots": "",
+      "h1": [],
+      "ogTitle": "",
+      "ogDescription": "",
+      "structuredData": 0,
+      "internalLinks": 0
+    },
+    {
+      "url": "http://127.0.0.1:4173/portfolio/banking-portal",
+      "status": 404,
+      "effective": "http://127.0.0.1:4173/portfolio/banking-portal",
+      "ms": 16,
+      "title": "",
+      "description": "",
+      "canonical": "",
+      "robots": "",
+      "h1": [],
+      "ogTitle": "",
+      "ogDescription": "",
+      "structuredData": 0,
+      "internalLinks": 0
+    },
+    {
+      "url": "http://127.0.0.1:4173/portfolio/marketplace",
+      "status": 404,
+      "effective": "http://127.0.0.1:4173/portfolio/marketplace",
+      "ms": 16,
+      "title": "",
+      "description": "",
+      "canonical": "",
+      "robots": "",
+      "h1": [],
+      "ogTitle": "",
+      "ogDescription": "",
+      "structuredData": 0,
+      "internalLinks": 0
+    },
+    {
+      "url": "http://127.0.0.1:4173/portfolio/education-lms",
+      "status": 404,
+      "effective": "http://127.0.0.1:4173/portfolio/education-lms",
+      "ms": 16,
+      "title": "",
+      "description": "",
+      "canonical": "",
+      "robots": "",
+      "h1": [],
+      "ogTitle": "",
+      "ogDescription": "",
+      "structuredData": 0,
+      "internalLinks": 0
+    },
+    {
+      "url": "http://127.0.0.1:4173/portfolio/logistics-platform",
+      "status": 404,
+      "effective": "http://127.0.0.1:4173/portfolio/logistics-platform",
+      "ms": 16,
+      "title": "",
+      "description": "",
+      "canonical": "",
+      "robots": "",
+      "h1": [],
+      "ogTitle": "",
+      "ogDescription": "",
+      "structuredData": 0,
+      "internalLinks": 0
+    }
+  ],
+  "issues": [
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/about/leadership-governance",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/careers",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/faq",
+      "msg": "HTTP 404"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/industries/healthcare",
+      "msg": "HTTP 404"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/portfolio/adm-ai-crm",
+      "msg": "HTTP 404"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/portfolio/banking-portal",
+      "msg": "HTTP 404"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/portfolio/education-lms",
+      "msg": "HTTP 404"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/portfolio/logistics-platform",
+      "msg": "HTTP 404"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/portfolio/marketplace",
+      "msg": "HTTP 404"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/portfolio/medical-dashboard",
+      "msg": "HTTP 404"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/services/ai-solutions",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/services/mobile-apps",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/services/ui-ux",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/services/web-development",
+      "msg": "Request failed: The operation was aborted due to timeout"
+    },
+    {
+      "level": "HIGH",
+      "url": "http://127.0.0.1:4173/sitemap.xml",
+      "msg": "Unavailable: The operation was aborted due to timeout"
+    },
+    {
+      "level": "OWNER",
+      "url": "http://127.0.0.1:4173/cookies",
+      "msg": "Potential placeholder email or phone detected; verify before launch."
+    },
+    {
+      "level": "OWNER",
+      "url": "http://127.0.0.1:4173/privacy-policy",
+      "msg": "Potential placeholder email or phone detected; verify before launch."
+    },
+    {
+      "level": "OWNER",
+      "url": "http://127.0.0.1:4173/terms",
+      "msg": "Potential placeholder email or phone detected; verify before launch."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/about",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/about",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/about/sustainability",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/about/sustainability",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/blogs",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/blogs",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/consultation",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/consultation",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/contact",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/contact",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/cookies",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/cookies",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/industries",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/industries",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/portfolio",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/portfolio",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/privacy-policy",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/privacy-policy",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/robots.txt",
+      "msg": "Review disallow rules for accidental blocking of public pages."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services/ai",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services/ai",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services/data",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services/data",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services/marketing",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services/marketing",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services/technology",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/services/technology",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/terms",
+      "msg": "Canonical points to another origin; verify intended domain."
+    },
+    {
+      "level": "REVIEW",
+      "url": "http://127.0.0.1:4173/terms",
+      "msg": "Multiple H1 headings; check whether hierarchy is purposeful."
+    }
+  ]
+}

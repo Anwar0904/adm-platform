@@ -10,7 +10,7 @@ import PortfolioTestimonials from "@/components/portfolio/PortfolioTestimonials"
 import ProjectProcess from "@/components/portfolio/ProjectProcess";
 
 export const metadata: Metadata = {
-    title: "Selected Work | Arazi Digital Media",
+    title: { absolute: "Selected Work | Arazi Digital Media" },
     description:
         "Explore work presented by Arazi Digital Media across digital products, technology, marketing, AI and data.",
     alternates: { canonical: `${SITE_URL}/portfolio` },

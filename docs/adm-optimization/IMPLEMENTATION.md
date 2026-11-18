@@ -32,3 +32,9 @@ No palette, typography, page-section order, forms, CMS records, auth/session beh
 - Sitemap still degrades to static routes if MongoDB fails, as before. Dynamic CMS coverage is limited to blog/service routes that have implemented page templates.
 - Public claim verification is an owner/legal task described in `CLAIMS_REVIEW.md`. No fake projects or social proof were silently removed or reclassified.
 - Git branch creation was attempted but failed because workspace permissions make `.git` read-only. Changes are on the checked-out `main` worktree; no commit was created.
+
+## Phase 2 completion update — 18 November 2026
+
+The follow-up implementation fixed duplicate title suffixes on portfolio, industries, contact, consultation, FAQs and testimonials; changed the global navbar logo from H1 to a non-heading element; fixed FAQ links to `/faqs`; and removed links from portfolio/industry cards to detail routes that do not exist. The cards and underlying claim content remain unchanged pending owner approval. Details, audit evidence and the release decision are in `PHASE2_COMPLETION.md`.
+
+The final isolated Next production build passed and generated 70 pages; TypeScript passed; the focused sitemap tests passed 3/3; the fixture audit passed; and targeted ESLint passed with two existing warnings. Full lint was run and exited 1 with 93 errors and 78 warnings. The configured `npm test` runner still fails before test discovery with Node 26 `uv_os_get_passwd returned ENOMEM`. The local post-fix crawl has 8 HIGH timeouts including `/sitemap.xml` and multiple database-backed pages. These results keep release at NO-GO; this crawl is not production verification.

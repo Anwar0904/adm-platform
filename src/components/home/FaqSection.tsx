@@ -72,7 +72,7 @@ export default function FaqSection() {
 
         <div className="mt-10 text-center sm:mt-14">
           <Link
-            href="/faq"
+            href="/faqs"
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-slate-900/80 px-6 py-3.5 text-sm font-semibold text-slate-100 shadow-sm transition-all hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200 hover:shadow-lg sm:w-auto sm:px-8 sm:py-4 sm:text-base"
           >
             View All FAQs

@@ -4,7 +4,7 @@ import FAQCTA from "@/components/faqs/faq-cta";
 import FAQHero from "@/components/faqs/faq-hero";
 
 export const metadata: Metadata = {
-    title: "Frequently Asked Questions | Arazi Digital Media",
+    title: { absolute: "Frequently Asked Questions | Arazi Digital Media" },
     description:
         "Find answers to common questions about working with Arazi Digital Media across technology, marketing, AI and data.",
     alternates: { canonical: `${SITE_URL}/faqs` },

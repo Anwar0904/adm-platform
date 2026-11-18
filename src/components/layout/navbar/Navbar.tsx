@@ -24,10 +24,10 @@ function NavLogo({ compact = false }: { compact?: boolean }) {
                 </div>
 
                 <div className="leading-none">
-                    <h1 className={`font-black tracking-tight text-text transition-all duration-300 ${compact ? "text-base sm:text-base" : "text-lg sm:text-lg"}`}>
+                    <span className={`font-black tracking-tight text-text transition-all duration-300 ${compact ? "text-base sm:text-base" : "text-lg sm:text-lg"}`}>
                         Arazi{" "}
                         <span className="text-brand-600">Digital Media</span>
-                    </h1>
+                    </span>
                     <p className={`mt-1.5 font-semibold uppercase tracking-[0.18em] text-text-soft transition-all duration-300 ${compact ? "text-[7px]" : "text-[8px] sm:text-[7px]"}`}>
                         Intelligent Digital Solutions
                     </p>

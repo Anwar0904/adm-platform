@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 
 const projects = [
   {
@@ -83,11 +81,7 @@ export default function PortfolioMasonry() {
 
         <div className="columns-1 gap-7 space-y-7 md:columns-2 xl:columns-3">
           {projects.map((project) => (
-            <Link
-              href={`/portfolio/${project.slug}`}
-              key={project.id}
-              className="group block break-inside-avoid"
-            >
+            <div key={project.id} className="group block break-inside-avoid">
               <article
                 className={`relative overflow-hidden rounded-3xl border border-white/10 ${project.height}`}
               >
@@ -106,19 +100,12 @@ export default function PortfolioMasonry() {
                     {project.category}
                   </span>
 
-                  <div className="mt-5 flex items-end justify-between gap-4">
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">{project.title}</h3>
-                      <p className="mt-3 text-white/80">View complete case study</p>
-                    </div>
-
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:bg-blue-600 group-hover:text-white">
-                      <ArrowUpRight className="h-6 w-6" />
-                    </div>
+                  <div className="mt-5">
+                    <h3 className="text-2xl font-bold text-white">{project.title}</h3>
                   </div>
                 </div>
               </article>
-            </Link>
+            </div>
           ))}
         </div>
 

@@ -7,7 +7,7 @@ import OfficeLocationSection from "@/components/contact/OfficeLocationSection";
 import WhyChooseADMSection from "@/components/contact/WhyChooseADMSection";
 
 export const metadata: Metadata = {
-    title: "Contact Arazi Digital Media",
+    title: { absolute: "Contact Arazi Digital Media" },
     description:
         "Contact Arazi Digital Media to discuss a technology, marketing, AI or data challenge and explore a possible next step.",
     alternates: { canonical: `${SITE_URL}/contact` },

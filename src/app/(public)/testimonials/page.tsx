@@ -5,7 +5,7 @@ import TestimonialsHero from "@/components/testimonials/testimonials-hero";
 import TrustSection from "@/components/testimonials/trust-section";
 
 export const metadata: Metadata = {
-    title: "Testimonials | Arazi Digital Media",
+    title: { absolute: "Testimonials | Arazi Digital Media" },
     description:
         "Read testimonials and perspectives published by Arazi Digital Media about client experiences and project work.",
     alternates: { canonical: `${SITE_URL}/testimonials` },

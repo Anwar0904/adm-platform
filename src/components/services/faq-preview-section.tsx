@@ -89,7 +89,7 @@ export default function FAQPreviewSection() {
 
         <div className="mt-12 text-center">
           <Link
-            href="/faq"
+            href="/faqs"
             className="font-semibold text-blue-300 hover:underline"
           >
             View All FAQs →

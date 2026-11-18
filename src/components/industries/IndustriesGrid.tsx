@@ -1,10 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-    ArrowRight,
     HeartPulse,
     GraduationCap,
     Landmark,
@@ -83,10 +81,6 @@ export default function IndustriesGrid() {
                                         ))}
                                     </div>
 
-                                    <Link href={`/industries/${industry.slug}`} className="mt-8 inline-flex items-center font-semibold text-blue-300">
-                                        Explore Industry
-                                        <ArrowRight className="ml-2 h-4 w-4 transition group-hover:translate-x-1" />
-                                    </Link>
                                 </div>
                             </motion.div>
                         );

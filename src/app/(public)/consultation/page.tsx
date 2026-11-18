@@ -5,7 +5,7 @@ import ConsultationRequestSection from "@/components/consultation/consultation-r
 import ConsultationHero from "@/components/consultation/ConsultationHero";
 
 export const metadata: Metadata = {
-    title: "Request a Consultation | Arazi Digital Media",
+    title: { absolute: "Request a Consultation | Arazi Digital Media" },
     description:
         "Share your goals with Arazi Digital Media and request a conversation about technology, marketing, AI or data.",
     alternates: { canonical: `${SITE_URL}/consultation` },
