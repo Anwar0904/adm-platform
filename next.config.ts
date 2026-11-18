@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Allows validation builds to avoid colliding with an active .next dev server.
+  distDir: process.env.ADM_NEXT_DIST_DIR || ".next",
   images: {
     remotePatterns: [
       {

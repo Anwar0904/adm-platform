@@ -14,12 +14,12 @@ import { SITE_URL } from "@/config/site";
 export const metadata: Metadata = {
   title: { absolute: "Arazi Digital Media | Technology, Marketing, AI & Data" },
   description:
-    "Arazi Digital Media is a global technology, marketing, AI and data company helping organizations create demand, build digital products, understand performance and scale with confidence.",
+    "Arazi Digital Media brings together technology, marketing, AI and data to help organizations build digital products, reach audiences and make better use of information.",
   alternates: { canonical: `${SITE_URL}/` },
   openGraph: {
     title: "Arazi Digital Media | Technology, Marketing, AI & Data",
     description:
-      "Building what's next for the digital economy through connected technology, marketing, AI and data capabilities.",
+      "Building What's Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
     url: `${SITE_URL}/`,
     type: "website",
   },

@@ -27,7 +27,24 @@ export async function generateMetadata({
     const { slug } = await params;
 
     await connectDB();
-    const record = await PublicContentService.getBlogBySlug(slug);
+    let record;
+
+    try {
+        record = await PublicContentService.getBlogBySlug(slug);
+    } catch {
+        return {
+            title: "Article unavailable | Arazi Digital Media",
+            robots: { index: false, follow: true },
+        };
+    }
+
+    if (!record) {
+        return {
+            title: "Article unavailable | Arazi Digital Media",
+            robots: { index: false, follow: true },
+        };
+    }
+
     const blog = normalizeBlog(record.toJSON() as unknown as ApiBlog);
 
     if (!blog) {
@@ -37,13 +54,15 @@ export async function generateMetadata({
     }
 
     const url = `${SITE_URL}/blogs/${blog.slug}`;
-    const authorName = typeof blog.author === 'object' && blog.author
-        ? (blog.author as any)?.name
-        : typeof blog.author === 'string' ? blog.author : undefined;
-    const tagNames = blog.tags?.map(t => typeof t === 'string' ? t : (t as any)?.name).filter(Boolean) || [];
+    const authorName = blog.author.name;
+    const tagNames = blog.tags;
 
     return {
         title: blog.seoTitle || blog.title,
+
+        alternates: { canonical: url },
+
+        robots: { index: true, follow: true },
 
         description:
             blog.metaDescription || blog.excerpt,
@@ -71,8 +90,6 @@ export async function generateMetadata({
             ] : [],
 
             publishedTime: blog.publishedAt ? new Date(blog.publishedAt).toISOString() : undefined,
-
-            authors: authorName ? [`${SITE_URL}/team`] : undefined,
 
             tags: tagNames,
         },

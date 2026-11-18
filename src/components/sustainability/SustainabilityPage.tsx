@@ -63,8 +63,8 @@ export default function SustainabilityPage() {
                         Building What&apos;s Next for the Digital Economy.
                     </p>
                     <p className="mx-auto mt-5 max-w-4xl text-base leading-7 text-text-muted sm:text-lg sm:leading-8">
-                        Arazi Digital Media is a global Technology, Marketing,
-                        AI and Data company.
+                        Arazi Digital Media brings together Technology,
+                        Marketing, AI and Data as connected capabilities.
                     </p>
                     <p className="mx-auto mt-4 max-w-4xl text-base leading-7 text-text-muted sm:text-lg sm:leading-8">
                         How digital work is designed matters alongside what it

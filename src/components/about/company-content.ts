@@ -15,7 +15,7 @@ export const companyMedia = {
 
 export const companyContent = {
     introduction:
-        "Arazi Digital Media is a global Technology, Marketing, AI and Data company.",
+        "Arazi Digital Media brings together Technology, Marketing, AI and Data as connected capabilities.",
     overviewHeading: "Building What's Next for the Digital Economy.",
     overviewDescription:
         "We bring technology, marketing, artificial intelligence and data together as connected capabilities to address evolving digital challenges.",

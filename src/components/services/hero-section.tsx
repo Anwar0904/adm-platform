@@ -48,7 +48,7 @@ export default function ServicesHeroSection() {
             </h1>
 
             <p className="mt-8 max-w-2xl text-lg leading-8 text-slate-300">
-              Arazi Digital Media is a global Technology, Marketing, AI and Data company helping organizations create demand, build digital products, understand performance and scale with confidence.
+              Arazi Digital Media brings Technology, Marketing, AI and Data together to help organizations address digital challenges and build practical solutions.
             </p>
 
             <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">

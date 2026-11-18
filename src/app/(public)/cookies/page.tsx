@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import LegalPage, { legalIcons, type LegalSection } from "@/components/legal/LegalPage";
+import { SITE_URL } from "@/config/site";
 
 export const metadata: Metadata = {
     title: "Cookie Policy",
     description: "Understand how Arazi Digital Media uses cookies and similar technologies.",
+    alternates: { canonical: `${SITE_URL}/cookies` },
 };
 
 const sections: LegalSection[] = [

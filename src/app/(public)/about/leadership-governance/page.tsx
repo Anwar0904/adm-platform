@@ -9,15 +9,18 @@ import { connectDB } from "@/lib/db";
 import PublicContentService from "@/services/public-content.service";
 import LeadershipHero from "@/components/about/leadership/LeadershipHero";
 import type { IPublicTeamMember } from "@/types/team-member.types";
+import { SITE_URL } from "@/config/site";
 
 export const metadata: Metadata = {
     title: "Leadership & Governance",
     description:
         "Learn about the governance structure of Arazi Digital Media and view leadership profiles when their details are approved.",
+    alternates: { canonical: `${SITE_URL}/about/leadership-governance` },
     openGraph: {
         title: "Leadership & Governance | Arazi Digital Media",
         description:
             "Governance information and approved leadership profiles for Arazi Digital Media.",
+        url: `${SITE_URL}/about/leadership-governance`,
     },
 };
 

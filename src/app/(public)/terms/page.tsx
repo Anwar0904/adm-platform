@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import LegalPage, { legalIcons, type LegalSection } from "@/components/legal/LegalPage";
+import { SITE_URL } from "@/config/site";
 
 export const metadata: Metadata = {
     title: "Terms of Service",
     description: "The terms that guide use of the Arazi Digital Media website and services.",
+    alternates: { canonical: `${SITE_URL}/terms` },
 };
 
 const sections: LegalSection[] = [

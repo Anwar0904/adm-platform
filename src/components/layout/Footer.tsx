@@ -42,8 +42,8 @@ const company = [
         href: "/industries",
     },
     {
-        name: "People & Expertise",
-        href: "/team",
+        name: "Leadership & Governance",
+        href: "/about/leadership-governance",
     },
     {
         name: "Careers",
@@ -289,7 +289,7 @@ export default function Footer() {
 
                                         <p>
 
-                                            hello@adm.com
+                                            info@arazidigitalmedia
 
                                         </p>
 
@@ -311,7 +311,7 @@ export default function Footer() {
 
                                         <p>
 
-                                            +92 300 0000000
+                                            +92 341 9583887
 
                                         </p>
 

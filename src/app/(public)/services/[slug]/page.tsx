@@ -126,6 +126,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: service.seo?.metaTitle || service.title || "Service",
       description: service.seo?.metaDescription || service.shortDescription || "Service details",
       keywords: service.seo?.keywords || [],
+      alternates: { canonical: url },
+      robots: { index: true, follow: true },
       openGraph: {
         type: "website",
         title: service.title,

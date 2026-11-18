@@ -2,16 +2,14 @@ import type { MetadataRoute } from "next";
 import { connection } from "next/server";
 import { CAREERS_CANONICAL_URL, SITE_URL } from "@/config/site";
 import { connectDB } from "@/lib/db";
+import {
+  createPublishedContentSitemapEntries,
+  createStaticSitemapEntries,
+  type SitemapContentRecord,
+  uniqueSitemapEntries,
+} from "@/lib/seo/sitemap";
 import PublicContentService from "@/services/public-content.service";
 import CareerService from "@/services/career.service";
-import { CONTENT_STATUS } from "@/enums";
-
-type SitemapContentRecord = {
-  slug: string;
-  status: string;
-  createdAt: Date | string;
-  updatedAt?: Date | string;
-};
 
 function getSitemapContentRecords(value: unknown): SitemapContentRecord[] {
   if (!Array.isArray(value)) return [];
@@ -19,200 +17,65 @@ function getSitemapContentRecords(value: unknown): SitemapContentRecord[] {
   return value.filter((item): item is SitemapContentRecord => {
     if (typeof item !== "object" || item === null) return false;
     const record = item as Record<string, unknown>;
-    const validDate = (date: unknown) => date instanceof Date || typeof date === "string";
+    const validDate = (date: unknown) =>
+      date === undefined || date instanceof Date || typeof date === "string";
 
     return (
       typeof record.slug === "string" &&
       typeof record.status === "string" &&
       validDate(record.createdAt) &&
-      (record.updatedAt === undefined || validDate(record.updatedAt))
+      validDate(record.updatedAt)
     );
   });
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   await connection();
-  const baseUrl = SITE_URL;
-
-  const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/about`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/about/leadership-governance`,
-      changeFrequency: "monthly",
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/about/sustainability`,
-      changeFrequency: "monthly",
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: CAREERS_CANONICAL_URL,
-      changeFrequency: "weekly",
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/`,
-      changeFrequency: "weekly",
-      priority: 1,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/services`,
-      changeFrequency: "monthly",
-      priority: 0.9,
-      lastModified: new Date(),
-    },
-    ...["technology", "marketing", "ai", "data"].map((pillar) => ({
-      url: `${baseUrl}/services/${pillar}`,
-      changeFrequency: "monthly" as const,
-      priority: 0.8,
-      lastModified: new Date(),
-    })),
-    {
-      url: `${baseUrl}/portfolio`,
-      changeFrequency: "monthly",
-      priority: 0.9,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/industries`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/team`,
-      changeFrequency: "monthly",
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/blogs`,
-      changeFrequency: "weekly",
-      priority: 0.8,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/contact`,
-      changeFrequency: "yearly",
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/consultation`,
-      changeFrequency: "yearly",
-      priority: 0.7,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/faqs`,
-      changeFrequency: "monthly",
-      priority: 0.6,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/privacy-policy`,
-      changeFrequency: "yearly",
-      priority: 0.3,
-      lastModified: new Date(),
-    },
-    {
-      url: `${baseUrl}/terms`,
-      changeFrequency: "yearly",
-      priority: 0.3,
-      lastModified: new Date(),
-    },
-  ];
+  const staticRoutes = createStaticSitemapEntries(SITE_URL);
 
   try {
     await connectDB();
 
-    const blogsResult = await PublicContentService.getBlogs({
-      page: 1,
-      limit: 1000,
-    });
+    const [blogsResult, servicesResult] = await Promise.all([
+      PublicContentService.getBlogs({ page: 1, limit: 1000 }),
+      PublicContentService.getServices({ page: 1, limit: 1000 }),
+    ]);
 
-    const blogRoutes: MetadataRoute.Sitemap = getSitemapContentRecords(blogsResult.blogs)
-      .filter((blog) => blog.status === CONTENT_STATUS.PUBLISHED)
-      .map((blog) => ({
-        url: `${baseUrl}/blogs/${blog.slug}`,
-        changeFrequency: "weekly" as const,
-        priority: 0.7,
-        lastModified: new Date(blog.updatedAt || blog.createdAt),
-      }));
+    const blogRoutes = createPublishedContentSitemapEntries(
+      SITE_URL,
+      "blogs",
+      getSitemapContentRecords(blogsResult.blogs),
+      "weekly",
+      0.7
+    );
 
-    const servicesResult = await PublicContentService.getServices({
-      page: 1,
-      limit: 1000,
-    });
-
-    const serviceRoutes: MetadataRoute.Sitemap = getSitemapContentRecords(servicesResult.services)
-      .filter((service) => service.status === CONTENT_STATUS.PUBLISHED)
-      .map((service) => ({
-        url: `${baseUrl}/services/${service.slug}`,
-        changeFrequency: "monthly" as const,
-        priority: 0.8,
-        lastModified: new Date(service.updatedAt || service.createdAt),
-      }));
-
-    const portfolioResult = await PublicContentService.getPortfolio({
-      page: 1,
-      limit: 1000,
-    });
-
-    const portfolioRoutes: MetadataRoute.Sitemap = getSitemapContentRecords(portfolioResult.portfolio)
-      .filter((item) => item.status === CONTENT_STATUS.PUBLISHED)
-      .map((item) => ({
-        url: `${baseUrl}/portfolio/${item.slug}`,
-        changeFrequency: "monthly" as const,
-        priority: 0.7,
-        lastModified: new Date(item.updatedAt || item.createdAt),
-      }));
-
-    const industriesResult = await PublicContentService.getIndustries({
-      page: 1,
-      limit: 1000,
-    });
-
-    const industryRoutes: MetadataRoute.Sitemap = getSitemapContentRecords(industriesResult.industries)
-      .filter((industry) => industry.status === CONTENT_STATUS.PUBLISHED)
-      .map((industry) => ({
-        url: `${baseUrl}/industries/${industry.slug}`,
-        changeFrequency: "monthly" as const,
-        priority: 0.7,
-        lastModified: new Date(industry.updatedAt || industry.createdAt),
-      }));
+    const serviceRoutes = createPublishedContentSitemapEntries(
+      SITE_URL,
+      "services",
+      getSitemapContentRecords(servicesResult.services),
+      "monthly",
+      0.8
+    );
 
     let careerRoutes: MetadataRoute.Sitemap = [];
     try {
       const careers = await CareerService.getPublicCareers();
       careerRoutes = careers.map((career) => ({
         url: `${CAREERS_CANONICAL_URL}/${encodeURIComponent(career.slug)}`,
-        changeFrequency: "weekly" as const,
+        changeFrequency: "weekly",
         priority: 0.6,
-        lastModified: new Date(career.updatedAt || career.createdAt),
+        ...(career.updatedAt ? { lastModified: career.updatedAt } : {}),
       }));
     } catch (error) {
       console.error("Career sitemap generation error:", error);
     }
 
-    return [
+    return uniqueSitemapEntries([
       ...staticRoutes,
       ...blogRoutes,
       ...serviceRoutes,
-      ...portfolioRoutes,
-      ...industryRoutes,
       ...careerRoutes,
-    ];
+    ]);
   } catch (error) {
     console.error("Sitemap generation error:", error);
     return staticRoutes;

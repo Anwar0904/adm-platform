@@ -6,15 +6,12 @@ import { SITE_URL } from "@/config/site";
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
-    alternates: {
-        canonical: SITE_URL,
-    },
     title: {
         default: "Arazi Digital Media | Technology, Marketing, AI & Data",
         template: "%s | Arazi Digital Media",
     },
     description:
-        "Arazi Digital Media is a global technology, marketing, AI and data company helping organizations create demand, build digital products, understand performance and scale with confidence.",
+        "Arazi Digital Media brings together technology, marketing, AI and data to help organizations build digital products, reach audiences and make better use of information.",
     keywords: [
         "Arazi Digital Media",
         "technology company",
@@ -52,16 +49,16 @@ export const metadata: Metadata = {
         type: "website",
         locale: "en_US",
         url: SITE_URL,
-        title: "ADM | Digital Company - AI-Powered Solutions",
+        title: "Arazi Digital Media | Technology, Marketing, AI & Data",
         description:
-            "Arazi Digital Media delivers intelligent digital solutions: AI automation, enterprise software, digital platforms, and UI/UX design.",
+            "Building What's Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
         siteName: "Arazi Digital Media",
     },
     twitter: {
         card: "summary_large_image",
-        title: "ADM | Digital Company - AI-Powered Solutions",
+        title: "Arazi Digital Media | Technology, Marketing, AI & Data",
         description:
-            "Arazi Digital Media delivers intelligent digital solutions: AI automation, enterprise software, digital platforms, and UI/UX design.",
+            "Building What's Next for the Digital Economy. Arazi Digital Media brings together Technology, Marketing, AI and Data.",
     },
 };
 

@@ -9,6 +9,20 @@ import PortfolioFinalCTA from "@/components/portfolio/PortfolioFinalCTA";
 import PortfolioTestimonials from "@/components/portfolio/PortfolioTestimonials";
 import ProjectProcess from "@/components/portfolio/ProjectProcess";
 
+export const metadata: Metadata = {
+    title: "Selected Work | Arazi Digital Media",
+    description:
+        "Explore work presented by Arazi Digital Media across digital products, technology, marketing, AI and data.",
+    alternates: { canonical: `${SITE_URL}/portfolio` },
+    openGraph: {
+        type: "website",
+        title: "Selected Work | Arazi Digital Media",
+        description:
+            "Explore work presented by Arazi Digital Media across its four capabilities.",
+        url: `${SITE_URL}/portfolio`,
+    },
+};
+
 export default function PortfolioPage() {
     return (
         <>
@@ -24,3 +38,5 @@ export default function PortfolioPage() {
         </>
     )
 }
+import type { Metadata } from "next";
+import { SITE_URL } from "@/config/site";

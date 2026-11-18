@@ -125,8 +125,8 @@ export default function CareersPage({ careers }: { careers: CareerListing[] }) {
               Make your next move <span className="text-brand-300">matter.</span>
             </h1>
               <p className="mt-6 max-w-xl text-base leading-7 text-text-muted sm:mt-8 sm:text-lg sm:leading-8">
-              Arazi Digital Media is a global Technology, Marketing, AI and Data
-              company. Explore the work behind the ideas shaping the digital
+              Arazi Digital Media brings together Technology, Marketing, AI
+              and Data. Explore the work behind ideas shaping the digital
               economy.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-4 sm:mt-9">
