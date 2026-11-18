@@ -43,3 +43,14 @@
 - [ ] Production hostname/redirects, Search Console, browser/accessibility, safe form E2E and field Core Web Vitals remain unverified.
 
 The release gate is **NO-GO**. Track the complete evidence and conditions in `PHASE2_COMPLETION.md`.
+
+## Phase 3 status — 18 November 2026
+
+- [x] Production `POST /api/seed/roles` returns 404 before connecting to MongoDB, verified against the isolated production build.
+- [x] Production MongoDB connection no longer falls back to localhost; the fallback remains for non-production environments.
+- [x] TypeScript, isolated build and focused URI-selection tests pass.
+- [ ] Non-production role-seed authorization and the eight CMS/sitemap timeout routes need safe staging database verification.
+- [ ] Configured test runner fails before discovery on Node 26 `uv_os_get_passwd returned ENOMEM`; full lint reports 93 errors and 78 warnings. See `PHASE3_LINT_INVENTORY.md`.
+- [ ] Owner-approved public inbox/GitHub profile, claims, CMS service URLs and legal content remain pending. Service HTML sanitization needs a content-preserving review.
+
+Release remains **NO-GO**. See `PHASE3_REVIEW.md`.

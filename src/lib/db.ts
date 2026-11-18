@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { env } from "@/config/env";
 import { ApiError } from "@/lib/api/api-error";
+import { getMongoUriCandidates } from "@/lib/db-uri-candidates";
 
 type MongooseCache = {
   conn: typeof mongoose | null;
@@ -21,11 +22,7 @@ if (!global.mongooseCache) {
   global.mongooseCache = globalCache;
 }
 
-export function getMongoUriCandidates(configuredUri: string, fallbackUri: string) {
-  const candidates = [configuredUri, fallbackUri].filter(Boolean);
-
-  return candidates.filter((uri, index) => candidates.indexOf(uri) === index);
-}
+export { getMongoUriCandidates } from "@/lib/db-uri-candidates";
 
 export async function connectDB(): Promise<typeof mongoose> {
   if (globalCache.conn) {
@@ -35,7 +32,8 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!globalCache.promise) {
     const candidates = getMongoUriCandidates(
       env.MONGODB_URI,
-      "mongodb://127.0.0.1:27017/adm-platform"
+      "mongodb://127.0.0.1:27017/adm-platform",
+      process.env.NODE_ENV !== "production"
     );
 
     globalCache.promise = (async () => {
