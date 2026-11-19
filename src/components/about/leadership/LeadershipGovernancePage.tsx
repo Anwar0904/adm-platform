@@ -1,5 +1,4 @@
 import { connection } from "next/server";
-
 import LeadershipDirectory from "@/components/about/leadership/LeadershipDirectory";
 import LeadershipDataError from "@/components/about/leadership/LeadershipDataError";
 import { connectDB } from "@/lib/db";

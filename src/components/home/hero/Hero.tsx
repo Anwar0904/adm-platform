@@ -11,14 +11,6 @@ import {
 } from "lucide-react";
 
 
-const TRUSTED_BY = [
-  { name: "Uneed", icon: "u" },
-  { name: "Cactus", icon: "cactus" },
-  { name: "cloudwatch", icon: "cloud" },
-  { name: "Volume", icon: "check" },
-  { name: "SnapShot", icon: "gear" },
-];
-
 export default function Hero() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -37,20 +29,19 @@ export default function Hero() {
         <div className="relative z-10 pt-20">
           <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-blue-400/30 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-100 shadow-sm shadow-blue-500/10 backdrop-blur-sm">
             <span className="h-2 w-2 rounded-full bg-cyan-400" />
-            Digital solutions that drive real growth
+            Technology • Marketing • AI • Data
           </div>
 
           <h1 className="max-w-xl text-[2.5rem] font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
-            We Drive{" "}
+            Connected digital capabilities for{" "}
             <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-200 bg-clip-text text-transparent">
-              Businesses
+              business growth
             </span>
           </h1>
 
           <p className="mt-6 max-w-lg text-base leading-7 text-slate-300 sm:text-lg">
-            From powerful websites to <span className="font-semibold text-white">AI automation</span> and{" "}
-            <span className="font-semibold text-white">custom software</span>, we help brands scale smarter
-            with technology.
+            Arazi Digital Media brings together technology, marketing, applied AI and data to help
+            organizations build platforms, reach customers, improve workflows and make more informed decisions.
           </p>
 
           <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -70,20 +61,9 @@ export default function Hero() {
             </Link>
           </div>
 
-          <div className="mt-14">
-            <p className="mb-4 text-xs font-medium text-slate-300">Trusted by growing brands</p>
-            <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
-              {TRUSTED_BY.map((brand) => (
-                <span
-                  key={brand.name}
-                  className="flex items-center gap-1.5 text-sm font-medium text-slate-200"
-                >
-                  <TrustedIcon type={brand.icon} />
-                  {brand.name}
-                </span>
-              ))}
-            </div>
-          </div>
+          <p className="mt-14 text-sm font-medium text-slate-200">
+            Building What&apos;s Next for the Digital Economy.
+          </p>
         </div>
 
         {/* ---------------- RIGHT: image collage ---------------- */}
@@ -177,7 +157,6 @@ export default function Hero() {
     </section>
   );
 }
-
 /* ------------------------------------------------------------------ */
 /*  Small presentational helpers                                      */
 /* ------------------------------------------------------------------ */
@@ -210,22 +189,4 @@ function FloatingCard({
       </span>
     </div>
   );
-}
-
-function TrustedIcon({ type }: { type: string }) {
-  const common = "h-4 w-4 shrink-0 text-slate-500";
-  switch (type) {
-    case "u":
-      return <span className={`${common} flex items-center justify-center rounded-full border border-slate-500 text-[10px]`}>U</span>;
-    case "cactus":
-      return <span className={common}>🌵</span>;
-    case "cloud":
-      return <span className={common}>☁️</span>;
-    case "check":
-      return <span className={common}>✔</span>;
-    case "gear":
-      return <span className={common}>⚙️</span>;
-    default:
-      return null;
-  }
 }

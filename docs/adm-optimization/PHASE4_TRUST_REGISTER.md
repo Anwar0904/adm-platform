@@ -1,0 +1,19 @@
+# Phase 4 public trust register
+
+Repository-only inventory based on `CLAIMS_REVIEW.md` and targeted source inspection. “Pending” means publication evidence/permission is not present in this repository; it does not mean the claim is false. Owner is not identified. No PII or confidential evidence is recorded.
+
+| Claim ID | Source path / public URL | Type and visible claim class | Public state after this change | Owner | Evidence ID / approval date |
+| --- | --- | --- | --- | --- | --- |
+| TR-001 | `src/components/home/stats/data.tsx`, `src/components/home/CallToActionSection.tsx`; `/` | Engagement, satisfaction and tenure metrics | Pending; hero proof strip removed. Other static metrics remain for owner review. | Company owner needed | None / none |
+| TR-002 | `src/components/home/trusted/data.ts`, `src/components/home/trusted/TrustedCompanies.tsx`; `/` | Client names and logos | Pending; hero logos removed. Other trust/logo components remain for review. | Company owner needed | None / none |
+| TR-003 | `src/components/portfolio/ClientSuccessMetrics.tsx`, `src/components/portfolio/hero.tsx`, `src/components/portfolio/IndustriesShowcase.tsx`; `/portfolio` | ROI, outcome, project and performance metrics | Pending; visible source records preserved. | Company owner and client permissions needed | None / none |
+| TR-004 | `src/components/home/TestimonialsSection.tsx`, `src/components/portfolio/PortfolioTestimonials.tsx`, `src/constants/testimonial.ts`; `/`, `/portfolio`, `/testimonials` | Testimonials, ratings, named client/role and portraits | Pending; source records preserved. | Company owner and testimonial/image permissions needed | None / none |
+| TR-005 | `src/components/testimonials/trust-section.tsx`, `src/components/testimonials/testimonials-hero.tsx`, `src/components/contact/contact-faq-section.tsx`; related public pages | Global reach, worldwide operations and client coverage | Pending; not independently verified. | Company owner needed | None / none |
+| TR-006 | `src/components/team/*`, `src/app/(public)/about/leadership-governance/*`; governance pages | Leadership identities, titles, bios and photos | Pending verification against current approved records. | Company owner and each subject's permission needed | None / none |
+| TR-007 | `src/components/contact/OfficeLocationSection.tsx`, `src/components/contact/contactMethods.tsx`, `src/components/layout/Footer.tsx`; `/contact`, sitewide footer | Inbox, phone, physical office/address/map and working hours | Conflicting/unverified values. Footer now omits unknown values and points to `/contact`; contact page needs owner review. | Company owner needed | None / none |
+| TR-008 | Footer social links and company social components; sitewide | Official social-profile ownership | Unverified footer links removed until verified. | Company owner needed | None / none |
+| TR-009 | `src/app/(public)/privacy-policy/page.tsx`, `terms/page.tsx`, `cookies/page.tsx` | Legal entity, effective date, processing, retention, jurisdiction and consent | Owner/legal review pending. | Legal/company owner needed | None / none |
+| TR-010 | `src/components/about/company-content.ts`; `/about` | Company story, mission, vision, sample video and corporate identity | Draft/proposed language and sample media require approval. | Company owner needed | None / none |
+| TR-011 | CMS entities: published blog, service, career, team, testimonial and portfolio models | CMS publication status, awards, products and customer/client classification | Approval metadata/evidence is not established by this source review. Do not treat records as proof of permission. | CMS/content owner needed | No evidence IDs available / none |
+
+This is a grouped source inventory, not a claim-by-claim CMS export. Complete the CMS inventory only with safe read access and an identified content owner. Nothing in this register grants publication approval.

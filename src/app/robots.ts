@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/config/site";
 
 export default function robots(): MetadataRoute.Robots {
+    const siteUrl = SITE_URL.replace(/\/+$/, "");
     return {
         rules: [
             {
@@ -21,7 +22,7 @@ export default function robots(): MetadataRoute.Robots {
                 allow: ["/"],
             },
         ],
-        sitemap: `${SITE_URL}/sitemap.xml`,
-        host: SITE_URL,
+        sitemap: [`${siteUrl}/sitemap.xml`, `${siteUrl}/cms-sitemap.xml`],
+        host: siteUrl,
     };
 }

@@ -4,10 +4,11 @@ import { ApiResponse } from "@/lib/api/api-response";
 import { ApiErrorHandler } from "@/lib/api/api-error";
 import { requireAuth } from "@/lib/auth/require-auth";
 import { requireSuperAdmin } from "@/lib/auth/super-admin";
+import { isRoleSeedRouteDisabled } from "@/lib/security/seed-route-policy";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-    if (process.env.NODE_ENV === "production") {
+    if (isRoleSeedRouteDisabled(process.env.NODE_ENV)) {
         return NextResponse.json(
             { success: false, message: "Not found." },
             { status: 404 }

@@ -1,34 +1,24 @@
 import Link from "next/link";
 import { publicRoutes } from "@/config/site";
-import {
-    Mail,
-    MapPin,
-    Phone,
-    ArrowUpRight,
-} from "lucide-react";
-import {
-    FaFacebookF,
-    FaGithub,
-    FaInstagram,
-    FaLinkedinIn,
-} from "react-icons/fa";
+import { ArrowUpRight } from "lucide-react";
+import { companyContact } from "@/config/company-contact";
 
 const services = [
     {
-        name: "Digital Platforms & Engineering",
-        href: "/services/web-development",
+        name: "Technology",
+        href: "/services/technology",
     },
     {
-        name: "Mobile Apps",
-        href: "/services/mobile-apps",
+        name: "Marketing",
+        href: "/services/marketing",
     },
     {
-        name: "AI & Intelligent Systems",
-        href: "/services/ai-solutions",
+        name: "Artificial Intelligence",
+        href: "/services/ai",
     },
     {
-        name: "UI / UX Design",
-        href: "/services/ui-ux",
+        name: "Data",
+        href: "/services/data",
     },
 ];
 
@@ -52,25 +42,6 @@ const company = [
     {
         name: "Insights",
         href: "/blogs",
-    },
-];
-
-const socials = [
-    {
-        icon: FaFacebookF,
-        href: "https://www.facebook.com/share/1Q8xVAMvsK/",
-    },
-    {
-        icon: FaLinkedinIn,
-        href: "https://www.linkedin.com/company/arazi-digital-media",
-    },
-    {
-        icon: FaGithub,
-        href: "https://github.com",
-    },
-    {
-        icon: FaInstagram,
-        href: "https://www.instagram.com/arazidigitalmedia?igsi=MW56cnFwNDhzZDZ6eQ==",
     },
 ];
 
@@ -172,26 +143,15 @@ export default function Footer() {
 
                             </p>
 
-                            <div className="mt-10 flex gap-4">
-
-                                {socials.map((social, index) => {
-
-                                    const Icon = social.icon;
-
-                                    return (
-                                        <Link
-                                            key={index}
-                                            href={social.href}
-                                            className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500 hover:bg-blue-600"
-                                        >
-                                            <Icon
-                                                size={18}
-                                            />
+                            {companyContact.socialProfiles.length > 0 && (
+                                <div className="mt-10 flex gap-4">
+                                    {companyContact.socialProfiles.map((profile) => (
+                                        <Link key={profile.label} href={profile.href} aria-label={profile.label}>
+                                            {profile.label}
                                         </Link>
-                                    );
-                                })}
-
-                            </div>
+                                    ))}
+                                </div>
+                            )}
 
                         </div>
 
@@ -274,73 +234,17 @@ export default function Footer() {
                             </h3>
 
                             <div className="space-y-7">
-
-                                <div className="flex gap-4">
-
-                                    <Mail className="mt-1 text-blue-400" />
-
-                                    <div>
-
-                                        <p className="text-sm text-slate-400">
-
-                                            Email
-
-                                        </p>
-
-                                        <p>
-
-                                            info@arazidigitalmedia
-
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                                <div className="flex gap-4">
-
-                                    <Phone className="mt-1 text-blue-400" />
-
-                                    <div>
-
-                                        <p className="text-sm text-slate-400">
-
-                                            Phone
-
-                                        </p>
-
-                                        <p>
-
-                                            +92 341 9583887
-
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                                <div className="flex gap-4">
-
-                                    <MapPin className="mt-1 text-blue-400" />
-
-                                    <div>
-
-                                        <p className="text-sm text-slate-400">
-
-                                            Address
-
-                                        </p>
-
-                                        <p>
-
-                                            Pakistan
-
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
+                                {companyContact.email ? (
+                                    <a className="block hover:text-blue-400" href={`mailto:${companyContact.email}`}>
+                                        {companyContact.email}
+                                    </a>
+                                ) : (
+                                    <Link className="hover:text-blue-400" href="/contact">
+                                        Use the contact form to reach our team
+                                    </Link>
+                                )}
+                                {companyContact.phone && <a href={`tel:${companyContact.phone}`}>{companyContact.phone}</a>}
+                                {companyContact.address && <p>{companyContact.address}</p>}
                             </div>
 
                         </div>

@@ -1,40 +1,24 @@
-import test from "node:test";
 import assert from "node:assert/strict";
-
+import test from "node:test";
 import { getMongoUriCandidates } from "./db-uri-candidates";
 
-test("keeps the configured URI before the local fallback outside production", () => {
+test("production URI selection never includes the local fallback", () => {
   assert.deepEqual(
-    getMongoUriCandidates(
-      "mongodb+srv://cluster.example.mongodb.net/adm-platform",
-      "mongodb://127.0.0.1:27017/adm-platform",
-      true
-    ),
-    [
-      "mongodb+srv://cluster.example.mongodb.net/adm-platform",
-      "mongodb://127.0.0.1:27017/adm-platform",
-    ]
+    getMongoUriCandidates("mongodb+srv://configured.example/db", "mongodb://127.0.0.1/db", false),
+    ["mongodb+srv://configured.example/db"]
   );
 });
 
-test("deduplicates identical configured and fallback URIs", () => {
+test("local fallback remains available only when explicitly allowed", () => {
   assert.deepEqual(
-    getMongoUriCandidates(
-      "mongodb://127.0.0.1:27017/adm-platform",
-      "mongodb://127.0.0.1:27017/adm-platform",
-      true
-    ),
-    ["mongodb://127.0.0.1:27017/adm-platform"]
+    getMongoUriCandidates("mongodb://configured/db", "mongodb://127.0.0.1/db", true),
+    ["mongodb://configured/db", "mongodb://127.0.0.1/db"]
   );
 });
 
-test("does not add the local fallback in production", () => {
+test("duplicate URI candidates are removed", () => {
   assert.deepEqual(
-    getMongoUriCandidates(
-      "mongodb+srv://cluster.example.mongodb.net/adm-platform",
-      "mongodb://127.0.0.1:27017/adm-platform",
-      false
-    ),
-    ["mongodb+srv://cluster.example.mongodb.net/adm-platform"]
+    getMongoUriCandidates("mongodb://same/db", "mongodb://same/db", true),
+    ["mongodb://same/db"]
   );
 });

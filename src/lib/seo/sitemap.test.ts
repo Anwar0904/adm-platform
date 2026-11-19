@@ -6,6 +6,10 @@ import {
   createStaticSitemapEntries,
   uniqueSitemapEntries,
 } from "./sitemap";
+import {
+  createDynamicSitemapEntries,
+  renderSitemapXml,
+} from "./sitemap-content";
 
 test("static sitemap includes implemented public routes without fabricated dates", () => {
   const entries = createStaticSitemapEntries("https://example.com/");
@@ -52,4 +56,29 @@ test("duplicate URLs keep only the first sitemap entry", () => {
   ]);
 
   assert.deepEqual(unique, [{ url: "https://example.com/services/ai" }]);
+});
+
+test("dynamic sitemap includes published CMS routes and current open careers", () => {
+  const entries = createDynamicSitemapEntries(
+    [
+      { slug: "published-post", status: "published" },
+      { slug: "draft-post", status: "draft" },
+    ],
+    [{ slug: "published-service", status: "published" }],
+    [{ slug: "open-role" }]
+  );
+  const urls = entries.map(({ url }) => url);
+
+  assert.ok(urls.some((url) => url.endsWith("/blogs/published-post")));
+  assert.ok(urls.some((url) => url.endsWith("/services/published-service")));
+  assert.ok(urls.some((url) => url.endsWith("/careers/open-role")));
+  assert.ok(!urls.some((url) => url.endsWith("/blogs/draft-post")));
+});
+
+test("CMS sitemap XML escapes URL text and emits valid root element", () => {
+  const xml = renderSitemapXml([{ url: "https://example.com/blogs/a&b" }]);
+
+  assert.match(xml, /^<\?xml version="1\.0" encoding="UTF-8"\?><urlset/);
+  assert.match(xml, /a&amp;b/);
+  assert.match(xml, /<\/urlset>$/);
 });
