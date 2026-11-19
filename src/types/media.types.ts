@@ -5,6 +5,7 @@ import {
   Model,
   Types,
 } from "mongoose";
+import type { ContentStatus } from "@/enums";
 
 export type MediaType =
   | "image"
@@ -29,6 +30,8 @@ export interface IMedia {
   alt?: string;
 
   folder?: string;
+
+  status?: ContentStatus;
 
   uploadedBy?: Types.ObjectId | null;
 

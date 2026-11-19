@@ -5,7 +5,7 @@ import { Media } from "@/models/media.model";
 import { SortOrder } from "mongoose";
 
 
-class MediaRepository extends BaseRepository<IMedia> {
+class MediaRepository extends BaseRepository<IMedia, typeof Media> {
     constructor() {
         super(Media);
     }

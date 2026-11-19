@@ -1,13 +1,35 @@
-import {
+﻿import {
+    Query,
     SortOrder,
     Types,
 } from "mongoose";
 
 import { Blog } from "@/models/blog.model";
-import { IBlog } from "@/types/blog.types";
+import { BlogDocument, BlogMethods, IBlog } from "@/types/blog.types";
+
+type BlogQueryOperation = "find" | "findOne" | "findOneAndUpdate";
 
 class BlogRepository {
-    private populateQuery(query: any) {
+    private populateQuery<
+        TResult,
+        TOperation extends BlogQueryOperation,
+    >(
+        query: Query<
+            TResult,
+            BlogDocument,
+            Record<never, never>,
+            IBlog,
+            TOperation,
+            BlogMethods
+        >
+    ): Query<
+        TResult,
+        BlogDocument,
+        Record<never, never>,
+        IBlog,
+        TOperation,
+        BlogMethods
+    > {
         return query
             .populate(
                 "category",

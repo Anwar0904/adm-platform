@@ -30,6 +30,7 @@ test("content sitemap includes unique published slugs with valid source dates", 
     [
       { slug: "published-article", status: "published", updatedAt: "2026-02-03" },
       { slug: "draft-article", status: "draft", createdAt: "2026-02-01" },
+      { slug: "withdrawn-article", status: "withdrawn", updatedAt: "2026-02-02" },
       { slug: "published-article", status: "published", createdAt: "2026-01-01" },
       { slug: "invalid/date", status: "published" },
       { slug: "invalid-date", status: "published", updatedAt: "not a date" },
@@ -128,12 +129,82 @@ test("CMS sitemap pagination collects records beyond the first 1,000 in bounded 
 test("CMS sitemap pagination rejects incomplete query results", async () => {
   await assert.rejects(
     collectSitemapPages(
-      async () => ({ pagination: { total: 2, totalPages: 2 }, records: [2] }),
+      async () => ({ pagination: { total: 2, totalPages: 2 }, records: [] }),
       { pagination: { total: 2, totalPages: 2 }, records: [1] },
       { pageSize: 1, maxRecords: 10 }
     ),
-    /incomplete record set/
+    /content page is incomplete/
   );
+});
+
+test("CMS sitemap pagination rejects conflicting count metadata and invalid counts", async () => {
+  const fetchSecondPage = async () => ({
+    pagination: { total: 2, totalPages: 2 },
+    records: [2],
+  });
+  const firstPage = {
+    pagination: { total: 2, totalPages: 2 },
+    records: [1],
+  };
+
+  await assert.rejects(
+    collectSitemapPages(fetchSecondPage, {
+      pagination: { total: 2, totalPages: 1 },
+      records: [1],
+    }, { pageSize: 1, maxRecords: 10 }),
+    /metadata or limits are invalid/
+  );
+  await assert.rejects(
+    collectSitemapPages(fetchSecondPage, {
+      pagination: { total: -1, totalPages: 0 },
+      records: [],
+    }, { pageSize: 1, maxRecords: 10 }),
+    /metadata or limits are invalid/
+  );
+  await assert.rejects(
+    collectSitemapPages(fetchSecondPage, {
+      pagination: { total: 2.5, totalPages: 3 },
+      records: [1],
+    }, { pageSize: 1, maxRecords: 10 }),
+    /metadata or limits are invalid/
+  );
+  await assert.rejects(
+    collectSitemapPages(fetchSecondPage, firstPage, { pageSize: 1, maxRecords: 1 }),
+    /metadata or limits are invalid/
+  );
+  await assert.rejects(
+    collectSitemapPages(
+      async () => ({ pagination: { total: 3, totalPages: 3 }, records: [2] }),
+      firstPage,
+      { pageSize: 1, maxRecords: 10 }
+    ),
+    /metadata changed during collection/
+  );
+  await assert.rejects(
+    collectSitemapPages(fetchSecondPage, firstPage, { pageSize: 0, maxRecords: 10 }),
+    /metadata or limits are invalid/
+  );
+});
+
+test("CMS sitemap pagination rejects duplicate records across overlapping pages", async () => {
+  await assert.rejects(
+    collectSitemapPages(
+      async () => ({ pagination: { total: 2, totalPages: 2 }, records: [{ slug: "same" }] }),
+      { pagination: { total: 2, totalPages: 2 }, records: [{ slug: "same" }] },
+      { pageSize: 1, maxRecords: 10, recordKey: (record) => record.slug }
+    ),
+    /duplicate records/
+  );
+});
+
+test("CMS sitemap pagination accepts an empty content set", async () => {
+  const records = await collectSitemapPages(
+    async () => ({ pagination: { total: 0, totalPages: 0 }, records: [] }),
+    { pagination: { total: 0, totalPages: 0 }, records: [] },
+    { pageSize: 1_000, maxRecords: 50_000 }
+  );
+
+  assert.deepEqual(records, []);
 });
 
 test("CMS sitemap XML escapes URL text and emits valid root element", () => {

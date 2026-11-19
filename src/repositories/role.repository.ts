@@ -7,7 +7,7 @@ import { BaseRepository } from "@/repositories/base.repository";
 import { IRole } from "@/types/role.types";
 
 export class RoleRepository
-    extends BaseRepository<IRole> {
+    extends BaseRepository<IRole, typeof Role> {
     constructor() {
         super(Role);
     }

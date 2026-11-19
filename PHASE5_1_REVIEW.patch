@@ -1,0 +1,604 @@
+diff --git a/src/app/cms-sitemap.xml/route.ts b/src/app/cms-sitemap.xml/route.ts
+index b240130..839dc91 100644
+--- a/src/app/cms-sitemap.xml/route.ts
++++ b/src/app/cms-sitemap.xml/route.ts
+@@ -8,7 +8,6 @@ export const runtime = "nodejs";
+ 
+ const PAGE_SIZE = 1_000;
+ const MAX_URLS = 50_000;
+-const PAGE_BATCH_SIZE = 4;
+ 
+ export async function GET(): Promise<Response> {
+   try {
+@@ -28,7 +27,11 @@ export async function GET(): Promise<Response> {
+           return { pagination: result.pagination, records: result.blogs };
+         },
+         { pagination: blogsFirst.pagination, records: blogsFirst.blogs },
+-        { pageSize: PAGE_SIZE, maxRecords: MAX_URLS }
++        {
++          pageSize: PAGE_SIZE,
++          maxRecords: MAX_URLS,
++          recordKey: (blog) => blog.slug,
++        }
+       ),
+       collectSitemapPages(
+         async (page, limit) => {
+@@ -36,7 +39,11 @@ export async function GET(): Promise<Response> {
+           return { pagination: result.pagination, records: result.services };
+         },
+         { pagination: servicesFirst.pagination, records: servicesFirst.services },
+-        { pageSize: PAGE_SIZE, maxRecords: MAX_URLS }
++        {
++          pageSize: PAGE_SIZE,
++          maxRecords: MAX_URLS,
++          recordKey: (service) => service.slug,
++        }
+       ),
+     ]);
+ 
+diff --git a/src/lib/seo/sitemap-pagination.ts b/src/lib/seo/sitemap-pagination.ts
+index fba0062..ae27925 100644
+--- a/src/lib/seo/sitemap-pagination.ts
++++ b/src/lib/seo/sitemap-pagination.ts
+@@ -6,30 +6,77 @@ export type SitemapPage<T> = {
+ export async function collectSitemapPages<T>(
+   fetchPage: (page: number, limit: number) => Promise<SitemapPage<T>>,
+   firstPage: SitemapPage<T>,
+-  options: { pageSize: number; maxRecords: number; batchSize?: number }
++  options: {
++    pageSize: number;
++    maxRecords: number;
++    batchSize?: number;
++    recordKey?: (record: T) => string;
++  }
+ ): Promise<T[]> {
+   const { pageSize, maxRecords, batchSize = 4 } = options;
+-  const totalPages = firstPage.pagination.totalPages;
++  const { total, totalPages } = firstPage.pagination;
++  const paginationValuesAreValid =
++    Number.isInteger(total) && total >= 0 &&
++    Number.isInteger(totalPages) && totalPages >= 0;
++  const optionsAreValid =
++    Number.isInteger(pageSize) && pageSize > 0 &&
++    Number.isInteger(maxRecords) && maxRecords >= 0 &&
++    Number.isInteger(batchSize) && batchSize > 0;
++
+   if (
+-    !Number.isInteger(totalPages) ||
+-    totalPages < 1 ||
+-    firstPage.pagination.total > maxRecords ||
+-    totalPages > Math.ceil(maxRecords / pageSize)
++    !paginationValuesAreValid ||
++    !optionsAreValid ||
++    total > maxRecords ||
++    totalPages !== Math.ceil(total / pageSize)
+   ) {
+-    throw new Error("Sitemap content exceeds the supported limit.");
++    throw new Error("Sitemap pagination metadata or limits are invalid.");
++  }
++
++  const expectedFirstPageCount = Math.min(pageSize, total);
++  if (firstPage.records.length !== expectedFirstPageCount) {
++    throw new Error("Sitemap first page is incomplete.");
+   }
+ 
+   const records = [...firstPage.records];
++  const recordKeys = new Set<string>();
++  const addRecordKeys = (pageRecords: T[]) => {
++    if (!options.recordKey) return;
++    for (const record of pageRecords) {
++      const key = options.recordKey(record);
++      if (recordKeys.has(key)) {
++        throw new Error("Sitemap pagination returned duplicate records.");
++      }
++      recordKeys.add(key);
++    }
++  };
++  addRecordKeys(records);
++
+   for (let start = 2; start <= totalPages; start += batchSize) {
+     const pages = Array.from(
+       { length: Math.min(batchSize, totalPages - start + 1) },
+       (_, index) => start + index
+     );
+     const results = await Promise.all(pages.map((page) => fetchPage(page, pageSize)));
+-    for (const result of results) records.push(...result.records);
++    for (const [index, result] of results.entries()) {
++      const page = pages[index];
++      if (
++        result.pagination.total !== total ||
++        result.pagination.totalPages !== totalPages
++      ) {
++        throw new Error("Sitemap pagination metadata changed during collection.");
++      }
++
++      const expectedPageCount = Math.min(pageSize, total - (page - 1) * pageSize);
++      if (result.records.length !== expectedPageCount) {
++        throw new Error("Sitemap content page is incomplete.");
++      }
++
++      addRecordKeys(result.records);
++      records.push(...result.records);
++    }
+   }
+ 
+-  if (records.length !== firstPage.pagination.total) {
++  if (records.length !== total) {
+     throw new Error("Sitemap pagination returned an incomplete record set.");
+   }
+   return records;
+diff --git a/src/lib/seo/sitemap.test.ts b/src/lib/seo/sitemap.test.ts
+index cd3faf1..0c5934a 100644
+--- a/src/lib/seo/sitemap.test.ts
++++ b/src/lib/seo/sitemap.test.ts
+@@ -30,6 +30,7 @@ test("content sitemap includes unique published slugs with valid source dates",
+     [
+       { slug: "published-article", status: "published", updatedAt: "2026-02-03" },
+       { slug: "draft-article", status: "draft", createdAt: "2026-02-01" },
++      { slug: "withdrawn-article", status: "withdrawn", updatedAt: "2026-02-02" },
+       { slug: "published-article", status: "published", createdAt: "2026-01-01" },
+       { slug: "invalid/date", status: "published" },
+       { slug: "invalid-date", status: "published", updatedAt: "not a date" },
+@@ -128,14 +129,84 @@ test("CMS sitemap pagination collects records beyond the first 1,000 in bounded
+ test("CMS sitemap pagination rejects incomplete query results", async () => {
+   await assert.rejects(
+     collectSitemapPages(
+-      async () => ({ pagination: { total: 2, totalPages: 2 }, records: [2] }),
++      async () => ({ pagination: { total: 2, totalPages: 2 }, records: [] }),
+       { pagination: { total: 2, totalPages: 2 }, records: [1] },
+       { pageSize: 1, maxRecords: 10 }
+     ),
+-    /incomplete record set/
++    /content page is incomplete/
+   );
+ });
+ 
++test("CMS sitemap pagination rejects conflicting count metadata and invalid counts", async () => {
++  const fetchSecondPage = async () => ({
++    pagination: { total: 2, totalPages: 2 },
++    records: [2],
++  });
++  const firstPage = {
++    pagination: { total: 2, totalPages: 2 },
++    records: [1],
++  };
++
++  await assert.rejects(
++    collectSitemapPages(fetchSecondPage, {
++      pagination: { total: 2, totalPages: 1 },
++      records: [1],
++    }, { pageSize: 1, maxRecords: 10 }),
++    /metadata or limits are invalid/
++  );
++  await assert.rejects(
++    collectSitemapPages(fetchSecondPage, {
++      pagination: { total: -1, totalPages: 0 },
++      records: [],
++    }, { pageSize: 1, maxRecords: 10 }),
++    /metadata or limits are invalid/
++  );
++  await assert.rejects(
++    collectSitemapPages(fetchSecondPage, {
++      pagination: { total: 2.5, totalPages: 3 },
++      records: [1],
++    }, { pageSize: 1, maxRecords: 10 }),
++    /metadata or limits are invalid/
++  );
++  await assert.rejects(
++    collectSitemapPages(fetchSecondPage, firstPage, { pageSize: 1, maxRecords: 1 }),
++    /metadata or limits are invalid/
++  );
++  await assert.rejects(
++    collectSitemapPages(
++      async () => ({ pagination: { total: 3, totalPages: 3 }, records: [2] }),
++      firstPage,
++      { pageSize: 1, maxRecords: 10 }
++    ),
++    /metadata changed during collection/
++  );
++  await assert.rejects(
++    collectSitemapPages(fetchSecondPage, firstPage, { pageSize: 0, maxRecords: 10 }),
++    /metadata or limits are invalid/
++  );
++});
++
++test("CMS sitemap pagination rejects duplicate records across overlapping pages", async () => {
++  await assert.rejects(
++    collectSitemapPages(
++      async () => ({ pagination: { total: 2, totalPages: 2 }, records: [{ slug: "same" }] }),
++      { pagination: { total: 2, totalPages: 2 }, records: [{ slug: "same" }] },
++      { pageSize: 1, maxRecords: 10, recordKey: (record) => record.slug }
++    ),
++    /duplicate records/
++  );
++});
++
++test("CMS sitemap pagination accepts an empty content set", async () => {
++  const records = await collectSitemapPages(
++    async () => ({ pagination: { total: 0, totalPages: 0 }, records: [] }),
++    { pagination: { total: 0, totalPages: 0 }, records: [] },
++    { pageSize: 1_000, maxRecords: 50_000 }
++  );
++
++  assert.deepEqual(records, []);
++});
++
+ test("CMS sitemap XML escapes URL text and emits valid root element", () => {
+   const xml = renderSitemapXml([{ url: "https://example.com/blogs/a&b" }]);
+ 
+diff --git a/src/models/media.model.ts b/src/models/media.model.ts
+index 5204b3a..1490672 100644
+--- a/src/models/media.model.ts
++++ b/src/models/media.model.ts
+@@ -10,6 +10,7 @@ import {
+   IMedia,
+   MediaModel,
+ } from "@/types/media.types";
++import { CONTENT_STATUS } from "@/enums";
+ 
+ const MediaSchema =
+   new Schema<IMedia, MediaModel>(
+@@ -76,6 +77,11 @@ const MediaSchema =
+         trim: true,
+       },
+ 
++      status: {
++        type: String,
++        enum: Object.values(CONTENT_STATUS),
++      },
++
+       uploadedBy: {
+         type: Schema.Types.ObjectId,
+         ref: "User",
+diff --git a/src/repositories/base.repository.ts b/src/repositories/base.repository.ts
+index afe2e79..3dbfdf2 100644
+--- a/src/repositories/base.repository.ts
++++ b/src/repositories/base.repository.ts
+@@ -1,7 +1,10 @@
+ import { Model, Types, UpdateQuery } from "mongoose";
+ 
+-export abstract class BaseRepository<T> {
+-  constructor(protected readonly model: Model<any>) { }
++export abstract class BaseRepository<
++  T,
++  TModel extends Model<T> = Model<T>
++> {
++  constructor(protected readonly model: TModel) { }
+ 
+   async create(data: Partial<T>) {
+     return this.model.create(data);
+diff --git a/src/repositories/blog.repository.ts b/src/repositories/blog.repository.ts
+index 8f3b33f..db7c592 100644
+--- a/src/repositories/blog.repository.ts
++++ b/src/repositories/blog.repository.ts
+@@ -1,13 +1,35 @@
+-import {
++﻿import {
++    Query,
+     SortOrder,
+     Types,
+ } from "mongoose";
+ 
+ import { Blog } from "@/models/blog.model";
+-import { IBlog } from "@/types/blog.types";
++import { BlogDocument, BlogMethods, IBlog } from "@/types/blog.types";
++
++type BlogQueryOperation = "find" | "findOne" | "findOneAndUpdate";
+ 
+ class BlogRepository {
+-    private populateQuery(query: any) {
++    private populateQuery<
++        TResult,
++        TOperation extends BlogQueryOperation,
++    >(
++        query: Query<
++            TResult,
++            BlogDocument,
++            Record<never, never>,
++            IBlog,
++            TOperation,
++            BlogMethods
++        >
++    ): Query<
++        TResult,
++        BlogDocument,
++        Record<never, never>,
++        IBlog,
++        TOperation,
++        BlogMethods
++    > {
+         return query
+             .populate(
+                 "category",
+diff --git a/src/repositories/category.repository.ts b/src/repositories/category.repository.ts
+index f36a095..2fda636 100644
+--- a/src/repositories/category.repository.ts
++++ b/src/repositories/category.repository.ts
+@@ -5,7 +5,7 @@ import { ICategory } from "@/types/category.types";
+ 
+ import { BaseRepository } from "./base.repository";
+ 
+-class CategoryRepository extends BaseRepository<ICategory> {
++class CategoryRepository extends BaseRepository<ICategory, typeof Category> {
+     constructor() {
+         super(Category);
+     }
+@@ -74,4 +74,4 @@ class CategoryRepository extends BaseRepository<ICategory> {
+     }
+ }
+ 
+-export default new CategoryRepository();
+\ No newline at end of file
++export default new CategoryRepository();
+diff --git a/src/repositories/media.repository.ts b/src/repositories/media.repository.ts
+index 95b53b2..d0f0306 100644
+--- a/src/repositories/media.repository.ts
++++ b/src/repositories/media.repository.ts
+@@ -5,7 +5,7 @@ import { Media } from "@/models/media.model";
+ import { SortOrder } from "mongoose";
+ 
+ 
+-class MediaRepository extends BaseRepository<IMedia> {
++class MediaRepository extends BaseRepository<IMedia, typeof Media> {
+     constructor() {
+         super(Media);
+     }
+@@ -37,4 +37,4 @@ class MediaRepository extends BaseRepository<IMedia> {
+     }
+ }
+ 
+-export default new MediaRepository();
+\ No newline at end of file
++export default new MediaRepository();
+diff --git a/src/repositories/role.repository.ts b/src/repositories/role.repository.ts
+index 9f4f3e0..a3ca905 100644
+--- a/src/repositories/role.repository.ts
++++ b/src/repositories/role.repository.ts
+@@ -7,7 +7,7 @@ import { BaseRepository } from "@/repositories/base.repository";
+ import { IRole } from "@/types/role.types";
+ 
+ export class RoleRepository
+-    extends BaseRepository<IRole> {
++    extends BaseRepository<IRole, typeof Role> {
+     constructor() {
+         super(Role);
+     }
+@@ -163,4 +163,4 @@ export class RoleRepository
+ }
+ 
+ export const roleRepository =
+-    new RoleRepository();
+\ No newline at end of file
++    new RoleRepository();
+diff --git a/src/repositories/session.repository.ts b/src/repositories/session.repository.ts
+index 2f89b55..26128be 100644
+--- a/src/repositories/session.repository.ts
++++ b/src/repositories/session.repository.ts
+@@ -6,7 +6,7 @@ import { BaseRepository } from "./base.repository";
+ 
+ import { ISession } from "@/types/session.types";
+ 
+-class SessionRepository extends BaseRepository<ISession> {
++class SessionRepository extends BaseRepository<ISession, typeof Session> {
+   constructor() {
+     super(Session);
+   }
+@@ -176,4 +176,4 @@ class SessionRepository extends BaseRepository<ISession> {
+   }
+ }
+ 
+-export default new SessionRepository();
+\ No newline at end of file
++export default new SessionRepository();
+diff --git a/src/repositories/tag.repository.ts b/src/repositories/tag.repository.ts
+index 0a0a040..6215af8 100644
+--- a/src/repositories/tag.repository.ts
++++ b/src/repositories/tag.repository.ts
+@@ -5,7 +5,7 @@ import { BaseRepository } from "./base.repository";
+ import { Tag } from "@/models/tag.model";
+ import { ITag } from "@/types/tag.types";
+ 
+-class TagRepository extends BaseRepository<ITag> {
++class TagRepository extends BaseRepository<ITag, typeof Tag> {
+     constructor() {
+         super(Tag);
+     }
+@@ -50,4 +50,4 @@ class TagRepository extends BaseRepository<ITag> {
+     }
+ }
+ 
+-export default new TagRepository();
+\ No newline at end of file
++export default new TagRepository();
+diff --git a/src/services/auth/auth.service.ts b/src/services/auth/auth.service.ts
+index d5682c7..1e988e0 100644
+--- a/src/services/auth/auth.service.ts
++++ b/src/services/auth/auth.service.ts
+@@ -34,13 +34,11 @@ async function findActiveRefreshSession(
+ 
+     const sessions = payload.sid
+         ? mongoose.Types.ObjectId.isValid(payload.sid)
+-            ? [
+-                await SessionRepository.findActiveSessionById(
+-                    payload.sid,
+-                    payload.userId,
+-                    now
+-                ),
+-            ].filter(Boolean)
++            ? await SessionRepository.findActiveSessionById(
++                payload.sid,
++                payload.userId,
++                now
++            ).then((session) => session ? [session] : [])
+             : []
+         : await SessionRepository.find({
+             user: payload.userId,
+@@ -86,6 +84,9 @@ async function getActiveRefreshSession(
+         payload,
+         now
+     );
++    if (!session) {
++        throw new ApiError(401, "Refresh session not found or expired.");
++    }
+     const user = await User.findById(payload.userId).populate("role");
+ 
+     if (!user || user.isDeleted || user.status !== "active") {
+@@ -477,17 +478,7 @@ class AuthService {
+             return true;
+         }
+ 
+-        const sessions = payload.sid
+-            ? mongoose.Types.ObjectId.isValid(payload.sid)
+-                ? [
+-                    await SessionRepository.findOne({
+-                        _id: payload.sid,
+-                        user: payload.userId,
+-                        isRevoked: false,
+-                    }),
+-                ].filter(Boolean)
+-                : []
+-            : await SessionRepository.find({
++        const sessions = await SessionRepository.find({
+                 user: payload.userId,
+                 isRevoked: false,
+             });
+@@ -756,4 +747,4 @@ class AuthService {
+ 
+ }
+ 
+-export default new AuthService();
+\ No newline at end of file
++export default new AuthService();
+diff --git a/src/types/media.types.ts b/src/types/media.types.ts
+index bba5016..25d2f26 100644
+--- a/src/types/media.types.ts
++++ b/src/types/media.types.ts
+@@ -5,6 +5,7 @@ import {
+   Model,
+   Types,
+ } from "mongoose";
++import type { ContentStatus } from "@/enums";
+ 
+ export type MediaType =
+   | "image"
+@@ -30,6 +31,8 @@ export interface IMedia {
+ 
+   folder?: string;
+ 
++  status?: ContentStatus;
++
+   uploadedBy?: Types.ObjectId | null;
+ 
+   isDeleted: boolean;
+diff --git a/docs/adm-optimization/PHASE5_1_BASELINE.md b/docs/adm-optimization/PHASE5_1_BASELINE.md
+new file mode 100644
+index 0000000..ecebb71
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_1_BASELINE.md
+@@ -0,0 +1,20 @@
++# Phase 5.1 baseline
++
++**Starting SHA:** `aa1d7df20889eca0a550d5c4b86e2ffab82b5c74` (`main`, also `origin/main`). The worktree was clean before edits.
++
++Local branch creation was attempted with `git switch -c phase5-1/ci-closure` and failed because `.git/refs/heads` is read-only. No commit or remote ref was created. The deliverable is a patch tested against a clean archive of this exact SHA.
++
++## Phase 5 GitHub Actions evidence
++
++Run [44558187097](https://github.com/Anwar0904/adm-platform/actions/runs/44558187097) checked out the same SHA, used Node 22.23.4/npm 10.9.9, and ran `npm ci` successfully in every job.
++
++| Job | Result |
++|---|---|
++| TypeScript and unit tests | Typecheck PASS; tests FAIL, 44 passed / 1 failed / 45 total. The failing pagination test expected rejection despite receiving exactly the declared two records. |
++| Production build | PASS, 71 pages. Static HTTP smoke PASS: robots 200, sitemap 200, XML with 23 URLs, `application/xml`, 0.009 s. The origin was synthetic `https://adm-ci.invalid`; CMS/database health and the production host were not tested. |
++| ESLint | FAIL, 2 errors / 79 warnings. Both errors were `no-explicit-any` in `src/repositories/base.repository.ts` and `src/repositories/blog.repository.ts`. |
++| Dependency audit | FAIL, one critical Mongoose entry; installed/resolved range reported as 9.0.0 through 9.11.3 with five listed advisories. |
++
++Job IDs: audit `135679883154`, build `135679883800`, tests `135679883814`, lint `135679883826`.
++
++This baseline contains no staging-database, production-host, deployed-SHA, form-routing, accessibility, CWV, Search Console, or owner/legal approval evidence.
+diff --git a/docs/adm-optimization/PHASE5_1_CI_EVIDENCE.md b/docs/adm-optimization/PHASE5_1_CI_EVIDENCE.md
+new file mode 100644
+index 0000000..f7b5a42
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_1_CI_EVIDENCE.md
+@@ -0,0 +1,23 @@
++# Phase 5.1 CI evidence
++
++## Local checks after changes
++
++| Command | Result |
++|---|---|
++| `npm run typecheck` | PASS, exit 0 on local Node 26.13.0. |
++| `npm test` | PASS, 48 passed / 0 failed across 15 discovered test files. Local Node 26 cannot call `os.userInfo()` in this sandbox, so the run used a temporary external `NODE_OPTIONS` shim for that call only. It did not modify repository code; this is not a clean Node 22 result. |
++| `npm run lint -- --format json` | PASS, exit 0; 0 errors / 78 warnings. No lint rule was disabled. Warnings remain primarily `import/no-anonymous-default-export`, `<img>` optimization, unused declarations, and one React Hook Form compiler incompatibility. They were not bulk-refactored. |
++| `npm audit --audit-level=high` | Not passed on the updated source because dependencies remain unchanged and the npm registry request from this environment timed out. The Phase 5 CI audit remains a confirmed failure. |
++| `npm ci`, `npm ls mongoose`, `npm run build`, static HTTP smoke | Not rerun in a clean Node 22 environment. The existing Phase 5 CI Node 22 build/smoke is baseline evidence only. |
++
++Local `node --version` is `v26.13.0`, while `.nvmrc` and `engines` require Node 22. No Node 22 binary/version manager was available. The temporary test shim addresses the sandbox `os.userInfo()` issue only; it does not substitute for Node 22 compatibility verification.
++
++## Dependency audit — BLOCKED
++
++The exact Phase 5 Actions audit log reports Mongoose 9.0.0–9.11.3 and these advisories: [GHSA-gg4r-jv3p-qx3c](https://github.com/advisories/GHSA-gg4r-jv3p-qx3c), [GHSA-pcrw-h46h-c93h](https://github.com/advisories/GHSA-pcrw-h46h-c93h), [GHSA-wr5m-5jph-8m96](https://github.com/advisories/GHSA-wr5m-5jph-8m96), [GHSA-8332-j7wj-wjw4](https://github.com/advisories/GHSA-8332-j7wj-wjw4), [GHSA-6972-9mcm-vhwj](https://github.com/advisories/GHSA-6972-9mcm-vhwj). Advisory metadata identifies 9.11.4 as the fixed floor for the reported set; npm currently lists 9.12.2, but this environment could not reach the npm registry to resolve and validate that package. Sources: [GitHub advisory](https://github.com/advisories/GHSA-gg4r-jv3p-qx3c), [official npm versions](https://www.npmjs.com/package/mongoose?activeTab=versions).
++
++`package.json` and `package-lock.json` are unchanged. No lockfile was hand-edited. Complete the upgrade in a clean Node 22, registry-connected checkout, then record `npm ci`, `npm ls mongoose`, `npm audit --audit-level=high`, and DB/model compatibility evidence. Until then, audit remains **FAIL/BLOCKED** and release remains NO-GO.
++
++## No new GitHub Actions run
++
++This checkout's `.git` ref store is read-only, so no branch was pushed and no new workflow run can truthfully be reported. The implementation patch is checked against the exact baseline SHA and requires a new reviewed branch/Actions run from a writable clone.
+diff --git a/docs/adm-optimization/PHASE5_1_IMPLEMENTATION.md b/docs/adm-optimization/PHASE5_1_IMPLEMENTATION.md
+new file mode 100644
+index 0000000..ba6f435
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_1_IMPLEMENTATION.md
+@@ -0,0 +1,21 @@
++# Phase 5.1 implementation
++
++## Pagination completeness
++
++`src/lib/seo/sitemap-pagination.ts` now validates page size, batch size, record limits, nonnegative integer totals, and `totalPages === ceil(total / pageSize)`. It requires the first and subsequent page lengths to match the declared bounds, rejects pagination metadata drift, and optionally rejects duplicate stable record keys. An empty content set with zero pages is valid. The route supplies blog/service slugs as stable keys; a changing or incomplete result fails closed and the route returns its existing non-cacheable 503.
++
++`src/lib/seo/sitemap.test.ts` fixes the false-positive fixture by returning an empty second page for a two-record total. It also covers 2,501 records, short pages, inconsistent metadata, negative and fractional counts, over-limit/invalid options, duplicate slugs, empty content, and withdrawn publication state.
++
++## Mongoose typing
++
++- `src/repositories/base.repository.ts` is generic over the raw document and concrete Mongoose model; it no longer stores `Model<any>`.
++- Category, media, role, session, and tag repositories pass their concrete model type to the base repository. This preserves model-specific query/document return types.
++- Auth session resolution now explicitly narrows missing session results before token operations. The legacy logout path is also narrowed to the no-session-ID branch after the signed-session-ID path has already returned.
++- `src/repositories/blog.repository.ts` uses a generic Mongoose `Query` contract for `find`, `findOne`, and `findOneAndUpdate`, retaining result type, nullability, query chaining, and populate calls without `any`.
++- The stronger model type exposed that the media service already updates and filters by `status`, and its validator accepts content status, while `IMedia` and the schema omitted it. The optional enum field was added to the type/schema with no default and no backfill. This is a schema declaration change only; no migration or database write was performed. Existing records are not migrated.
++
++## Safeguards and rollback
++
++No seed command, database connection, migration, form submission, email, production change, or deployment was performed. The existing seed hard stop and proof visibility gates remain unchanged.
++
++Rollback the typed repository work as a unit across `base.repository.ts`, the five subclasses, auth null checks, blog query typing, and media type/schema. Reverting the media schema field does not require a data rollback because this task performed no writes. Keep the sitemap tests and collection checks unless a separately reviewed replacement exists.
+diff --git a/docs/adm-optimization/PHASE5_1_RELEASE_GATES.md b/docs/adm-optimization/PHASE5_1_RELEASE_GATES.md
+new file mode 100644
+index 0000000..35f4f46
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_1_RELEASE_GATES.md
+@@ -0,0 +1,24 @@
++# Phase 5.1 release gates
++
++**Decision: NO-GO.** Local code checks improved, but the dependency audit, clean Node 22 CI, staging/database validation, and owner-controlled launch approvals are unresolved.
++
++| Gate | Status | Evidence or blocker |
++|---|---|---|
++| Source control | BLOCKED | Baseline `aa1d7df20889eca0a550d5c4b86e2ffab82b5c74`; `.git` is read-only. No branch, commit, PR, push, or new Actions run. Clean-baseline apply check passes for supplied patch. |
++| TypeScript | PASS (local only) | `npm run typecheck` exit 0 on Node 26; new branch CI Node 22 result still required. |
++| Tests | PASS (local shim only) | 48/48 pass on Node 26 with a one-off shim for blocked `os.userInfo()`. No tests skipped. Clean Node 22 is still required for acceptance. |
++| Lint | PASS locally | `npm run lint -- --format json`: 0 errors, 78 warnings. Warning categories are recorded in CI output; no rules disabled. |
++| Mongoose dependency audit | FAIL/BLOCKED | Manifest/lock remain at Mongoose `^9.7.4` / resolved `9.7.4`. Phase 5 Actions reports one critical advisory entry. npm registry unreachable and Node 22 absent; no lockfile change or audit pass is claimed. |
++| Build/static smoke | PASS at Phase 5 baseline only | Actions run `44558187097`: build and synthetic-origin static smoke passed. This did not test CMS sitemap/database health or production origin. No Phase 5.1 build run. |
++| CMS/staging database | BLOCKED | No authorized staging database. Healthy completeness, outage 503, pagination during live changes, duplicates, and latency not exercised against staging. |
++| Forms/contact routing | BLOCKED | No staging form exercise or notification routing check; no submissions were sent. |
++| Production/SEO/accessibility/CWV | BLOCKED | No deployed SHA/host check, canonical production crawl, Search Console, browser screenshots, WCAG review, or lab/field CWV evidence. |
++| Public proof and legal approvals | OWNER-REVIEW | Existing default-off trust controls remain. Contact identity, leadership, public proof, legal entity, privacy/consent/retention, and service claims still require evidence and responsible approval. |
++
++## Next release actions
++
++1. Apply this patch to the verified SHA in a writable clone on `phase5-1/ci-closure`.
++2. In clean Node 22 with registry access, upgrade Mongoose and regenerate the lock using npm; verify `npm ci`, resolved version, and high/critical audit.
++3. Run all four Actions jobs and review the logs. Do not promote the synthetic CI artifact.
++4. Complete authorized staging checks for CMS sitemap health/outage, 404 versus 503, forms, and routing. Record dated status/latency evidence.
++5. Complete browser/accessibility/performance checks and obtain owner/legal decisions. Independently verify the deployment SHA and rollback before any GO decision.

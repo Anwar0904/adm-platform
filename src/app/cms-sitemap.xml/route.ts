@@ -8,7 +8,6 @@ export const runtime = "nodejs";
 
 const PAGE_SIZE = 1_000;
 const MAX_URLS = 50_000;
-const PAGE_BATCH_SIZE = 4;
 
 export async function GET(): Promise<Response> {
   try {
@@ -28,7 +27,11 @@ export async function GET(): Promise<Response> {
           return { pagination: result.pagination, records: result.blogs };
         },
         { pagination: blogsFirst.pagination, records: blogsFirst.blogs },
-        { pageSize: PAGE_SIZE, maxRecords: MAX_URLS }
+        {
+          pageSize: PAGE_SIZE,
+          maxRecords: MAX_URLS,
+          recordKey: (blog) => blog.slug,
+        }
       ),
       collectSitemapPages(
         async (page, limit) => {
@@ -36,7 +39,11 @@ export async function GET(): Promise<Response> {
           return { pagination: result.pagination, records: result.services };
         },
         { pagination: servicesFirst.pagination, records: servicesFirst.services },
-        { pageSize: PAGE_SIZE, maxRecords: MAX_URLS }
+        {
+          pageSize: PAGE_SIZE,
+          maxRecords: MAX_URLS,
+          recordKey: (service) => service.slug,
+        }
       ),
     ]);
 

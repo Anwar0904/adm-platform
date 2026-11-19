@@ -5,7 +5,7 @@ import { BaseRepository } from "./base.repository";
 import { Tag } from "@/models/tag.model";
 import { ITag } from "@/types/tag.types";
 
-class TagRepository extends BaseRepository<ITag> {
+class TagRepository extends BaseRepository<ITag, typeof Tag> {
     constructor() {
         super(Tag);
     }

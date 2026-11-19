@@ -34,13 +34,11 @@ async function findActiveRefreshSession(
 
     const sessions = payload.sid
         ? mongoose.Types.ObjectId.isValid(payload.sid)
-            ? [
-                await SessionRepository.findActiveSessionById(
-                    payload.sid,
-                    payload.userId,
-                    now
-                ),
-            ].filter(Boolean)
+            ? await SessionRepository.findActiveSessionById(
+                payload.sid,
+                payload.userId,
+                now
+            ).then((session) => session ? [session] : [])
             : []
         : await SessionRepository.find({
             user: payload.userId,
@@ -86,6 +84,9 @@ async function getActiveRefreshSession(
         payload,
         now
     );
+    if (!session) {
+        throw new ApiError(401, "Refresh session not found or expired.");
+    }
     const user = await User.findById(payload.userId).populate("role");
 
     if (!user || user.isDeleted || user.status !== "active") {
@@ -477,17 +478,7 @@ class AuthService {
             return true;
         }
 
-        const sessions = payload.sid
-            ? mongoose.Types.ObjectId.isValid(payload.sid)
-                ? [
-                    await SessionRepository.findOne({
-                        _id: payload.sid,
-                        user: payload.userId,
-                        isRevoked: false,
-                    }),
-                ].filter(Boolean)
-                : []
-            : await SessionRepository.find({
+        const sessions = await SessionRepository.find({
                 user: payload.userId,
                 isRevoked: false,
             });

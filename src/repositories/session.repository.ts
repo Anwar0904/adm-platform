@@ -6,7 +6,7 @@ import { BaseRepository } from "./base.repository";
 
 import { ISession } from "@/types/session.types";
 
-class SessionRepository extends BaseRepository<ISession> {
+class SessionRepository extends BaseRepository<ISession, typeof Session> {
   constructor() {
     super(Session);
   }

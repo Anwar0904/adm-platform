@@ -5,7 +5,7 @@ import { ICategory } from "@/types/category.types";
 
 import { BaseRepository } from "./base.repository";
 
-class CategoryRepository extends BaseRepository<ICategory> {
+class CategoryRepository extends BaseRepository<ICategory, typeof Category> {
     constructor() {
         super(Category);
     }

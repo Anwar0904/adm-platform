@@ -10,6 +10,7 @@ import {
   IMedia,
   MediaModel,
 } from "@/types/media.types";
+import { CONTENT_STATUS } from "@/enums";
 
 const MediaSchema =
   new Schema<IMedia, MediaModel>(
@@ -74,6 +75,11 @@ const MediaSchema =
         type: String,
         default: "general",
         trim: true,
+      },
+
+      status: {
+        type: String,
+        enum: Object.values(CONTENT_STATUS),
       },
 
       uploadedBy: {
