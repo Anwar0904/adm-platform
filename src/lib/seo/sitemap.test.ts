@@ -10,6 +10,7 @@ import {
   createDynamicSitemapEntries,
   renderSitemapXml,
 } from "./sitemap-content";
+import { collectSitemapPages } from "./sitemap-pagination";
 
 test("static sitemap includes implemented public routes without fabricated dates", () => {
   const entries = createStaticSitemapEntries("https://example.com/");
@@ -73,6 +74,66 @@ test("dynamic sitemap includes published CMS routes and current open careers", (
   assert.ok(urls.some((url) => url.endsWith("/services/published-service")));
   assert.ok(urls.some((url) => url.endsWith("/careers/open-role")));
   assert.ok(!urls.some((url) => url.endsWith("/blogs/draft-post")));
+});
+
+test("career sitemap validates dates and percent-encodes safe slugs", () => {
+  const entries = createDynamicSitemapEntries([], [], [
+    { slug: "role & growth", updatedAt: "2026-03-04T00:00:00.000Z" },
+    { slug: "bad-date", updatedAt: "not a date" },
+    { slug: "far-future", updatedAt: "+010000-01-01T00:00:00.000Z" },
+    { slug: "nested/role", updatedAt: new Date("2026-01-01") },
+  ]);
+
+  assert.equal(entries.length, 3);
+  assert.ok(entries.some(({ url }) => url.endsWith("/careers/role%20%26%20growth")));
+  assert.equal(entries.find(({ url }) => url.endsWith("/careers/bad-date"))?.lastModified, undefined);
+  assert.equal(entries.find(({ url }) => url.endsWith("/careers/far-future"))?.lastModified, undefined);
+  assert.ok(!entries.some(({ url }) => url.includes("nested")));
+});
+
+test("sitemap XML omits invalid and out-of-range lastmod values without failing", () => {
+  const xml = renderSitemapXml([
+    { url: "https://example.com/a", lastModified: "invalid" },
+    { url: "https://example.com/b", lastModified: "+010000-01-01T00:00:00.000Z" },
+  ]);
+
+  assert.doesNotMatch(xml, /<lastmod>/);
+  assert.match(xml, /<loc>https:\/\/example.com\/a<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/example.com\/b<\/loc>/);
+});
+
+test("CMS sitemap pagination collects records beyond the first 1,000 in bounded batches", async () => {
+  const requested: number[] = [];
+  const records = Array.from({ length: 2_501 }, (_, index) => index);
+  const all = await collectSitemapPages(
+    async (page, limit) => {
+      requested.push(page);
+      const pageRecords = records.slice((page - 1) * limit, page * limit);
+      return {
+        pagination: { total: records.length, totalPages: 3 },
+        records: pageRecords,
+      };
+    },
+    {
+      pagination: { total: records.length, totalPages: 3 },
+      records: records.slice(0, 1_000),
+    },
+    { pageSize: 1_000, maxRecords: 50_000, batchSize: 2 }
+  );
+
+  assert.deepEqual(requested, [2, 3]);
+  assert.deepEqual(all, records);
+});
+
+test("CMS sitemap pagination rejects incomplete query results", async () => {
+  await assert.rejects(
+    collectSitemapPages(
+      async () => ({ pagination: { total: 2, totalPages: 2 }, records: [2] }),
+      { pagination: { total: 2, totalPages: 2 }, records: [1] },
+      { pageSize: 1, maxRecords: 10 }
+    ),
+    /incomplete record set/
+  );
 });
 
 test("CMS sitemap XML escapes URL text and emits valid root element", () => {

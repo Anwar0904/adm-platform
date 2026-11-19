@@ -42,7 +42,7 @@ export interface ITestimonial {
   deletedAt?: Date | null;
 }
 
-export interface TestimonialMethods {}
+export type TestimonialMethods = Record<never, never>;
 
 export interface TestimonialStatics {
   findPublished(): Promise<TestimonialDocument[]>;
@@ -59,6 +59,7 @@ export type TestimonialDocument =
 export type TestimonialModel =
   Model<
     ITestimonial,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
     {},
     TestimonialMethods
   > &

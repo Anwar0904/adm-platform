@@ -42,7 +42,7 @@ export interface ILead {
   updatedAt: Date;
 }
 
-export interface LeadMethods { }
+export type LeadMethods = Record<never, never>;
 
 export interface LeadStatics {
   findByEmail(
@@ -60,5 +60,6 @@ export type LeadDocument =
   HydratedDocument<ILead, LeadMethods>;
 
 export type LeadModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<ILead, {}, LeadMethods> &
   LeadStatics;

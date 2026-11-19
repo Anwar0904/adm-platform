@@ -26,7 +26,7 @@ export interface ITag {
   deletedAt?: Date | null;
 }
 
-export interface TagMethods {}
+export type TagMethods = Record<never, never>;
 
 export interface TagStatics {
   findBySlug(slug: string): Promise<TagDocument | null>;
@@ -38,5 +38,6 @@ export type TagDocument =
   HydratedDocument<ITag, TagMethods>;
 
 export type TagModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<ITag, {}, TagMethods> &
   TagStatics;

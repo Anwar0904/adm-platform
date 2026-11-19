@@ -109,7 +109,7 @@ export default function PortfolioTestimonials() {
                                     ))}
                                 </div>
 
-                                <p className="mt-6 leading-8 text-slate-300">"{item.quote}"</p>
+                                <p className="mt-6 leading-8 text-slate-300">&quot;{item.quote}&quot;</p>
 
                                 <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 p-5 text-white">
                                     <p className="text-sm opacity-80">Project</p>

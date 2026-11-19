@@ -158,11 +158,11 @@ export default function TestimonialsGrid() {
                                 </div>
 
                                 <p className="mt-6 leading-8 text-slate-600">
-                                    "
+                                    &quot;
                                     {
                                         item.review
                                     }
-                                    "
+                                    &quot;
                                 </p>
                             </motion.article>
                         )

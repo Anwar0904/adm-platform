@@ -47,7 +47,7 @@ export interface IIndustry {
   deletedAt?: Date | null;
 }
 
-export interface IndustryMethods {}
+export type IndustryMethods = Record<never, never>;
 
 export interface IndustryStatics {
   findBySlug(slug: string): Promise<IndustryDocument | null>;
@@ -61,5 +61,6 @@ export type IndustryDocument =
   HydratedDocument<IIndustry, IndustryMethods>;
 
 export type IndustryModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<IIndustry, {}, IndustryMethods> &
   IndustryStatics;

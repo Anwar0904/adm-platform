@@ -70,7 +70,7 @@ export default function ContactMethodsSection() {
                     </h2>
 
                     <p className="mt-6 text-lg leading-9 text-slate-300">
-                        Choose the communication method that works best for you. We're always happy to help.
+                        Choose the communication method that works best for you. We&apos;re always happy to help.
                     </p>
                 </div>
 

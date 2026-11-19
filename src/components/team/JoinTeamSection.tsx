@@ -76,7 +76,7 @@ export default function JoinTeamSection() {
                             </h2>
 
                             <p className="mt-8 text-lg leading-9 text-slate-300">
-                                We're always looking for ambitious designers,
+                                We&apos;re always looking for ambitious designers,
                                 engineers and innovators who love solving difficult
                                 problems and building products that create impact.
                             </p>
@@ -216,8 +216,8 @@ export default function JoinTeamSection() {
                                     <Users className="text-cyan-300" />
 
                                     <p className="text-sm leading-7 text-slate-300">
-                                        Don't see your role? We're always interested in
-                                        exceptional talent. We'd love to hear from you.
+                                        Don&apos;t see your role? We&apos;re always interested in
+                                        exceptional talent. We&apos;d love to hear from you.
                                     </p>
 
                                 </div>

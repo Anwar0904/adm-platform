@@ -464,7 +464,7 @@ export default function AdminLoginForm() {
 
                                 <p className="text-xs leading-5 text-slate-500">
                                     Your account is protected
-                                    by ADM's authentication
+                                    by ADM&apos;s authentication
                                     and session system.
                                 </p>
                             </div>

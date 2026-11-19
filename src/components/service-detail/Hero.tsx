@@ -4,6 +4,15 @@ import Link from "next/link";
 import { ArrowDownToLine, ArrowRight, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
+type ServiceHeroData = {
+  title?: string;
+  shortDescription?: string;
+  image?: string | null;
+  featuredImage?: string | null;
+  featureList?: Array<{ title: string }>;
+  seo?: { metaTitle?: string };
+};
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -13,7 +22,7 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#039;");
 }
 
-export default function Hero({ service }: { service: any }) {
+export default function Hero({ service }: { service: ServiceHeroData }) {
   const title = service?.title || "Service";
   const subtitle = service?.shortDescription || "Modern digital solutions built to help your business move faster and smarter.";
   const image = service?.image || service?.featuredImage || null;
@@ -30,7 +39,7 @@ export default function Hero({ service }: { service: any }) {
 
     const features = (Array.isArray(service?.featureList) ? service.featureList : [])
       .slice(0, 6)
-      .map((item: any) => `<li>${escapeHtml(item.title || "Key deliverable")}</li>`)
+      .map((item) => `<li>${escapeHtml(item.title || "Key deliverable")}</li>`)
       .join("");
 
     const printWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");

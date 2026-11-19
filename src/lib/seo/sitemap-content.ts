@@ -27,7 +27,7 @@ export function getSitemapContentRecords(value: unknown): SitemapContentRecord[]
 export function createDynamicSitemapEntries(
   blogs: unknown,
   services: unknown,
-  careers: Array<{ slug: string; updatedAt?: Date | string }>
+  careers: Array<{ slug: string; updatedAt?: Date | string | null }>
 ): MetadataRoute.Sitemap {
   const blogRoutes = createPublishedContentSitemapEntries(
     SITE_URL,
@@ -43,16 +43,34 @@ export function createDynamicSitemapEntries(
     "monthly",
     0.8
   );
-  const careerRoutes = careers
-    .filter((career) => typeof career.slug === "string" && career.slug.trim())
-    .map((career) => ({
-      url: `${CAREERS_CANONICAL_URL}/${encodeURIComponent(career.slug)}`,
+  const careerRoutes = careers.flatMap((career) => {
+    const slug = typeof career.slug === "string" ? career.slug.trim() : "";
+    if (!slug || slug.includes("/") || slug.includes("?") || slug.includes("#")) return [];
+
+    const lastModified = parseSitemapDate(career.updatedAt);
+    return [{
+      url: `${CAREERS_CANONICAL_URL}/${encodeURIComponent(slug)}`,
       changeFrequency: "weekly" as const,
       priority: 0.6,
-      ...(career.updatedAt ? { lastModified: career.updatedAt } : {}),
-    }));
+      ...(lastModified ? { lastModified } : {}),
+    }];
+  });
 
   return uniqueSitemapEntries([...blogRoutes, ...serviceRoutes, ...careerRoutes]);
+}
+
+function parseSitemapDate(value: Date | string | null | undefined): Date | undefined {
+  if (value === undefined || value === null) return undefined;
+  const date = value instanceof Date ? value : new Date(value);
+  const timestamp = date.getTime();
+  if (!Number.isFinite(timestamp)) return undefined;
+  const year = date.getUTCFullYear();
+  return year >= 1970 && year <= 9999 ? date : undefined;
+}
+
+function formatSitemapDate(value: Date | string | undefined): string | undefined {
+  const date = parseSitemapDate(value);
+  return date?.toISOString();
 }
 
 function escapeXml(value: string): string {
@@ -71,8 +89,9 @@ function escapeXml(value: string): string {
 export function renderSitemapXml(entries: MetadataRoute.Sitemap): string {
   const urls = entries
     .map(({ url, lastModified }) => {
-      const lastmod = lastModified
-        ? `<lastmod>${escapeXml(new Date(lastModified).toISOString())}</lastmod>`
+      const safeLastModified = formatSitemapDate(lastModified);
+      const lastmod = safeLastModified
+        ? `<lastmod>${escapeXml(safeLastModified)}</lastmod>`
         : "";
       return `<url><loc>${escapeXml(url)}</loc>${lastmod}</url>`;
     })

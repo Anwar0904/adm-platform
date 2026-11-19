@@ -42,16 +42,16 @@ export default function FAQCTA() {
                             </span>
 
                             <h2 className="mt-6 text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl">
-                                Let's Discuss Your
+                                Let&apos;s Discuss Your
                                 <span className="block text-blue-400">
                                     Project Together
                                 </span>
                             </h2>
 
                             <p className="mt-8 max-w-2xl text-lg leading-8 text-slate-300">
-                                Didn't find the answer you were looking for?
+                                Didn&apos;t find the answer you were looking for?
                                 Schedule a free consultation with our experts
-                                or send us your requirements and we'll respond
+                                or send us your requirements and we&apos;ll respond
                                 within one business day.
                             </p>
 

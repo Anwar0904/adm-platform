@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { motion } from "framer-motion";
 
 import {
@@ -14,6 +12,7 @@ import { FaLinkedin, FaFacebook, FaTwitter } from "react-icons/fa";
 import { toast } from "sonner";
 
 import type { BlogPost } from "@/lib/dummy/blog";
+import { SITE_URL } from "@/config/site";
 
 interface Props {
     blog: BlogPost;
@@ -22,17 +21,11 @@ interface Props {
 export default function ShareSection({
     blog,
 }: Props) {
-    const [shareUrl, setShareUrl] = useState("");
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            setShareUrl(window.location.href);
-        }
-    }, []);
+    const shareUrl = `${SITE_URL}/blogs/${encodeURIComponent(blog.slug)}`;
 
     const copyLink = async () => {
         const currentUrl =
-            shareUrl || `/blogs/${blog.slug}`;
+            shareUrl;
 
         await navigator.clipboard.writeText(
             currentUrl
@@ -47,9 +40,7 @@ export default function ShareSection({
         encodeURIComponent(blog.title);
 
     const encodedUrl =
-        shareUrl
-            ? encodeURIComponent(shareUrl)
-            : "";
+        encodeURIComponent(shareUrl);
 
     return (
         <section className="bg-slate-950 py-16">

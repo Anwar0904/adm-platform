@@ -130,7 +130,7 @@ export default function ContactFormSection() {
                         </span>
 
                         <h2 className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl">
-                            Let's Build
+                            Let&apos;s Build
                             <span className="mt-1 block bg-gradient-to-r from-blue-300 via-cyan-300 to-white bg-clip-text text-transparent">
                                 Something Great
                             </span>

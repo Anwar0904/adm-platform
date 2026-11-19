@@ -127,6 +127,16 @@ function slugify(value: string) {
         .replace(/^-+|-+$/g, "");
 }
 
+function getApiList<T>(value: unknown, keys: string[]): T[] {
+    if (Array.isArray(value)) return value as T[];
+    if (value === null || typeof value !== "object") return [];
+    const record = value as Record<string, unknown>;
+    for (const key of keys) {
+        if (Array.isArray(record[key])) return record[key] as T[];
+    }
+    return [];
+}
+
 function getCategoryName(
     category: Project["category"]
 ) {
@@ -312,7 +322,7 @@ export default function PortfolioManagement() {
                     );
 
                 const result =
-                    (await response.json()) as ApiResponse<any>;
+                    (await response.json()) as ApiResponse<unknown>;
 
                 if (!response.ok) {
                     throw new Error(
@@ -333,21 +343,7 @@ export default function PortfolioManagement() {
                  * }
                  */
 
-                const data =
-                    result.data;
-
-                if (
-                    Array.isArray(data)
-                ) {
-                    setProjects(data);
-                } else {
-                    setProjects(
-                        data?.items ||
-                        data?.projects ||
-                        data?.results ||
-                        []
-                    );
-                }
+                setProjects(getApiList<Project>(result.data, ["items", "projects", "results"]));
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -381,7 +377,7 @@ export default function PortfolioManagement() {
                     );
 
                 const result =
-                    (await response.json()) as ApiResponse<any>;
+                    (await response.json()) as ApiResponse<unknown>;
 
                 if (!response.ok) {
                     throw new Error(
@@ -390,16 +386,7 @@ export default function PortfolioManagement() {
                     );
                 }
 
-                const data =
-                    result.data;
-
-                const categoryList =
-                    Array.isArray(data)
-                        ? data
-                        : data?.items ||
-                        data?.categories ||
-                        data?.results ||
-                        [];
+                const categoryList = getApiList<Category>(result.data, ["items", "categories", "results"]);
 
                 setCategories(
                     categoryList.filter(
@@ -458,7 +445,7 @@ export default function PortfolioManagement() {
                     );
 
                 const result =
-                    (await response.json()) as ApiResponse<any>;
+                    (await response.json()) as ApiResponse<unknown>;
 
                 if (!response.ok) {
                     throw new Error(
@@ -467,16 +454,8 @@ export default function PortfolioManagement() {
                     );
                 }
 
-                const data =
-                    result.data;
-
                 setMedia(
-                    Array.isArray(data)
-                        ? data
-                        : data?.items ||
-                        data?.media ||
-                        data?.results ||
-                        []
+                    getApiList<Media>(result.data, ["items", "media", "results"])
                 );
             } catch (err) {
                 setFormError(
@@ -494,11 +473,13 @@ export default function PortfolioManagement() {
     ===================================================== */
 
     useEffect(() => {
-        fetchCategories();
+        const timer = window.setTimeout(() => void fetchCategories(), 0);
+        return () => window.clearTimeout(timer);
     }, [fetchCategories]);
 
     useEffect(() => {
-        fetchProjects();
+        const timer = window.setTimeout(() => void fetchProjects(), 0);
+        return () => window.clearTimeout(timer);
     }, [fetchProjects]);
 
     /* =====================================================
@@ -710,7 +691,7 @@ export default function PortfolioManagement() {
                 );
 
             const result =
-                (await response.json()) as ApiResponse<any>;
+                (await response.json()) as ApiResponse<Media | Media[]>;
 
             if (!response.ok) {
                 throw new Error(
@@ -872,7 +853,7 @@ export default function PortfolioManagement() {
                 );
 
             const result =
-                (await response.json()) as ApiResponse<any>;
+                (await response.json()) as ApiResponse<unknown>;
 
             if (!response.ok) {
                 throw new Error(
@@ -921,7 +902,7 @@ export default function PortfolioManagement() {
                 );
 
             const result =
-                (await response.json()) as ApiResponse<any>;
+                (await response.json()) as ApiResponse<unknown>;
 
             if (!response.ok) {
                 throw new Error(

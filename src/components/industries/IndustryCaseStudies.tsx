@@ -57,7 +57,7 @@ export default function IndustryCaseStudies() {
                     </h2>
 
                     <p className="mt-6 text-lg leading-8 text-slate-300">
-                        We don't just build software. We solve business challenges with technology that delivers measurable ROI.
+                        We don&apos;t just build software. We solve business challenges with technology that delivers measurable ROI.
                     </p>
                 </div>
 

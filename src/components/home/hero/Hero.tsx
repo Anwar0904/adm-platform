@@ -136,13 +136,12 @@ export default function Hero() {
             subtitle="Smarter Workflows"
           />
 
-          {/* floating card — 98% Organization Satisfaction */}
+          {/* floating card — non-quantified data capability */}
           <FloatingCard
             className="right-[-2%] top-[32%] w-[36%] sm:w-[36%]"
             icon={<BarChart3 size={18} />}
-            title="98%"
-            titleClassName="text-emerald-500"
-            subtitle="Organization Satisfaction"
+            title="Data Insights"
+            subtitle="Informed Decisions"
           />
 
           {/* floating card — Custom Software */}

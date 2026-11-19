@@ -210,14 +210,20 @@ UserSchema.index({
  */
 const sanitizeUser = (
   _doc: unknown,
-  ret: any
+  ret: unknown
 ) => {
-  delete ret.password;
-  delete ret.passwordResetToken;
-  delete ret.passwordResetExpires;
-  delete ret.emailVerificationToken;
-  delete ret.emailVerificationExpires;
-  delete ret.__v;
+  if (ret && typeof ret === "object") {
+    for (const key of [
+      "password",
+      "passwordResetToken",
+      "passwordResetExpires",
+      "emailVerificationToken",
+      "emailVerificationExpires",
+      "__v",
+    ]) {
+      Reflect.deleteProperty(ret, key);
+    }
+  }
 
   return ret;
 };

@@ -40,13 +40,13 @@ export default function ConsultationFinalCTASection() {
                     </div>
 
                     <h2 className="mt-8 text-4xl font-black leading-tight tracking-tight text-white md:text-6xl xl:text-7xl">
-                        Let's Turn Your Vision
+                        Let&apos;s Turn Your Vision
                         <br />
                         Into Reality.
                     </h2>
 
                     <p className="mx-auto mt-8 max-w-3xl text-lg leading-9 text-blue-100 md:text-xl">
-                        Whether you're launching a startup,
+                        Whether you&apos;re launching a startup,
                         modernizing an existing business,
                         or building a large-scale platform,
                         ADM is here to guide you from strategy

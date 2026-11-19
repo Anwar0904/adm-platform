@@ -43,7 +43,7 @@ export default function ContactHeroSection() {
                     >
                         <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-cyan-200 backdrop-blur-xl">
                             <Sparkles size={16} />
-                            Let's Build Something Amazing
+                            Let&apos;s Build Something Amazing
                         </span>
 
                         <h1 className="mt-8 text-5xl font-black leading-tight text-white lg:text-7xl">
@@ -54,7 +54,7 @@ export default function ContactHeroSection() {
                         </h1>
 
                         <p className="mt-8 max-w-2xl text-xl leading-10 text-slate-300">
-                            Whether you're building an AI platform,
+                            Whether you&apos;re building an AI platform,
                             launching a startup, modernizing enterprise
                             software or transforming your digital presence,
                             our experts are ready to help.

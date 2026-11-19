@@ -56,7 +56,7 @@ export interface IPortfolio {
   deletedAt?: Date | null;
 }
 
-export interface PortfolioMethods { }
+export type PortfolioMethods = Record<never, never>;
 
 export interface PortfolioStatics {
   findBySlug(slug: string): Promise<PortfolioDocument | null>;
@@ -70,5 +70,6 @@ export type PortfolioDocument =
   HydratedDocument<IPortfolio, PortfolioMethods>;
 
 export type PortfolioModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<IPortfolio, {}, PortfolioMethods> &
   PortfolioStatics;

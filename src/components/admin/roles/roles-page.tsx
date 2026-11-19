@@ -336,7 +336,8 @@ export default function RolesPage() {
     }, [fetchRoles]);
 
     useEffect(() => {
-        setPage(1);
+        const timer = window.setTimeout(() => setPage(1), 0);
+        return () => window.clearTimeout(timer);
     }, [search, status]);
 
     async function handleDelete() {

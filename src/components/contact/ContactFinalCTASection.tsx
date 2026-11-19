@@ -53,14 +53,14 @@ export default function ContactFinalCTASection() {
                         </span>
 
                         <h2 className="mt-8 text-4xl font-black leading-tight text-white lg:text-7xl">
-                            Let's Build
+                            Let&apos;s Build
                             <span className="block bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-300 bg-clip-text text-transparent">
                                 Something Extraordinary
                             </span>
                         </h2>
 
                         <p className="mx-auto mt-8 max-w-3xl text-lg leading-9 text-slate-300">
-                            Whether you're launching a startup, transforming an
+                            Whether you&apos;re launching a startup, transforming an
                             enterprise, or bringing an innovative AI product to
                             life, ADM is ready to become your long-term
                             technology partner.

@@ -141,7 +141,7 @@ async function apiFetch(
 
     const text = await response.text();
 
-    let data: any = null;
+    let data: unknown = null;
 
     try {
         data = text ? JSON.parse(text) : null;
@@ -154,22 +154,27 @@ async function apiFetch(
     }
 
     if (!response.ok) {
+        const errorData = data !== null && typeof data === "object"
+            ? data as Record<string, unknown>
+            : {};
         throw new Error(
-            data?.message ||
-            data?.error ||
-            "Request failed."
+            typeof errorData.message === "string"
+                ? errorData.message
+                : typeof errorData.error === "string"
+                    ? errorData.error
+                    : "Request failed."
         );
     }
 
     return data;
 }
 
-function getPayload<T>(response: any): T {
-    return (
-        response?.data ??
-        response?.result ??
-        response
-    );
+function getPayload<T>(response: unknown): T {
+    if (response !== null && typeof response === "object") {
+        const record = response as Record<string, unknown>;
+        return (record.data ?? record.result ?? response) as T;
+    }
+    return response as T;
 }
 
 function getUserName(user: User) {
@@ -319,14 +324,11 @@ export default function UsersPage() {
                     );
 
                 const payload =
-                    getPayload<any>(
+                    getPayload<Role[] | { roles?: Role[] }>(
                         response
                     );
 
-                const roleList =
-                    payload?.roles ??
-                    payload ??
-                    [];
+                const roleList = Array.isArray(payload) ? payload : payload.roles ?? [];
 
                 setRoles(
                     Array.isArray(roleList)
@@ -434,7 +436,8 @@ export default function UsersPage() {
     );
 
     useEffect(() => {
-        fetchRoles();
+        const timer = window.setTimeout(() => void fetchRoles(), 0);
+        return () => window.clearTimeout(timer);
     }, [fetchRoles]);
 
     useEffect(() => {

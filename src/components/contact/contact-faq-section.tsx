@@ -82,7 +82,7 @@ export default function ContactFAQSection() {
                     <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
                         Questions?
                         <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
-                            We've Got Answers
+                            We&apos;ve Got Answers
                         </span>
                     </h2>
 

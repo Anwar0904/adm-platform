@@ -66,7 +66,7 @@ export default function OfficeLocationSection() {
                     </h2>
 
                     <p className="mt-6 text-lg leading-9 text-slate-300">
-                        Whether you want a face-to-face consultation or simply wish to learn more about ADM, you're always welcome.
+                        Whether you want a face-to-face consultation or simply wish to learn more about ADM, you&apos;re always welcome.
                     </p>
                 </motion.div>
 
@@ -215,7 +215,7 @@ export default function OfficeLocationSection() {
                     <div className="flex flex-col items-center justify-between gap-8 lg:flex-row">
                         <div>
                             <h3 className="text-3xl font-black text-white">Prefer an Online Meeting?</h3>
-                            <p className="mt-4 max-w-2xl leading-8 text-slate-300">We work with clients worldwide. If visiting our office isn't convenient, schedule a free video consultation with our experts.</p>
+                            <p className="mt-4 max-w-2xl leading-8 text-slate-300">We work with clients worldwide. If visiting our office isn&apos;t convenient, schedule a free video consultation with our experts.</p>
                         </div>
 
                         <Link

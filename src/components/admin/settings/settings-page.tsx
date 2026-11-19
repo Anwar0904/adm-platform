@@ -44,6 +44,22 @@ type SettingsForm = {
     analyticsId: string;
 };
 
+type SettingsPayload = Partial<Omit<SettingsForm, "branding">> & {
+    branding?: Partial<Omit<SettingsForm["branding"], "logo" | "favicon">> & {
+        logo?: unknown;
+        favicon?: unknown;
+    };
+};
+
+function mediaId(value: unknown): string | null {
+    if (typeof value === "string") return value;
+    if (value !== null && typeof value === "object" && "_id" in value) {
+        const id = (value as { _id?: unknown })._id;
+        return typeof id === "string" ? id : null;
+    }
+    return null;
+}
+
 const emptySettings: SettingsForm = {
     branding: {
         siteName: "ADM",
@@ -115,7 +131,7 @@ export default function SettingsPage() {
                     );
 
                 const result =
-                    await response.json();
+                    await response.json() as { message?: string; data?: SettingsPayload };
 
                 if (!response.ok) {
                     throw new Error(
@@ -146,7 +162,7 @@ export default function SettingsPage() {
     }, []);
 
     function normalizeSettings(
-        data: any
+        data: SettingsPayload
     ): SettingsForm {
         return {
             branding: {
@@ -157,18 +173,8 @@ export default function SettingsPage() {
                     data.branding
                         ?.siteDescription ??
                     "",
-                logo:
-                    typeof data.branding
-                        ?.logo === "string"
-                        ? data.branding.logo
-                        : data.branding?.logo
-                            ?._id ?? null,
-                favicon:
-                    typeof data.branding
-                        ?.favicon === "string"
-                        ? data.branding.favicon
-                        : data.branding?.favicon
-                            ?._id ?? null,
+                logo: mediaId(data.branding?.logo),
+                favicon: mediaId(data.branding?.favicon),
             },
 
             contact: {

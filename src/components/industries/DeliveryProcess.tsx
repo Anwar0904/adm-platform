@@ -29,7 +29,7 @@ export default function DeliveryProcess() {
                     </h2>
 
                     <p className="mt-6 text-lg leading-8 text-slate-300">
-                        Great software isn't built by accident. Our structured delivery process minimizes risks while maximizing quality, speed and business value.
+                        Great software isn&apos;t built by accident. Our structured delivery process minimizes risks while maximizing quality, speed and business value.
                     </p>
                 </div>
 
@@ -80,7 +80,7 @@ export default function DeliveryProcess() {
                                 <span className="block">Predictable Results.</span>
                             </h3>
                             <p className="mt-5 max-w-3xl text-lg leading-8 text-blue-100">
-                                You'll always know what we're building, why we're building it and what comes next. No surprises—just continuous progress.
+                                You&apos;ll always know what we&apos;re building, why we&apos;re building it and what comes next. No surprises—just continuous progress.
                             </p>
                         </div>
 

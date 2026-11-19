@@ -40,5 +40,6 @@ export type SessionDocument =
   HydratedDocument<ISession, SessionMethods>;
 
 export type SessionModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<ISession, {}, SessionMethods> &
   SessionStatics;

@@ -1,0 +1,2245 @@
+diff --git a/.github/workflows/quality.yml b/.github/workflows/quality.yml
+index 7529c91..8c02ca1 100644
+--- a/.github/workflows/quality.yml
++++ b/.github/workflows/quality.yml
+@@ -37,6 +37,13 @@ jobs:
+   production-build:
+     name: Production build
+     runs-on: ubuntu-latest
++    env:
++      # Synthetic build-only configuration; this artifact is not deployable.
++      NEXT_PUBLIC_SITE_URL: https://adm-ci.invalid
++      JWT_ACCESS_SECRET: ci-build-only-not-for-production-access-0123456789abcdef
++      JWT_REFRESH_SECRET: ci-build-only-not-for-production-refresh-fedcba9876543210
++      MONGODB_URI: mongodb://ci-db.invalid:27017/adm-build-only
++      MONGODB_DB: adm-build-only
+     steps:
+       - uses: actions/checkout@v4
+       - uses: actions/setup-node@v4
+@@ -51,13 +58,12 @@ jobs:
+           server_pid=$!
+           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+           for attempt in $(seq 1 30); do
+-            if curl --fail --silent http://127.0.0.1:3000/robots.txt > /tmp/robots.txt; then break; fi
++            if curl --fail --silent http://127.0.0.1:3000/robots.txt > /dev/null; then break; fi
+             sleep 2
+           done
+-          curl --fail --silent http://127.0.0.1:3000/sitemap.xml > /tmp/sitemap.xml
+-          grep -q 'sitemap.xml' /tmp/robots.txt
+-          grep -q 'cms-sitemap.xml' /tmp/robots.txt
+-          grep -q 'https://arazidigitalmedia.com/' /tmp/sitemap.xml
++          SMOKE_BASE_URL=http://127.0.0.1:3000 \
++          CANONICAL_ORIGIN="$NEXT_PUBLIC_SITE_URL" \
++            python3 scripts/verify-static-seo.py
+ 
+   dependency-audit:
+     name: Dependency advisory audit
+diff --git a/src/app/(public)/page.tsx b/src/app/(public)/page.tsx
+index d25d918..fe0274f 100644
+--- a/src/app/(public)/page.tsx
++++ b/src/app/(public)/page.tsx
+@@ -2,6 +2,7 @@ import type { Metadata } from "next";
+ import CallToActionSection from "@/components/home/CallToActionSection";
+ import FaqSection from "@/components/home/FaqSection";
+ import { Hero } from "@/components/home/hero";
++import { publicProofVisibility } from "@/config/public-proof-visibility";
+ import LatestBlogsSection from "@/components/home/LatestBlogsSection";
+ import PortfolioSection from "@/components/home/PortfolioSection";
+ import ProcessSection from "@/components/home/ProcessSection";
+@@ -29,12 +30,12 @@ export default function HomePage() {
+   return (
+     <>
+       <Hero />
+-      <TrustedCompanies />
++      {publicProofVisibility.homepageClientLogos && <TrustedCompanies />}
+       <ServicesSection />
+-      <StatsSection />
++      {publicProofVisibility.homepageMetrics && <StatsSection />}
+       <ProcessSection />
+-      <PortfolioSection />
+-      <TestimonialsSection />
++      {publicProofVisibility.homepagePortfolioProof && <PortfolioSection />}
++      {publicProofVisibility.homepageTestimonials && <TestimonialsSection />}
+       <FaqSection />
+       <LatestBlogsSection />
+       <CallToActionSection />
+diff --git a/src/app/(public)/portfolio/page.tsx b/src/app/(public)/portfolio/page.tsx
+index 182ee18..cd79e39 100644
+--- a/src/app/(public)/portfolio/page.tsx
++++ b/src/app/(public)/portfolio/page.tsx
+@@ -8,6 +8,8 @@ import PortfolioFilter from "@/components/portfolio/PortfolioFilter";
+ import PortfolioFinalCTA from "@/components/portfolio/PortfolioFinalCTA";
+ import PortfolioTestimonials from "@/components/portfolio/PortfolioTestimonials";
+ import ProjectProcess from "@/components/portfolio/ProjectProcess";
++import Link from "next/link";
++import { publicProofVisibility } from "@/config/public-proof-visibility";
+ 
+ export const metadata: Metadata = {
+     title: { absolute: "Selected Work | Arazi Digital Media" },
+@@ -25,17 +27,30 @@ export const metadata: Metadata = {
+ 
+ export default function PortfolioPage() {
+     return (
+-        <>
+-            <PortfolioHero />
+-            <PortfolioFilter />
+-            <PortfolioMasonry />
+-            <IndustriesShowcase />
+-            <ClientSuccessMetrics />
+-            <ProjectProcess />
+-            <PortfolioTestimonials />
+-            <PortfolioFAQ />
+-            <PortfolioFinalCTA />
+-        </>
++        publicProofVisibility.portfolioEvidence ? (
++            <>
++                <PortfolioHero />
++                <PortfolioFilter />
++                <PortfolioMasonry />
++                <IndustriesShowcase />
++                <ClientSuccessMetrics />
++                <ProjectProcess />
++                <PortfolioTestimonials />
++                <PortfolioFAQ />
++                <PortfolioFinalCTA />
++            </>
++        ) : (
++            <section className="mx-auto max-w-5xl px-4 py-24 text-center text-white sm:px-6">
++                <h1 className="text-4xl font-bold">Selected Work</h1>
++                <p className="mx-auto mt-6 max-w-2xl text-slate-300">
++                    Portfolio examples are being reviewed before publication. Explore ADM&apos;s
++                    Technology, Marketing, AI and Data capabilities in the meantime.
++                </p>
++                <Link href="/services" className="mt-8 inline-flex rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700">
++                    Explore our capabilities
++                </Link>
++            </section>
++        )
+     )
+ }
+ import type { Metadata } from "next";
+diff --git a/src/app/(public)/services/[slug]/page.tsx b/src/app/(public)/services/[slug]/page.tsx
+index f9e15fb..12d0a6d 100644
+--- a/src/app/(public)/services/[slug]/page.tsx
++++ b/src/app/(public)/services/[slug]/page.tsx
+@@ -64,24 +64,66 @@ function resolveMediaUrl(value: unknown): string | null {
+   return null;
+ }
+ 
+-function normalizeService(service: any): any {
++type ServiceView = {
++  slug: string;
++  title: string;
++  shortDescription: string;
++  content: string;
++  seo?: { metaTitle?: string; metaDescription?: string; keywords?: string[] };
++  featuredImage?: string | null;
++  image: string | null;
++  featureList: Array<{ title: string; description?: string }>;
++  faqList: Array<{ question: string; answer: string }>;
++  gallery: string[];
++};
++
++function asRecord(value: unknown): Record<string, unknown> {
++  return value !== null && typeof value === "object"
++    ? value as Record<string, unknown>
++    : {};
++}
++
++function normalizeService(service: unknown): ServiceView | null {
+   if (!service) return null;
+ 
+-  const plain = deepPlain(service) as Record<string, any>;
++  const plain = asRecord(deepPlain(service));
+   const gallery = Array.isArray(plain.gallery) ? plain.gallery : [];
+-  const firstImage = resolveMediaUrl(plain.featuredImage) ?? gallery.map(resolveMediaUrl).find(Boolean) ?? null;
+-
+-  const normalized: Record<string, any> = {
+-    ...plain,
++  const seoRecord = asRecord(plain.seo);
++  const featureList = Array.isArray(plain.features)
++    ? plain.features.flatMap((value) => {
++      const feature = asRecord(value);
++      return typeof feature.title === "string"
++        ? [{ title: feature.title, ...(typeof feature.description === "string" ? { description: feature.description } : {}) }]
++        : [];
++    })
++    : [];
++  const faqList = Array.isArray(plain.faqs)
++    ? plain.faqs.flatMap((value) => {
++      const faq = asRecord(value);
++      return typeof faq.question === "string" && typeof faq.answer === "string"
++        ? [{ question: faq.question, answer: faq.answer }]
++        : [];
++    })
++    : [];
++  const images = gallery.map(resolveMediaUrl).filter((item): item is string => typeof item === "string");
++  const firstImage = resolveMediaUrl(plain.featuredImage) ?? images[0] ?? null;
++
++  return {
++    slug: typeof plain.slug === "string" ? plain.slug : "",
++    title: typeof plain.title === "string" ? plain.title : "Service",
++    shortDescription: typeof plain.shortDescription === "string" ? plain.shortDescription : "",
++    content: typeof plain.content === "string" ? plain.content : "",
++    seo: {
++      metaTitle: typeof seoRecord.metaTitle === "string" ? seoRecord.metaTitle : undefined,
++      metaDescription: typeof seoRecord.metaDescription === "string" ? seoRecord.metaDescription : undefined,
++      keywords: Array.isArray(seoRecord.keywords) ? seoRecord.keywords.filter((item): item is string => typeof item === "string") : undefined,
++    },
++    featuredImage: resolveMediaUrl(plain.featuredImage),
+     image: firstImage,
+-    featureList: Array.isArray(plain.features) ? plain.features : [],
+-    faqList: Array.isArray(plain.faqs) ? plain.faqs : [],
+-    gallery: gallery
+-      .map((item: unknown) => resolveMediaUrl(item))
+-      .filter((item: string | null): item is string => typeof item === "string" && Boolean(item)),
++    featureList,
++    faqList,
++    gallery: images,
+   };
+-
+-  return normalized;
+ }
+ 
+ export async function generateMetadata({ params }: Props): Promise<Metadata> {
+diff --git a/src/app/(public)/testimonials/page.tsx b/src/app/(public)/testimonials/page.tsx
+index ef76b6a..5bcb022 100644
+--- a/src/app/(public)/testimonials/page.tsx
++++ b/src/app/(public)/testimonials/page.tsx
+@@ -3,6 +3,8 @@ import TestimonialsCTA from "@/components/testimonials/testimonials-cta";
+ import TestimonialsGrid from "@/components/testimonials/testimonials-grid";
+ import TestimonialsHero from "@/components/testimonials/testimonials-hero";
+ import TrustSection from "@/components/testimonials/trust-section";
++import Link from "next/link";
++import { publicProofVisibility } from "@/config/public-proof-visibility";
+ 
+ export const metadata: Metadata = {
+     title: { absolute: "Testimonials | Arazi Digital Media" },
+@@ -21,13 +23,26 @@ export const metadata: Metadata = {
+ 
+ export default function TestimonialsPage() {
+     return (
+-        <>
+-            <TestimonialsHero />
+-            <FeaturedSuccessStory />
+-            <TestimonialsGrid />
+-            <TrustSection />
+-            <TestimonialsCTA />
+-        </>
++        publicProofVisibility.testimonialEvidence ? (
++            <>
++                <TestimonialsHero />
++                <FeaturedSuccessStory />
++                <TestimonialsGrid />
++                <TrustSection />
++                <TestimonialsCTA />
++            </>
++        ) : (
++            <section className="mx-auto max-w-5xl px-4 py-24 text-center text-white sm:px-6">
++                <h1 className="text-4xl font-bold">Customer stories</h1>
++                <p className="mx-auto mt-6 max-w-2xl text-slate-300">
++                    Customer stories are being reviewed before publication. Learn about ADM&apos;s
++                    Technology, Marketing, AI and Data capabilities.
++                </p>
++                <Link href="/services" className="mt-8 inline-flex rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700">
++                    Explore our capabilities
++                </Link>
++            </section>
++        )
+     );
+ }
+ import type { Metadata } from "next";
+diff --git a/src/app/cms-sitemap.xml/route.ts b/src/app/cms-sitemap.xml/route.ts
+index 8cc4664..b240130 100644
+--- a/src/app/cms-sitemap.xml/route.ts
++++ b/src/app/cms-sitemap.xml/route.ts
+@@ -1,22 +1,48 @@
+ import { connectDB } from "@/lib/db";
+ import { createDynamicSitemapEntries, renderSitemapXml } from "@/lib/seo/sitemap-content";
++import { collectSitemapPages } from "@/lib/seo/sitemap-pagination";
+ import CareerService from "@/services/career.service";
+ import PublicContentService from "@/services/public-content.service";
+ 
+ export const runtime = "nodejs";
+ 
++const PAGE_SIZE = 1_000;
++const MAX_URLS = 50_000;
++const PAGE_BATCH_SIZE = 4;
++
+ export async function GET(): Promise<Response> {
+   try {
+     await connectDB();
+-    const [blogsResult, servicesResult, careers] = await Promise.all([
+-      PublicContentService.getBlogs({ page: 1, limit: 1000 }),
+-      PublicContentService.getServices({ page: 1, limit: 1000 }),
+-      CareerService.getPublicCareers(),
++    const [blogsFirst, servicesFirst, careers] = await Promise.all([
++      PublicContentService.getBlogs({ page: 1, limit: PAGE_SIZE }),
++      PublicContentService.getServices({ page: 1, limit: PAGE_SIZE }),
++      CareerService.getPublicCareers({ limit: MAX_URLS + 1 }),
++    ]);
++    if (blogsFirst.pagination.total + servicesFirst.pagination.total + careers.length > MAX_URLS) {
++      throw new Error("CMS sitemap exceeds the 50,000 URL protocol limit.");
++    }
++    const [blogs, services] = await Promise.all([
++      collectSitemapPages(
++        async (page, limit) => {
++          const result = await PublicContentService.getBlogs({ page, limit });
++          return { pagination: result.pagination, records: result.blogs };
++        },
++        { pagination: blogsFirst.pagination, records: blogsFirst.blogs },
++        { pageSize: PAGE_SIZE, maxRecords: MAX_URLS }
++      ),
++      collectSitemapPages(
++        async (page, limit) => {
++          const result = await PublicContentService.getServices({ page, limit });
++          return { pagination: result.pagination, records: result.services };
++        },
++        { pagination: servicesFirst.pagination, records: servicesFirst.services },
++        { pageSize: PAGE_SIZE, maxRecords: MAX_URLS }
++      ),
+     ]);
+ 
+     return new Response(
+       renderSitemapXml(
+-        createDynamicSitemapEntries(blogsResult.blogs, servicesResult.services, careers)
++        createDynamicSitemapEntries(blogs, services, careers)
+       ),
+       {
+         headers: {
+diff --git a/src/components/admin/auth/admin-login-form.tsx b/src/components/admin/auth/admin-login-form.tsx
+index a4b65aa..cbc8d37 100644
+--- a/src/components/admin/auth/admin-login-form.tsx
++++ b/src/components/admin/auth/admin-login-form.tsx
+@@ -464,7 +464,7 @@ export default function AdminLoginForm() {
+ 
+                                 <p className="text-xs leading-5 text-slate-500">
+                                     Your account is protected
+-                                    by ADM's authentication
++                                    by ADM&apos;s authentication
+                                     and session system.
+                                 </p>
+                             </div>
+diff --git a/src/components/admin/layout/admin-shell.tsx b/src/components/admin/layout/admin-shell.tsx
+index 6875bbf..80826b1 100644
+--- a/src/components/admin/layout/admin-shell.tsx
++++ b/src/components/admin/layout/admin-shell.tsx
+@@ -85,11 +85,13 @@ export default function AdminShell({ children }: { children: React.ReactNode })
+     const [sessionRenewalError, setSessionRenewalError] = useState(false);
+ 
+     useEffect(() => {
+-        setUser(getUser());
++        const timer = window.setTimeout(() => setUser(getUser()), 0);
++        return () => window.clearTimeout(timer);
+     }, []);
+ 
+     useEffect(() => {
+-        setSidebarOpen(false);
++        const timer = window.setTimeout(() => setSidebarOpen(false), 0);
++        return () => window.clearTimeout(timer);
+     }, [pathname]);
+ 
+     useEffect(() => {
+diff --git a/src/components/admin/portfolio-management.tsx b/src/components/admin/portfolio-management.tsx
+index 7832ba8..8ca44f0 100644
+--- a/src/components/admin/portfolio-management.tsx
++++ b/src/components/admin/portfolio-management.tsx
+@@ -127,6 +127,16 @@ function slugify(value: string) {
+         .replace(/^-+|-+$/g, "");
+ }
+ 
++function getApiList<T>(value: unknown, keys: string[]): T[] {
++    if (Array.isArray(value)) return value as T[];
++    if (value === null || typeof value !== "object") return [];
++    const record = value as Record<string, unknown>;
++    for (const key of keys) {
++        if (Array.isArray(record[key])) return record[key] as T[];
++    }
++    return [];
++}
++
+ function getCategoryName(
+     category: Project["category"]
+ ) {
+@@ -312,7 +322,7 @@ export default function PortfolioManagement() {
+                     );
+ 
+                 const result =
+-                    (await response.json()) as ApiResponse<any>;
++                    (await response.json()) as ApiResponse<unknown>;
+ 
+                 if (!response.ok) {
+                     throw new Error(
+@@ -333,21 +343,7 @@ export default function PortfolioManagement() {
+                  * }
+                  */
+ 
+-                const data =
+-                    result.data;
+-
+-                if (
+-                    Array.isArray(data)
+-                ) {
+-                    setProjects(data);
+-                } else {
+-                    setProjects(
+-                        data?.items ||
+-                        data?.projects ||
+-                        data?.results ||
+-                        []
+-                    );
+-                }
++                setProjects(getApiList<Project>(result.data, ["items", "projects", "results"]));
+             } catch (err) {
+                 setError(
+                     err instanceof Error
+@@ -381,7 +377,7 @@ export default function PortfolioManagement() {
+                     );
+ 
+                 const result =
+-                    (await response.json()) as ApiResponse<any>;
++                    (await response.json()) as ApiResponse<unknown>;
+ 
+                 if (!response.ok) {
+                     throw new Error(
+@@ -390,16 +386,7 @@ export default function PortfolioManagement() {
+                     );
+                 }
+ 
+-                const data =
+-                    result.data;
+-
+-                const categoryList =
+-                    Array.isArray(data)
+-                        ? data
+-                        : data?.items ||
+-                        data?.categories ||
+-                        data?.results ||
+-                        [];
++                const categoryList = getApiList<Category>(result.data, ["items", "categories", "results"]);
+ 
+                 setCategories(
+                     categoryList.filter(
+@@ -458,7 +445,7 @@ export default function PortfolioManagement() {
+                     );
+ 
+                 const result =
+-                    (await response.json()) as ApiResponse<any>;
++                    (await response.json()) as ApiResponse<unknown>;
+ 
+                 if (!response.ok) {
+                     throw new Error(
+@@ -467,16 +454,8 @@ export default function PortfolioManagement() {
+                     );
+                 }
+ 
+-                const data =
+-                    result.data;
+-
+                 setMedia(
+-                    Array.isArray(data)
+-                        ? data
+-                        : data?.items ||
+-                        data?.media ||
+-                        data?.results ||
+-                        []
++                    getApiList<Media>(result.data, ["items", "media", "results"])
+                 );
+             } catch (err) {
+                 setFormError(
+@@ -494,11 +473,13 @@ export default function PortfolioManagement() {
+     ===================================================== */
+ 
+     useEffect(() => {
+-        fetchCategories();
++        const timer = window.setTimeout(() => void fetchCategories(), 0);
++        return () => window.clearTimeout(timer);
+     }, [fetchCategories]);
+ 
+     useEffect(() => {
+-        fetchProjects();
++        const timer = window.setTimeout(() => void fetchProjects(), 0);
++        return () => window.clearTimeout(timer);
+     }, [fetchProjects]);
+ 
+     /* =====================================================
+@@ -710,7 +691,7 @@ export default function PortfolioManagement() {
+                 );
+ 
+             const result =
+-                (await response.json()) as ApiResponse<any>;
++                (await response.json()) as ApiResponse<Media | Media[]>;
+ 
+             if (!response.ok) {
+                 throw new Error(
+@@ -872,7 +853,7 @@ export default function PortfolioManagement() {
+                 );
+ 
+             const result =
+-                (await response.json()) as ApiResponse<any>;
++                (await response.json()) as ApiResponse<unknown>;
+ 
+             if (!response.ok) {
+                 throw new Error(
+@@ -921,7 +902,7 @@ export default function PortfolioManagement() {
+                 );
+ 
+             const result =
+-                (await response.json()) as ApiResponse<any>;
++                (await response.json()) as ApiResponse<unknown>;
+ 
+             if (!response.ok) {
+                 throw new Error(
+@@ -2044,4 +2025,4 @@ function Field({
+             {children}
+         </div>
+     );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/admin/roles/roles-page.tsx b/src/components/admin/roles/roles-page.tsx
+index f77b860..e5a77f1 100644
+--- a/src/components/admin/roles/roles-page.tsx
++++ b/src/components/admin/roles/roles-page.tsx
+@@ -336,7 +336,8 @@ export default function RolesPage() {
+     }, [fetchRoles]);
+ 
+     useEffect(() => {
+-        setPage(1);
++        const timer = window.setTimeout(() => setPage(1), 0);
++        return () => window.clearTimeout(timer);
+     }, [search, status]);
+ 
+     async function handleDelete() {
+@@ -1909,4 +1910,4 @@ function ModalActions({
+             </button>
+         </div>
+     );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/admin/services/services-management.tsx b/src/components/admin/services/services-management.tsx
+index e26d6d8..c3365da 100644
+--- a/src/components/admin/services/services-management.tsx
++++ b/src/components/admin/services/services-management.tsx
+@@ -243,7 +243,8 @@ export default function ServicesManagement() {
+     }
+ 
+     useEffect(() => {
+-        void loadServices();
++        const timer = window.setTimeout(() => void loadServices(), 0);
++        return () => window.clearTimeout(timer);
+     }, []);
+ 
+     function createService() {
+@@ -1393,4 +1394,4 @@ function Faqs({
+             )}
+         </section>
+     );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/admin/settings/settings-page.tsx b/src/components/admin/settings/settings-page.tsx
+index 7b4331d..3a2094f 100644
+--- a/src/components/admin/settings/settings-page.tsx
++++ b/src/components/admin/settings/settings-page.tsx
+@@ -44,6 +44,22 @@ type SettingsForm = {
+     analyticsId: string;
+ };
+ 
++type SettingsPayload = Partial<Omit<SettingsForm, "branding">> & {
++    branding?: Partial<Omit<SettingsForm["branding"], "logo" | "favicon">> & {
++        logo?: unknown;
++        favicon?: unknown;
++    };
++};
++
++function mediaId(value: unknown): string | null {
++    if (typeof value === "string") return value;
++    if (value !== null && typeof value === "object" && "_id" in value) {
++        const id = (value as { _id?: unknown })._id;
++        return typeof id === "string" ? id : null;
++    }
++    return null;
++}
++
+ const emptySettings: SettingsForm = {
+     branding: {
+         siteName: "ADM",
+@@ -115,7 +131,7 @@ export default function SettingsPage() {
+                     );
+ 
+                 const result =
+-                    await response.json();
++                    await response.json() as { message?: string; data?: SettingsPayload };
+ 
+                 if (!response.ok) {
+                     throw new Error(
+@@ -146,7 +162,7 @@ export default function SettingsPage() {
+     }, []);
+ 
+     function normalizeSettings(
+-        data: any
++        data: SettingsPayload
+     ): SettingsForm {
+         return {
+             branding: {
+@@ -157,18 +173,8 @@ export default function SettingsPage() {
+                     data.branding
+                         ?.siteDescription ??
+                     "",
+-                logo:
+-                    typeof data.branding
+-                        ?.logo === "string"
+-                        ? data.branding.logo
+-                        : data.branding?.logo
+-                            ?._id ?? null,
+-                favicon:
+-                    typeof data.branding
+-                        ?.favicon === "string"
+-                        ? data.branding.favicon
+-                        : data.branding?.favicon
+-                            ?._id ?? null,
++                logo: mediaId(data.branding?.logo),
++                favicon: mediaId(data.branding?.favicon),
+             },
+ 
+             contact: {
+@@ -599,4 +605,4 @@ export default function SettingsPage() {
+             </div>
+         </div>
+     );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/admin/tags/tags-management.tsx b/src/components/admin/tags/tags-management.tsx
+index 0c82ce6..b4d3310 100644
+--- a/src/components/admin/tags/tags-management.tsx
++++ b/src/components/admin/tags/tags-management.tsx
+@@ -305,7 +305,8 @@ export default function TagsManagement() {
+     );
+ 
+     useEffect(() => {
+-        fetchTags();
++        const timer = window.setTimeout(() => void fetchTags(), 0);
++        return () => window.clearTimeout(timer);
+     }, [fetchTags]);
+ 
+     /* ---------------------------------------------------------------------- */
+@@ -1488,4 +1489,4 @@ export default function TagsManagement() {
+             )}
+         </div>
+     );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/admin/users/users-page.tsx b/src/components/admin/users/users-page.tsx
+index 44fca7c..b8e2767 100644
+--- a/src/components/admin/users/users-page.tsx
++++ b/src/components/admin/users/users-page.tsx
+@@ -141,7 +141,7 @@ async function apiFetch(
+ 
+     const text = await response.text();
+ 
+-    let data: any = null;
++    let data: unknown = null;
+ 
+     try {
+         data = text ? JSON.parse(text) : null;
+@@ -154,22 +154,27 @@ async function apiFetch(
+     }
+ 
+     if (!response.ok) {
++        const errorData = data !== null && typeof data === "object"
++            ? data as Record<string, unknown>
++            : {};
+         throw new Error(
+-            data?.message ||
+-            data?.error ||
+-            "Request failed."
++            typeof errorData.message === "string"
++                ? errorData.message
++                : typeof errorData.error === "string"
++                    ? errorData.error
++                    : "Request failed."
+         );
+     }
+ 
+     return data;
+ }
+ 
+-function getPayload<T>(response: any): T {
+-    return (
+-        response?.data ??
+-        response?.result ??
+-        response
+-    );
++function getPayload<T>(response: unknown): T {
++    if (response !== null && typeof response === "object") {
++        const record = response as Record<string, unknown>;
++        return (record.data ?? record.result ?? response) as T;
++    }
++    return response as T;
+ }
+ 
+ function getUserName(user: User) {
+@@ -319,14 +324,11 @@ export default function UsersPage() {
+                     );
+ 
+                 const payload =
+-                    getPayload<any>(
++                    getPayload<Role[] | { roles?: Role[] }>(
+                         response
+                     );
+ 
+-                const roleList =
+-                    payload?.roles ??
+-                    payload ??
+-                    [];
++                const roleList = Array.isArray(payload) ? payload : payload.roles ?? [];
+ 
+                 setRoles(
+                     Array.isArray(roleList)
+@@ -434,7 +436,8 @@ export default function UsersPage() {
+     );
+ 
+     useEffect(() => {
+-        fetchRoles();
++        const timer = window.setTimeout(() => void fetchRoles(), 0);
++        return () => window.clearTimeout(timer);
+     }, [fetchRoles]);
+ 
+     useEffect(() => {
+@@ -2290,4 +2293,4 @@ function EmptyRow() {
+             </td>
+         </tr>
+     );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/blog-detail/share-section.tsx b/src/components/blog-detail/share-section.tsx
+index ce00a45..3f37a35 100644
+--- a/src/components/blog-detail/share-section.tsx
++++ b/src/components/blog-detail/share-section.tsx
+@@ -1,7 +1,5 @@
+ "use client";
+ 
+-import { useEffect, useState } from "react";
+-
+ import { motion } from "framer-motion";
+ 
+ import {
+@@ -14,6 +12,7 @@ import { FaLinkedin, FaFacebook, FaTwitter } from "react-icons/fa";
+ import { toast } from "sonner";
+ 
+ import type { BlogPost } from "@/lib/dummy/blog";
++import { SITE_URL } from "@/config/site";
+ 
+ interface Props {
+     blog: BlogPost;
+@@ -22,17 +21,11 @@ interface Props {
+ export default function ShareSection({
+     blog,
+ }: Props) {
+-    const [shareUrl, setShareUrl] = useState("");
+-
+-    useEffect(() => {
+-        if (typeof window !== "undefined") {
+-            setShareUrl(window.location.href);
+-        }
+-    }, []);
++    const shareUrl = `${SITE_URL}/blogs/${encodeURIComponent(blog.slug)}`;
+ 
+     const copyLink = async () => {
+         const currentUrl =
+-            shareUrl || `/blogs/${blog.slug}`;
++            shareUrl;
+ 
+         await navigator.clipboard.writeText(
+             currentUrl
+@@ -47,9 +40,7 @@ export default function ShareSection({
+         encodeURIComponent(blog.title);
+ 
+     const encodedUrl =
+-        shareUrl
+-            ? encodeURIComponent(shareUrl)
+-            : "";
++        encodeURIComponent(shareUrl);
+ 
+     return (
+         <section className="bg-slate-950 py-16">
+@@ -107,4 +98,4 @@ export default function ShareSection({
+             </div>
+         </section>
+     );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/categories/categories-management.tsx b/src/components/categories/categories-management.tsx
+index 232d97a..c5d6432 100644
+--- a/src/components/categories/categories-management.tsx
++++ b/src/components/categories/categories-management.tsx
+@@ -167,7 +167,8 @@ export default function CategoriesManagement() {
+     }
+ 
+     useEffect(() => {
+-        loadCategories();
++        const timer = window.setTimeout(() => void loadCategories(), 0);
++        return () => window.clearTimeout(timer);
+     }, []);
+ 
+     const filteredCategories =
+@@ -1149,4 +1150,4 @@ export default function CategoriesManagement() {
+             )}
+         </div>
+     );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/consultation/consultation-final-cta-section.tsx b/src/components/consultation/consultation-final-cta-section.tsx
+index 0d8d5f5..767e63c 100644
+--- a/src/components/consultation/consultation-final-cta-section.tsx
++++ b/src/components/consultation/consultation-final-cta-section.tsx
+@@ -40,13 +40,13 @@ export default function ConsultationFinalCTASection() {
+                     </div>
+ 
+                     <h2 className="mt-8 text-4xl font-black leading-tight tracking-tight text-white md:text-6xl xl:text-7xl">
+-                        Let's Turn Your Vision
++                        Let&apos;s Turn Your Vision
+                         <br />
+                         Into Reality.
+                     </h2>
+ 
+                     <p className="mx-auto mt-8 max-w-3xl text-lg leading-9 text-blue-100 md:text-xl">
+-                        Whether you're launching a startup,
++                        Whether you&apos;re launching a startup,
+                         modernizing an existing business,
+                         or building a large-scale platform,
+                         ADM is here to guide you from strategy
+diff --git a/src/components/contact/ContactFinalCTASection.tsx b/src/components/contact/ContactFinalCTASection.tsx
+index 62c6703..6f45f13 100644
+--- a/src/components/contact/ContactFinalCTASection.tsx
++++ b/src/components/contact/ContactFinalCTASection.tsx
+@@ -53,14 +53,14 @@ export default function ContactFinalCTASection() {
+                         </span>
+ 
+                         <h2 className="mt-8 text-4xl font-black leading-tight text-white lg:text-7xl">
+-                            Let's Build
++                            Let&apos;s Build
+                             <span className="block bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-300 bg-clip-text text-transparent">
+                                 Something Extraordinary
+                             </span>
+                         </h2>
+ 
+                         <p className="mx-auto mt-8 max-w-3xl text-lg leading-9 text-slate-300">
+-                            Whether you're launching a startup, transforming an
++                            Whether you&apos;re launching a startup, transforming an
+                             enterprise, or bringing an innovative AI product to
+                             life, ADM is ready to become your long-term
+                             technology partner.
+diff --git a/src/components/contact/ContactHeroSection.tsx b/src/components/contact/ContactHeroSection.tsx
+index c333109..b99eefe 100644
+--- a/src/components/contact/ContactHeroSection.tsx
++++ b/src/components/contact/ContactHeroSection.tsx
+@@ -43,7 +43,7 @@ export default function ContactHeroSection() {
+                     >
+                         <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-5 py-2 text-sm font-semibold text-cyan-200 backdrop-blur-xl">
+                             <Sparkles size={16} />
+-                            Let's Build Something Amazing
++                            Let&apos;s Build Something Amazing
+                         </span>
+ 
+                         <h1 className="mt-8 text-5xl font-black leading-tight text-white lg:text-7xl">
+@@ -54,7 +54,7 @@ export default function ContactHeroSection() {
+                         </h1>
+ 
+                         <p className="mt-8 max-w-2xl text-xl leading-10 text-slate-300">
+-                            Whether you're building an AI platform,
++                            Whether you&apos;re building an AI platform,
+                             launching a startup, modernizing enterprise
+                             software or transforming your digital presence,
+                             our experts are ready to help.
+diff --git a/src/components/contact/OfficeLocationSection.tsx b/src/components/contact/OfficeLocationSection.tsx
+index dc7e26e..5411d19 100644
+--- a/src/components/contact/OfficeLocationSection.tsx
++++ b/src/components/contact/OfficeLocationSection.tsx
+@@ -66,7 +66,7 @@ export default function OfficeLocationSection() {
+                     </h2>
+ 
+                     <p className="mt-6 text-lg leading-9 text-slate-300">
+-                        Whether you want a face-to-face consultation or simply wish to learn more about ADM, you're always welcome.
++                        Whether you want a face-to-face consultation or simply wish to learn more about ADM, you&apos;re always welcome.
+                     </p>
+                 </motion.div>
+ 
+@@ -215,7 +215,7 @@ export default function OfficeLocationSection() {
+                     <div className="flex flex-col items-center justify-between gap-8 lg:flex-row">
+                         <div>
+                             <h3 className="text-3xl font-black text-white">Prefer an Online Meeting?</h3>
+-                            <p className="mt-4 max-w-2xl leading-8 text-slate-300">We work with clients worldwide. If visiting our office isn't convenient, schedule a free video consultation with our experts.</p>
++                            <p className="mt-4 max-w-2xl leading-8 text-slate-300">We work with clients worldwide. If visiting our office isn&apos;t convenient, schedule a free video consultation with our experts.</p>
+                         </div>
+ 
+                         <Link
+diff --git a/src/components/contact/contact-faq-section.tsx b/src/components/contact/contact-faq-section.tsx
+index 39b552b..dd135c9 100644
+--- a/src/components/contact/contact-faq-section.tsx
++++ b/src/components/contact/contact-faq-section.tsx
+@@ -82,7 +82,7 @@ export default function ContactFAQSection() {
+                     <h2 className="mt-6 text-4xl font-black text-white lg:text-6xl">
+                         Questions?
+                         <span className="block bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
+-                            We've Got Answers
++                            We&apos;ve Got Answers
+                         </span>
+                     </h2>
+ 
+diff --git a/src/components/contact/contact-form-section.tsx b/src/components/contact/contact-form-section.tsx
+index 0bad322..a19f5b9 100644
+--- a/src/components/contact/contact-form-section.tsx
++++ b/src/components/contact/contact-form-section.tsx
+@@ -130,7 +130,7 @@ export default function ContactFormSection() {
+                         </span>
+ 
+                         <h2 className="mt-4 text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl">
+-                            Let's Build
++                            Let&apos;s Build
+                             <span className="mt-1 block bg-gradient-to-r from-blue-300 via-cyan-300 to-white bg-clip-text text-transparent">
+                                 Something Great
+                             </span>
+diff --git a/src/components/contact/contactMethods.tsx b/src/components/contact/contactMethods.tsx
+index fdd4238..6290be2 100644
+--- a/src/components/contact/contactMethods.tsx
++++ b/src/components/contact/contactMethods.tsx
+@@ -70,7 +70,7 @@ export default function ContactMethodsSection() {
+                     </h2>
+ 
+                     <p className="mt-6 text-lg leading-9 text-slate-300">
+-                        Choose the communication method that works best for you. We're always happy to help.
++                        Choose the communication method that works best for you. We&apos;re always happy to help.
+                     </p>
+                 </div>
+ 
+diff --git a/src/components/faqs/faq-cta.tsx b/src/components/faqs/faq-cta.tsx
+index 4446227..49c6f10 100644
+--- a/src/components/faqs/faq-cta.tsx
++++ b/src/components/faqs/faq-cta.tsx
+@@ -42,16 +42,16 @@ export default function FAQCTA() {
+                             </span>
+ 
+                             <h2 className="mt-6 text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl">
+-                                Let's Discuss Your
++                                Let&apos;s Discuss Your
+                                 <span className="block text-blue-400">
+                                     Project Together
+                                 </span>
+                             </h2>
+ 
+                             <p className="mt-8 max-w-2xl text-lg leading-8 text-slate-300">
+-                                Didn't find the answer you were looking for?
++                                Didn&apos;t find the answer you were looking for?
+                                 Schedule a free consultation with our experts
+-                                or send us your requirements and we'll respond
++                                or send us your requirements and we&apos;ll respond
+                                 within one business day.
+                             </p>
+ 
+diff --git a/src/components/home/hero/Hero.tsx b/src/components/home/hero/Hero.tsx
+index 26c4681..dc86c81 100644
+--- a/src/components/home/hero/Hero.tsx
++++ b/src/components/home/hero/Hero.tsx
+@@ -136,13 +136,12 @@ export default function Hero() {
+             subtitle="Smarter Workflows"
+           />
+ 
+-          {/* floating card — 98% Organization Satisfaction */}
++          {/* floating card — non-quantified data capability */}
+           <FloatingCard
+             className="right-[-2%] top-[32%] w-[36%] sm:w-[36%]"
+             icon={<BarChart3 size={18} />}
+-            title="98%"
+-            titleClassName="text-emerald-500"
+-            subtitle="Organization Satisfaction"
++            title="Data Insights"
++            subtitle="Informed Decisions"
+           />
+ 
+           {/* floating card — Custom Software */}
+diff --git a/src/components/industries/DeliveryProcess.tsx b/src/components/industries/DeliveryProcess.tsx
+index c8ac492..ca4b09b 100644
+--- a/src/components/industries/DeliveryProcess.tsx
++++ b/src/components/industries/DeliveryProcess.tsx
+@@ -29,7 +29,7 @@ export default function DeliveryProcess() {
+                     </h2>
+ 
+                     <p className="mt-6 text-lg leading-8 text-slate-300">
+-                        Great software isn't built by accident. Our structured delivery process minimizes risks while maximizing quality, speed and business value.
++                        Great software isn&apos;t built by accident. Our structured delivery process minimizes risks while maximizing quality, speed and business value.
+                     </p>
+                 </div>
+ 
+@@ -80,7 +80,7 @@ export default function DeliveryProcess() {
+                                 <span className="block">Predictable Results.</span>
+                             </h3>
+                             <p className="mt-5 max-w-3xl text-lg leading-8 text-blue-100">
+-                                You'll always know what we're building, why we're building it and what comes next. No surprises—just continuous progress.
++                                You&apos;ll always know what we&apos;re building, why we&apos;re building it and what comes next. No surprises—just continuous progress.
+                             </p>
+                         </div>
+ 
+diff --git a/src/components/industries/IndustryCTA.tsx b/src/components/industries/IndustryCTA.tsx
+index 2812373..75e8bb1 100644
+--- a/src/components/industries/IndustryCTA.tsx
++++ b/src/components/industries/IndustryCTA.tsx
+@@ -56,7 +56,7 @@ export default function IndustryCTA() {
+                 >
+ 
+                     <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-semibold text-white backdrop-blur-md">
+-                        Let's Build Something Extraordinary
++                        Let&apos;s Build Something Extraordinary
+                     </span>
+ 
+                     <h2 className="mt-8 text-4xl font-black leading-tight text-white lg:text-6xl">
+@@ -67,7 +67,7 @@ export default function IndustryCTA() {
+                     </h2>
+ 
+                     <p className="mx-auto mt-8 max-w-3xl text-lg leading-9 text-blue-100">
+-                        Whether you're building a next-generation startup,
++                        Whether you&apos;re building a next-generation startup,
+                         modernizing enterprise software or integrating AI into
+                         existing systems, ADM helps businesses create products that
+                         stand out and scale confidently.
+diff --git a/src/components/industries/IndustryCaseStudies.tsx b/src/components/industries/IndustryCaseStudies.tsx
+index 0c45ddd..6ec45d6 100644
+--- a/src/components/industries/IndustryCaseStudies.tsx
++++ b/src/components/industries/IndustryCaseStudies.tsx
+@@ -57,7 +57,7 @@ export default function IndustryCaseStudies() {
+                     </h2>
+ 
+                     <p className="mt-6 text-lg leading-8 text-slate-300">
+-                        We don't just build software. We solve business challenges with technology that delivers measurable ROI.
++                        We don&apos;t just build software. We solve business challenges with technology that delivers measurable ROI.
+                     </p>
+                 </div>
+ 
+diff --git a/src/components/portfolio/PortfolioFinalCTA.tsx b/src/components/portfolio/PortfolioFinalCTA.tsx
+index f90bd7b..4782689 100644
+--- a/src/components/portfolio/PortfolioFinalCTA.tsx
++++ b/src/components/portfolio/PortfolioFinalCTA.tsx
+@@ -42,7 +42,7 @@ export default function PortfolioFinalCTA() {
+                             </h2>
+ 
+                             <p className="mt-8 max-w-xl text-xl leading-9 text-slate-200">
+-                                Whether you're launching an AI-powered platform,
++                                Whether you&apos;re launching an AI-powered platform,
+                                 enterprise application, SaaS product,
+                                 or complete digital transformation,
+                                 ADM is ready to turn your vision into
+diff --git a/src/components/portfolio/PortfolioTestimonials.tsx b/src/components/portfolio/PortfolioTestimonials.tsx
+index 134da65..59eff7b 100644
+--- a/src/components/portfolio/PortfolioTestimonials.tsx
++++ b/src/components/portfolio/PortfolioTestimonials.tsx
+@@ -109,7 +109,7 @@ export default function PortfolioTestimonials() {
+                                     ))}
+                                 </div>
+ 
+-                                <p className="mt-6 leading-8 text-slate-300">"{item.quote}"</p>
++                                <p className="mt-6 leading-8 text-slate-300">&quot;{item.quote}&quot;</p>
+ 
+                                 <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 p-5 text-white">
+                                     <p className="text-sm opacity-80">Project</p>
+diff --git a/src/components/portfolio/hero.tsx b/src/components/portfolio/hero.tsx
+index 9d5af3f..e13f372 100644
+--- a/src/components/portfolio/hero.tsx
++++ b/src/components/portfolio/hero.tsx
+@@ -35,7 +35,7 @@ export default function PortfolioHero() {
+               <p className="max-w-xl text-lg leading-8 text-slate-300">
+                 Explore a collection of websites, AI platforms, enterprise
+                 systems, SaaS products, branding projects and modern digital
+-                experiences we've crafted for ambitious businesses worldwide.
++                experiences we&apos;ve crafted for ambitious businesses worldwide.
+               </p>
+             </div>
+ 
+diff --git a/src/components/service-detail/Hero.tsx b/src/components/service-detail/Hero.tsx
+index 3a7f7db..5d8afd4 100644
+--- a/src/components/service-detail/Hero.tsx
++++ b/src/components/service-detail/Hero.tsx
+@@ -4,6 +4,15 @@ import Link from "next/link";
+ import { ArrowDownToLine, ArrowRight, CheckCircle2 } from "lucide-react";
+ import { motion } from "framer-motion";
+ 
++type ServiceHeroData = {
++  title?: string;
++  shortDescription?: string;
++  image?: string | null;
++  featuredImage?: string | null;
++  featureList?: Array<{ title: string }>;
++  seo?: { metaTitle?: string };
++};
++
+ function escapeHtml(value: string) {
+   return value
+     .replace(/&/g, "&amp;")
+@@ -13,7 +22,7 @@ function escapeHtml(value: string) {
+     .replace(/'/g, "&#039;");
+ }
+ 
+-export default function Hero({ service }: { service: any }) {
++export default function Hero({ service }: { service: ServiceHeroData }) {
+   const title = service?.title || "Service";
+   const subtitle = service?.shortDescription || "Modern digital solutions built to help your business move faster and smarter.";
+   const image = service?.image || service?.featuredImage || null;
+@@ -30,7 +39,7 @@ export default function Hero({ service }: { service: any }) {
+ 
+     const features = (Array.isArray(service?.featureList) ? service.featureList : [])
+       .slice(0, 6)
+-      .map((item: any) => `<li>${escapeHtml(item.title || "Key deliverable")}</li>`)
++      .map((item) => `<li>${escapeHtml(item.title || "Key deliverable")}</li>`)
+       .join("");
+ 
+     const printWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
+@@ -168,4 +177,4 @@ export default function Hero({ service }: { service: any }) {
+       </div>
+     </section>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/src/components/service-detail/ServiceFAQs.tsx b/src/components/service-detail/ServiceFAQs.tsx
+index 29fdfb9..096d624 100644
+--- a/src/components/service-detail/ServiceFAQs.tsx
++++ b/src/components/service-detail/ServiceFAQs.tsx
+@@ -126,7 +126,7 @@ export default function ServiceFAQs() {
+           </h3>
+ 
+           <p className="mx-auto mt-4 max-w-2xl text-blue-100">
+-            Speak directly with our experts. We'll help you choose
++            Speak directly with our experts. We&apos;ll help you choose
+             the right technology, architecture and engagement model
+             for your business.
+           </p>
+diff --git a/src/components/service-detail/ServiceProcess.tsx b/src/components/service-detail/ServiceProcess.tsx
+index 6058c42..483adc7 100644
+--- a/src/components/service-detail/ServiceProcess.tsx
++++ b/src/components/service-detail/ServiceProcess.tsx
+@@ -147,7 +147,7 @@ export default function ServiceProcessSection() {
+ 
+           <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-blue-600 to-sky-500 p-10 text-white">
+             <h3 className="mb-8 text-2xl font-bold">
+-              What You'll Receive
++              What You&apos;ll Receive
+             </h3>
+ 
+             <div className="grid gap-4 sm:grid-cols-2">
+diff --git a/src/components/services/services-cta-section.tsx b/src/components/services/services-cta-section.tsx
+index 9d95345..eba069c 100644
+--- a/src/components/services/services-cta-section.tsx
++++ b/src/components/services/services-cta-section.tsx
+@@ -17,7 +17,7 @@ export default function ServicesCTASection() {
+         className="relative mx-auto max-w-5xl px-6 text-center text-white"
+       >
+         <span className="rounded-full border border-white/20 bg-white/8 px-4 py-2 text-sm font-semibold backdrop-blur">
+-          Let's Build Together
++          Let&apos;s Build Together
+         </span>
+ 
+         <h2 className="mt-8 text-4xl font-black lg:text-6xl">
+@@ -28,7 +28,7 @@ export default function ServicesCTASection() {
+         </h2>
+ 
+         <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-slate-200">
+-          Whether you're launching a startup, transforming an enterprise,
++          Whether you&apos;re launching a startup, transforming an enterprise,
+           or integrating Artificial Intelligence into your business,
+           ADM is ready to help.
+         </p>
+diff --git a/src/components/team/JoinTeamSection.tsx b/src/components/team/JoinTeamSection.tsx
+index 408be8e..3c61a9b 100644
+--- a/src/components/team/JoinTeamSection.tsx
++++ b/src/components/team/JoinTeamSection.tsx
+@@ -76,7 +76,7 @@ export default function JoinTeamSection() {
+                             </h2>
+ 
+                             <p className="mt-8 text-lg leading-9 text-slate-300">
+-                                We're always looking for ambitious designers,
++                                We&apos;re always looking for ambitious designers,
+                                 engineers and innovators who love solving difficult
+                                 problems and building products that create impact.
+                             </p>
+@@ -216,8 +216,8 @@ export default function JoinTeamSection() {
+                                     <Users className="text-cyan-300" />
+ 
+                                     <p className="text-sm leading-7 text-slate-300">
+-                                        Don't see your role? We're always interested in
+-                                        exceptional talent. We'd love to hear from you.
++                                        Don&apos;t see your role? We&apos;re always interested in
++                                        exceptional talent. We&apos;d love to hear from you.
+                                     </p>
+ 
+                                 </div>
+diff --git a/src/components/team/TeamCultureSection.tsx b/src/components/team/TeamCultureSection.tsx
+index b0d0c42..0f6f2aa 100644
+--- a/src/components/team/TeamCultureSection.tsx
++++ b/src/components/team/TeamCultureSection.tsx
+@@ -190,7 +190,7 @@ export default function TeamCultureSection() {
+ 
+                         <div className="mt-14 rounded-3xl border border-cyan-400/20 bg-white/5 p-8 backdrop-blur-xl">
+                             <p className="text-xl italic leading-9 text-slate-200">
+-                                “Our purpose isn't just building software—it's building an environment where extraordinary people can create extraordinary things.”
++                                “Our purpose isn&apos;t just building software—it&apos;s building an environment where extraordinary people can create extraordinary things.”
+                             </p>
+ 
+                             <div className="mt-8 h-px w-full bg-white/10" />
+diff --git a/src/components/testimonials/testimonials-grid.tsx b/src/components/testimonials/testimonials-grid.tsx
+index 4b143d0..8ba55d9 100644
+--- a/src/components/testimonials/testimonials-grid.tsx
++++ b/src/components/testimonials/testimonials-grid.tsx
+@@ -158,11 +158,11 @@ export default function TestimonialsGrid() {
+                                 </div>
+ 
+                                 <p className="mt-6 leading-8 text-slate-600">
+-                                    "
++                                    &quot;
+                                     {
+                                         item.review
+                                     }
+-                                    "
++                                    &quot;
+                                 </p>
+                             </motion.article>
+                         )
+diff --git a/src/database/seed.ts b/src/database/seed.ts
+index 187b3cb..a270713 100644
+--- a/src/database/seed.ts
++++ b/src/database/seed.ts
+@@ -1,59 +1,6 @@
+-import dotenv from "dotenv";
+-import path from "path";
+-import mongoose from "mongoose";
+-
+-dotenv.config({
+-  path: path.resolve(process.cwd(), ".env.local"),
+-});
+-
+-import { Role } from "@/models/role.model";
+-import { env } from "@/config/env";
+-
+-async function seed() {
+-  try {
+-    const uri = process.env.MONGODB_URI;
+-
+-    if (!uri) {
+-      throw new Error("MONGODB_URI is missing");
+-    }
+-
+-    await mongoose.connect(uri, {
+-      dbName: env.MONGODB_DB,
+-    });
+-
+-    // Remove old roles
+-    await Role.deleteMany({});
+-
+-    // Insert default roles
+-    await Role.insertMany([
+-      {
+-        "name": "super admin",
+-        "description": "Full system access",
+-        "permissions": [],
+-        "isDefault": false,
+-        "status": "active"
+-      },
+-      {
+-        "name": "admin",
+-        "description": "Administrator",
+-        "permissions": [],
+-        "isDefault": false,
+-        "status": "active"
+-      },
+-      {
+-        "name": "user",
+-        "description": "Default user",
+-        "permissions": [],
+-        "isDefault": true,
+-        "status": "active"
+-      },
+-    ]);
+-
+-    process.exit(0);
+-  } catch (error) {
+-    console.error(error);
+-    process.exit(1);
+-  }
+-}
+-
+-seed();
+\ No newline at end of file
++// Permanently disable the legacy role seed. It deleted every role and recreated
++// them with empty permission arrays. Use reviewed, per-role admin changes instead.
++console.error(
++  "Role seed disabled: this legacy command could delete existing roles and permissions."
++);
++process.exitCode = 1;
+diff --git a/src/lib/seo/sitemap-content.ts b/src/lib/seo/sitemap-content.ts
+index d83b64f..5300f4e 100644
+--- a/src/lib/seo/sitemap-content.ts
++++ b/src/lib/seo/sitemap-content.ts
+@@ -27,7 +27,7 @@ export function getSitemapContentRecords(value: unknown): SitemapContentRecord[]
+ export function createDynamicSitemapEntries(
+   blogs: unknown,
+   services: unknown,
+-  careers: Array<{ slug: string; updatedAt?: Date | string }>
++  careers: Array<{ slug: string; updatedAt?: Date | string | null }>
+ ): MetadataRoute.Sitemap {
+   const blogRoutes = createPublishedContentSitemapEntries(
+     SITE_URL,
+@@ -43,18 +43,36 @@ export function createDynamicSitemapEntries(
+     "monthly",
+     0.8
+   );
+-  const careerRoutes = careers
+-    .filter((career) => typeof career.slug === "string" && career.slug.trim())
+-    .map((career) => ({
+-      url: `${CAREERS_CANONICAL_URL}/${encodeURIComponent(career.slug)}`,
++  const careerRoutes = careers.flatMap((career) => {
++    const slug = typeof career.slug === "string" ? career.slug.trim() : "";
++    if (!slug || slug.includes("/") || slug.includes("?") || slug.includes("#")) return [];
++
++    const lastModified = parseSitemapDate(career.updatedAt);
++    return [{
++      url: `${CAREERS_CANONICAL_URL}/${encodeURIComponent(slug)}`,
+       changeFrequency: "weekly" as const,
+       priority: 0.6,
+-      ...(career.updatedAt ? { lastModified: career.updatedAt } : {}),
+-    }));
++      ...(lastModified ? { lastModified } : {}),
++    }];
++  });
+ 
+   return uniqueSitemapEntries([...blogRoutes, ...serviceRoutes, ...careerRoutes]);
+ }
+ 
++function parseSitemapDate(value: Date | string | null | undefined): Date | undefined {
++  if (value === undefined || value === null) return undefined;
++  const date = value instanceof Date ? value : new Date(value);
++  const timestamp = date.getTime();
++  if (!Number.isFinite(timestamp)) return undefined;
++  const year = date.getUTCFullYear();
++  return year >= 1970 && year <= 9999 ? date : undefined;
++}
++
++function formatSitemapDate(value: Date | string | undefined): string | undefined {
++  const date = parseSitemapDate(value);
++  return date?.toISOString();
++}
++
+ function escapeXml(value: string): string {
+   return value.replace(/[<>&'\"]/g, (character) => {
+     const entities: Record<string, string> = {
+@@ -71,8 +89,9 @@ function escapeXml(value: string): string {
+ export function renderSitemapXml(entries: MetadataRoute.Sitemap): string {
+   const urls = entries
+     .map(({ url, lastModified }) => {
+-      const lastmod = lastModified
+-        ? `<lastmod>${escapeXml(new Date(lastModified).toISOString())}</lastmod>`
++      const safeLastModified = formatSitemapDate(lastModified);
++      const lastmod = safeLastModified
++        ? `<lastmod>${escapeXml(safeLastModified)}</lastmod>`
+         : "";
+       return `<url><loc>${escapeXml(url)}</loc>${lastmod}</url>`;
+     })
+diff --git a/src/lib/seo/sitemap.test.ts b/src/lib/seo/sitemap.test.ts
+index afe9289..cd3faf1 100644
+--- a/src/lib/seo/sitemap.test.ts
++++ b/src/lib/seo/sitemap.test.ts
+@@ -10,6 +10,7 @@ import {
+   createDynamicSitemapEntries,
+   renderSitemapXml,
+ } from "./sitemap-content";
++import { collectSitemapPages } from "./sitemap-pagination";
+ 
+ test("static sitemap includes implemented public routes without fabricated dates", () => {
+   const entries = createStaticSitemapEntries("https://example.com/");
+@@ -75,6 +76,66 @@ test("dynamic sitemap includes published CMS routes and current open careers", (
+   assert.ok(!urls.some((url) => url.endsWith("/blogs/draft-post")));
+ });
+ 
++test("career sitemap validates dates and percent-encodes safe slugs", () => {
++  const entries = createDynamicSitemapEntries([], [], [
++    { slug: "role & growth", updatedAt: "2026-03-04T00:00:00.000Z" },
++    { slug: "bad-date", updatedAt: "not a date" },
++    { slug: "far-future", updatedAt: "+010000-01-01T00:00:00.000Z" },
++    { slug: "nested/role", updatedAt: new Date("2026-01-01") },
++  ]);
++
++  assert.equal(entries.length, 3);
++  assert.ok(entries.some(({ url }) => url.endsWith("/careers/role%20%26%20growth")));
++  assert.equal(entries.find(({ url }) => url.endsWith("/careers/bad-date"))?.lastModified, undefined);
++  assert.equal(entries.find(({ url }) => url.endsWith("/careers/far-future"))?.lastModified, undefined);
++  assert.ok(!entries.some(({ url }) => url.includes("nested")));
++});
++
++test("sitemap XML omits invalid and out-of-range lastmod values without failing", () => {
++  const xml = renderSitemapXml([
++    { url: "https://example.com/a", lastModified: "invalid" },
++    { url: "https://example.com/b", lastModified: "+010000-01-01T00:00:00.000Z" },
++  ]);
++
++  assert.doesNotMatch(xml, /<lastmod>/);
++  assert.match(xml, /<loc>https:\/\/example.com\/a<\/loc>/);
++  assert.match(xml, /<loc>https:\/\/example.com\/b<\/loc>/);
++});
++
++test("CMS sitemap pagination collects records beyond the first 1,000 in bounded batches", async () => {
++  const requested: number[] = [];
++  const records = Array.from({ length: 2_501 }, (_, index) => index);
++  const all = await collectSitemapPages(
++    async (page, limit) => {
++      requested.push(page);
++      const pageRecords = records.slice((page - 1) * limit, page * limit);
++      return {
++        pagination: { total: records.length, totalPages: 3 },
++        records: pageRecords,
++      };
++    },
++    {
++      pagination: { total: records.length, totalPages: 3 },
++      records: records.slice(0, 1_000),
++    },
++    { pageSize: 1_000, maxRecords: 50_000, batchSize: 2 }
++  );
++
++  assert.deepEqual(requested, [2, 3]);
++  assert.deepEqual(all, records);
++});
++
++test("CMS sitemap pagination rejects incomplete query results", async () => {
++  await assert.rejects(
++    collectSitemapPages(
++      async () => ({ pagination: { total: 2, totalPages: 2 }, records: [2] }),
++      { pagination: { total: 2, totalPages: 2 }, records: [1] },
++      { pageSize: 1, maxRecords: 10 }
++    ),
++    /incomplete record set/
++  );
++});
++
+ test("CMS sitemap XML escapes URL text and emits valid root element", () => {
+   const xml = renderSitemapXml([{ url: "https://example.com/blogs/a&b" }]);
+ 
+diff --git a/src/models/user.model.ts b/src/models/user.model.ts
+index 28e9ed4..2a62ba0 100644
+--- a/src/models/user.model.ts
++++ b/src/models/user.model.ts
+@@ -210,14 +210,20 @@ UserSchema.index({
+  */
+ const sanitizeUser = (
+   _doc: unknown,
+-  ret: any
++  ret: unknown
+ ) => {
+-  delete ret.password;
+-  delete ret.passwordResetToken;
+-  delete ret.passwordResetExpires;
+-  delete ret.emailVerificationToken;
+-  delete ret.emailVerificationExpires;
+-  delete ret.__v;
++  if (ret && typeof ret === "object") {
++    for (const key of [
++      "password",
++      "passwordResetToken",
++      "passwordResetExpires",
++      "emailVerificationToken",
++      "emailVerificationExpires",
++      "__v",
++    ]) {
++      Reflect.deleteProperty(ret, key);
++    }
++  }
+ 
+   return ret;
+ };
+@@ -245,4 +251,4 @@ export const User =
+     UserSchema
+   );
+ 
+-export default User;
+\ No newline at end of file
++export default User;
+diff --git a/src/repositories/base.repository.ts b/src/repositories/base.repository.ts
+index 00eca71..afe2e79 100644
+--- a/src/repositories/base.repository.ts
++++ b/src/repositories/base.repository.ts
+@@ -39,4 +39,4 @@ export abstract class BaseRepository<T> {
+   async count(filter: Record<string, unknown> = {}) {
+     return this.model.countDocuments(filter);
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/src/repositories/blog.repository.ts b/src/repositories/blog.repository.ts
+index 2188180..8f3b33f 100644
+--- a/src/repositories/blog.repository.ts
++++ b/src/repositories/blog.repository.ts
+@@ -226,4 +226,4 @@ class BlogRepository {
+     }
+ }
+ 
+-export default new BlogRepository();
+\ No newline at end of file
++export default new BlogRepository();
+diff --git a/src/repositories/career.repository.ts b/src/repositories/career.repository.ts
+index 7076688..219003c 100644
+--- a/src/repositories/career.repository.ts
++++ b/src/repositories/career.repository.ts
+@@ -35,11 +35,12 @@ class CareerRepository {
+       .lean();
+   }
+ 
+-  async findOpenCareers() {
+-    return Career.find(getOpenCareerFilter())
++  async findOpenCareers(limit?: number) {
++    const query = Career.find(getOpenCareerFilter())
+       .select(PUBLIC_LIST_FIELDS)
+-      .sort({ featured: -1, sortOrder: 1, createdAt: -1 })
+-      .lean();
++      .sort({ featured: -1, sortOrder: 1, createdAt: -1 });
++    if (limit !== undefined) query.limit(limit);
++    return query.lean();
+   }
+ 
+   async findOpenCareerBySlug(slug: string) {
+diff --git a/src/services/career.service.ts b/src/services/career.service.ts
+index e27e585..a5853e7 100644
+--- a/src/services/career.service.ts
++++ b/src/services/career.service.ts
+@@ -35,13 +35,13 @@ function hasSupportedCareerOptions(career: { employmentType: string; workplace:
+ }
+ 
+ class CareerService {
+-  async getPublicCareers() {
++  async getPublicCareers(options: { limit?: number } = {}) {
+     await connectDB();
+ 
+     const settings = await CareerRepository.getPublicSettings();
+     if (settings?.features?.careersEnabled === false) return [];
+ 
+-    const careers = await CareerRepository.findOpenCareers();
++    const careers = await CareerRepository.findOpenCareers(options.limit);
+     return careers.filter(hasSupportedCareerOptions).map((career): PublicCareerListing => ({
+       title: career.title,
+       slug: career.slug,
+diff --git a/src/services/portfolio.service.ts b/src/services/portfolio.service.ts
+index ca41d86..cef387b 100644
+--- a/src/services/portfolio.service.ts
++++ b/src/services/portfolio.service.ts
+@@ -47,8 +47,7 @@ export interface CreatePortfolioInput {
+     sortOrder?: number;
+ }
+ 
+-export interface UpdatePortfolioInput
+-    extends Partial<CreatePortfolioInput> { }
++export type UpdatePortfolioInput = Partial<CreatePortfolioInput>;
+ 
+ export class PortfolioService {
+     /**
+@@ -560,4 +559,4 @@ export class PortfolioService {
+ }
+ 
+ export const portfolioService =
+-    new PortfolioService();
+\ No newline at end of file
++    new PortfolioService();
+diff --git a/src/types/application.types.ts b/src/types/application.types.ts
+index 21d418e..ce0e5ba 100644
+--- a/src/types/application.types.ts
++++ b/src/types/application.types.ts
+@@ -59,7 +59,7 @@ export interface IApplication {
+   updatedAt: Date;
+ }
+ 
+-export interface ApplicationMethods {}
++export type ApplicationMethods = Record<never, never>;
+ 
+ export interface ApplicationStatics {
+   findByCareer(
+@@ -82,7 +82,8 @@ export type ApplicationDocument =
+ export type ApplicationModel =
+   Model<
+     IApplication,
++    // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+     {},
+     ApplicationMethods
+   > &
+-  ApplicationStatics;
+\ No newline at end of file
++  ApplicationStatics;
+diff --git a/src/types/blog.types.ts b/src/types/blog.types.ts
+index 4221271..a721650 100644
+--- a/src/types/blog.types.ts
++++ b/src/types/blog.types.ts
+@@ -54,7 +54,7 @@ export interface IBlog {
+   updatedAt: Date;
+ }
+ 
+-export interface BlogMethods { }
++export type BlogMethods = Record<never, never>;
+ 
+ export interface BlogStatics {
+   findBySlug(slug: string): Promise<BlogDocument | null>;
+@@ -68,5 +68,6 @@ export type BlogDocument =
+   HydratedDocument<IBlog, BlogMethods>;
+ 
+ export type BlogModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<IBlog, {}, BlogMethods> &
+   BlogStatics;
+diff --git a/src/types/category.types.ts b/src/types/category.types.ts
+index 231edf4..f55b11b 100644
+--- a/src/types/category.types.ts
++++ b/src/types/category.types.ts
+@@ -34,7 +34,7 @@ export interface ICategory {
+   deletedAt?: Date | null;
+ }
+ 
+-export interface CategoryMethods { }
++export type CategoryMethods = Record<never, never>;
+ 
+ export interface CategoryStatics {
+   findBySlug(slug: string): Promise<CategoryDocument | null>;
+@@ -48,5 +48,6 @@ export type CategoryDocument =
+   HydratedDocument<ICategory, CategoryMethods>;
+ 
+ export type CategoryModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<ICategory, {}, CategoryMethods> &
+-  CategoryStatics;
+\ No newline at end of file
++  CategoryStatics;
+diff --git a/src/types/industry.types.ts b/src/types/industry.types.ts
+index c8f2923..0240034 100644
+--- a/src/types/industry.types.ts
++++ b/src/types/industry.types.ts
+@@ -47,7 +47,7 @@ export interface IIndustry {
+   deletedAt?: Date | null;
+ }
+ 
+-export interface IndustryMethods {}
++export type IndustryMethods = Record<never, never>;
+ 
+ export interface IndustryStatics {
+   findBySlug(slug: string): Promise<IndustryDocument | null>;
+@@ -61,5 +61,6 @@ export type IndustryDocument =
+   HydratedDocument<IIndustry, IndustryMethods>;
+ 
+ export type IndustryModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<IIndustry, {}, IndustryMethods> &
+-  IndustryStatics;
+\ No newline at end of file
++  IndustryStatics;
+diff --git a/src/types/lead.types.ts b/src/types/lead.types.ts
+index 894ca97..6c8c24c 100644
+--- a/src/types/lead.types.ts
++++ b/src/types/lead.types.ts
+@@ -42,7 +42,7 @@ export interface ILead {
+   updatedAt: Date;
+ }
+ 
+-export interface LeadMethods { }
++export type LeadMethods = Record<never, never>;
+ 
+ export interface LeadStatics {
+   findByEmail(
+@@ -60,5 +60,6 @@ export type LeadDocument =
+   HydratedDocument<ILead, LeadMethods>;
+ 
+ export type LeadModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<ILead, {}, LeadMethods> &
+   LeadStatics;
+diff --git a/src/types/page.types.ts b/src/types/page.types.ts
+index 78b4785..c428be6 100644
+--- a/src/types/page.types.ts
++++ b/src/types/page.types.ts
+@@ -44,7 +44,7 @@ export interface IPage {
+ 
+ }
+ 
+-export interface PageMethods{}
++export type PageMethods = Record<never, never>;
+ 
+ export interface PageStatics{
+ 
+@@ -60,5 +60,6 @@ export type PageDocument =
+ HydratedDocument<IPage,PageMethods>;
+ 
+ export type PageModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+ Model<IPage,{},PageMethods> &
+-PageStatics;
+\ No newline at end of file
++PageStatics;
+diff --git a/src/types/portfolio.types.ts b/src/types/portfolio.types.ts
+index ad137e7..bb0b91c 100644
+--- a/src/types/portfolio.types.ts
++++ b/src/types/portfolio.types.ts
+@@ -56,7 +56,7 @@ export interface IPortfolio {
+   deletedAt?: Date | null;
+ }
+ 
+-export interface PortfolioMethods { }
++export type PortfolioMethods = Record<never, never>;
+ 
+ export interface PortfolioStatics {
+   findBySlug(slug: string): Promise<PortfolioDocument | null>;
+@@ -70,5 +70,6 @@ export type PortfolioDocument =
+   HydratedDocument<IPortfolio, PortfolioMethods>;
+ 
+ export type PortfolioModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<IPortfolio, {}, PortfolioMethods> &
+-  PortfolioStatics;
+\ No newline at end of file
++  PortfolioStatics;
+diff --git a/src/types/service.types.ts b/src/types/service.types.ts
+index 15088b8..7c25a50 100644
+--- a/src/types/service.types.ts
++++ b/src/types/service.types.ts
+@@ -51,7 +51,7 @@ export interface IService {
+   deletedAt?: Date | null;
+ }
+ 
+-export interface ServiceMethods { }
++export type ServiceMethods = Record<never, never>;
+ 
+ export interface ServiceStatics {
+   findBySlug(
+@@ -67,5 +67,6 @@ export type ServiceDocument =
+   HydratedDocument<IService, ServiceMethods>;
+ 
+ export type ServiceModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<IService, {}, ServiceMethods> &
+-  ServiceStatics;
+\ No newline at end of file
++  ServiceStatics;
+diff --git a/src/types/session.types.ts b/src/types/session.types.ts
+index fec4214..bf01fac 100644
+--- a/src/types/session.types.ts
++++ b/src/types/session.types.ts
+@@ -40,5 +40,6 @@ export type SessionDocument =
+   HydratedDocument<ISession, SessionMethods>;
+ 
+ export type SessionModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<ISession, {}, SessionMethods> &
+-  SessionStatics;
+\ No newline at end of file
++  SessionStatics;
+diff --git a/src/types/settings.types.ts b/src/types/settings.types.ts
+index 8189ff6..79b78e3 100644
+--- a/src/types/settings.types.ts
++++ b/src/types/settings.types.ts
+@@ -52,7 +52,7 @@ export interface ISettings {
+   updatedAt: Date;
+ }
+ 
+-export interface SettingsMethods { }
++export type SettingsMethods = Record<never, never>;
+ 
+ export interface SettingsStatics {
+   getSettings(): Promise<SettingsDocument | null>;
+@@ -62,5 +62,6 @@ export type SettingsDocument =
+   HydratedDocument<ISettings, SettingsMethods>;
+ 
+ export type SettingsModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<ISettings, {}, SettingsMethods> &
+-  SettingsStatics;
+\ No newline at end of file
++  SettingsStatics;
+diff --git a/src/types/tag.types.ts b/src/types/tag.types.ts
+index 06efb95..3c8a932 100644
+--- a/src/types/tag.types.ts
++++ b/src/types/tag.types.ts
+@@ -26,7 +26,7 @@ export interface ITag {
+   deletedAt?: Date | null;
+ }
+ 
+-export interface TagMethods {}
++export type TagMethods = Record<never, never>;
+ 
+ export interface TagStatics {
+   findBySlug(slug: string): Promise<TagDocument | null>;
+@@ -38,5 +38,6 @@ export type TagDocument =
+   HydratedDocument<ITag, TagMethods>;
+ 
+ export type TagModel =
++// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+   Model<ITag, {}, TagMethods> &
+-  TagStatics;
+\ No newline at end of file
++  TagStatics;
+diff --git a/src/types/team-member.types.ts b/src/types/team-member.types.ts
+index c08b582..3e44f29 100644
+--- a/src/types/team-member.types.ts
++++ b/src/types/team-member.types.ts
+@@ -102,7 +102,7 @@ export interface IPublicTeamMember {
+     cvUrl?: string;
+ }
+ 
+-export interface TeamMemberMethods { }
++export type TeamMemberMethods = Record<never, never>;
+ 
+ export interface TeamMemberStatics {
+     findBySlug(
+@@ -127,7 +127,8 @@ export type TeamMemberDocument =
+ export type TeamMemberModel =
+     Model<
+         ITeamMember,
++        // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+         {},
+         TeamMemberMethods
+     > &
+-    TeamMemberStatics;
+\ No newline at end of file
++    TeamMemberStatics;
+diff --git a/src/types/testimonial.types.ts b/src/types/testimonial.types.ts
+index 6a58643..7a336df 100644
+--- a/src/types/testimonial.types.ts
++++ b/src/types/testimonial.types.ts
+@@ -42,7 +42,7 @@ export interface ITestimonial {
+   deletedAt?: Date | null;
+ }
+ 
+-export interface TestimonialMethods {}
++export type TestimonialMethods = Record<never, never>;
+ 
+ export interface TestimonialStatics {
+   findPublished(): Promise<TestimonialDocument[]>;
+@@ -59,7 +59,8 @@ export type TestimonialDocument =
+ export type TestimonialModel =
+   Model<
+     ITestimonial,
++    // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
+     {},
+     TestimonialMethods
+   > &
+-  TestimonialStatics;
+\ No newline at end of file
++  TestimonialStatics;
+diff --git a/PHASE5_CHANGED_FILES.md b/PHASE5_CHANGED_FILES.md
+new file mode 100644
+index 0000000..f6fd86a
+--- /dev/null
++++ b/PHASE5_CHANGED_FILES.md
+@@ -0,0 +1,91 @@
++# Phase 5 changed-file manifest
++
++**Baseline:** `629f0421bfc3a2755aa1545c8d82c54a2b6ec6c1` on `main`. No new commit or branch. The accompanying `PHASE5_REVIEW.patch` is the owner-reviewable patch.
++
++Apply from a clean checkout of that baseline with `git apply PHASE5_REVIEW.patch`. This command was verified against a clean archive of the baseline.
++
++## Modified tracked files
++
++- `.github/workflows/quality.yml`
++- `src/app/(public)/page.tsx`
++- `src/app/(public)/portfolio/page.tsx`
++- `src/app/(public)/services/[slug]/page.tsx`
++- `src/app/(public)/testimonials/page.tsx`
++- `src/app/cms-sitemap.xml/route.ts`
++- `src/components/admin/auth/admin-login-form.tsx`
++- `src/components/admin/layout/admin-shell.tsx`
++- `src/components/admin/portfolio-management.tsx`
++- `src/components/admin/roles/roles-page.tsx`
++- `src/components/admin/services/services-management.tsx`
++- `src/components/admin/settings/settings-page.tsx`
++- `src/components/admin/tags/tags-management.tsx`
++- `src/components/admin/users/users-page.tsx`
++- `src/components/blog-detail/share-section.tsx`
++- `src/components/categories/categories-management.tsx`
++- `src/components/consultation/consultation-final-cta-section.tsx`
++- `src/components/contact/ContactFinalCTASection.tsx`
++- `src/components/contact/ContactHeroSection.tsx`
++- `src/components/contact/OfficeLocationSection.tsx`
++- `src/components/contact/contact-faq-section.tsx`
++- `src/components/contact/contact-form-section.tsx`
++- `src/components/contact/contactMethods.tsx`
++- `src/components/faqs/faq-cta.tsx`
++- `src/components/home/hero/Hero.tsx`
++- `src/components/industries/DeliveryProcess.tsx`
++- `src/components/industries/IndustryCTA.tsx`
++- `src/components/industries/IndustryCaseStudies.tsx`
++- `src/components/portfolio/PortfolioFinalCTA.tsx`
++- `src/components/portfolio/PortfolioTestimonials.tsx`
++- `src/components/portfolio/hero.tsx`
++- `src/components/service-detail/Hero.tsx`
++- `src/components/service-detail/ServiceFAQs.tsx`
++- `src/components/service-detail/ServiceProcess.tsx`
++- `src/components/services/services-cta-section.tsx`
++- `src/components/team/JoinTeamSection.tsx`
++- `src/components/team/TeamCultureSection.tsx`
++- `src/components/testimonials/testimonials-grid.tsx`
++- `src/database/seed.ts`
++- `src/lib/seo/sitemap-content.ts`
++- `src/lib/seo/sitemap.test.ts`
++- `src/models/user.model.ts`
++- `src/repositories/base.repository.ts`
++- `src/repositories/blog.repository.ts`
++- `src/repositories/career.repository.ts`
++- `src/services/career.service.ts`
++- `src/services/portfolio.service.ts`
++- `src/types/application.types.ts`
++- `src/types/blog.types.ts`
++- `src/types/category.types.ts`
++- `src/types/industry.types.ts`
++- `src/types/lead.types.ts`
++- `src/types/page.types.ts`
++- `src/types/portfolio.types.ts`
++- `src/types/service.types.ts`
++- `src/types/session.types.ts`
++- `src/types/settings.types.ts`
++- `src/types/tag.types.ts`
++- `src/types/team-member.types.ts`
++- `src/types/testimonial.types.ts`
++
++## Added files
++
++- `PHASE5_CHANGED_FILES.md` (this manifest)
++- `PHASE5_REVIEW.patch` (review patch; generated from this manifest and the source diff)
++- `docs/adm-optimization/PHASE5_BASELINE.md`
++- `docs/adm-optimization/PHASE5_CI_FIXES.md`
++- `docs/adm-optimization/PHASE5_RELEASE_GATES.md`
++- `docs/adm-optimization/PHASE5_SECURITY_AND_DATA_SAFETY.md`
++- `docs/adm-optimization/PHASE5_STAGING_AND_SEO.md`
++- `docs/adm-optimization/PHASE5_TRUST_DECISIONS.md`
++- `scripts/verify-static-seo.py`
++- `src/config/public-proof-visibility.test.ts`
++- `src/config/public-proof-visibility.ts`
++- `src/database/seed.test.ts`
++- `src/lib/seo/sitemap-pagination.ts`
++
++## Review notes
++
++- `package.json` and `package-lock.json` are unchanged: Mongoose remediation is blocked on registry access and clean Node 22 validation.
++- No database, forms, migrations, seed execution, external communication, or deployment was performed.
++- Revert the trust presentation files and visibility config together to roll back visibility controls; retain the seed hard stop.
++- For remaining risk and detailed rollback boundaries, see `docs/adm-optimization/PHASE5_RELEASE_GATES.md`.
+diff --git a/docs/adm-optimization/PHASE5_BASELINE.md b/docs/adm-optimization/PHASE5_BASELINE.md
+new file mode 100644
+index 0000000..1bd19c5
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_BASELINE.md
+@@ -0,0 +1,20 @@
++# Phase 5 baseline and evidence
++
++**Verified source baseline:** `629f0421bfc3a2755aa1545c8d82c54a2b6ec6c1` (`main`, 19 November 2026).
++**Working copy:** local changes are uncommitted on `main`. `.git` does not permit creating refs or the index lock, so no Phase 5 branch or commit is claimed. A review patch and file manifest are supplied.
++**Production/deployment SHA:** not independently verified. No production host, deployment console, or staging database was accessed.
++
++## Reference CI run
++
++[GitHub Actions run 44542872266](https://github.com/Anwar0904/adm-platform/actions/runs/44542872266) used baseline SHA `629f0421...`:
++
++| Job | Result and evidence |
++|---|---|
++| TypeScript and unit tests | PASS on Node 22.23.4 / npm 10.9.9. `npm ci`, typecheck, and 39 tests passed across 13 discovered test files. |
++| Production build | FAIL during page data collection for `/api/auth/logout`; production env validation rejected development JWT defaults. Compilation and TypeScript had succeeded. |
++| ESLint | FAIL: 93 errors, 78 warnings. Error counts: unescaped JSX entities 38, empty object types 26, explicit `any` 19, setState in effect 10. |
++| Dependency audit | FAIL: critical Mongoose advisory; affected range reported through 9.11.3. |
++
++Reference run job IDs: tests `135625588755`, audit `135625589176`, build `135625589313`, lint `135625589334`.
++
++No new GitHub Actions run was triggered because source control is read-only from this checkout. The production state remains **unverified**; this document makes no uptime, SEO, performance, or deployment claim.
+diff --git a/docs/adm-optimization/PHASE5_CI_FIXES.md b/docs/adm-optimization/PHASE5_CI_FIXES.md
+new file mode 100644
+index 0000000..f6087c3
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_CI_FIXES.md
+@@ -0,0 +1,23 @@
++# Phase 5 CI fixes and remaining dependency blocker
++
++## Implemented
++
++- Production build job has clearly synthetic, CI-only values for the public origin, JWT validation, and unreachable MongoDB URI. No runtime validation was relaxed and no real secret was added. The artifact must not be promoted as a production build.
++- The workflow's smoke step now invokes `scripts/verify-static-seo.py` against the started application. It verifies prompt 200 responses, robots and sitemap media types, both advertised sitemap locations, XML parseability, configured canonical origin, and exclusion of routes known not to exist.
++- The `98% Organization Satisfaction` hero card was replaced with non-quantified `Data Insights / Informed Decisions` content.
++- Seed execution now stops before importing or connecting to the database. See [security and data safety](PHASE5_SECURITY_AND_DATA_SAFETY.md).
++
++## Validation
++
++- `npm run typecheck`: exit 0 on the local Node 26 environment after implementation.
++- `npm run lint -- --format json`: exit 1; **2 errors and 79 warnings** remain. The initial verified CI count was 93 errors and 78 warnings. JSX escaping, empty object type declarations, and state-in-effect errors are resolved. The remaining errors are the generic repository `any` contracts in `src/repositories/base.repository.ts` and `src/repositories/blog.repository.ts`; the Mongoose type changes tried locally altered inferred query/document behavior, so those contracts were restored rather than hidden behind casts.
++- `npm test`: exit 1 before test modules executed. Node 26's `os.userInfo()` fails with `uv_os_get_passwd returned ENOMEM` inside the installed `tsx` temporary-directory setup. The mandate identifies clean Node 22 as canonical; Node 22 is not installed in this environment. The new tests have not been recorded as passing.
++- A new build, audit, and static HTTP smoke run were not completed locally. No new Actions run exists.
++
++## Mongoose advisory — BLOCKED
++
++The lockfile and manifest remain unchanged. The Phase 4 CI run reported advisories through Mongoose 9.11.3; advisory metadata consulted during this task identifies 9.11.4 as the patched floor for the reported 9.x issues: [GHSA-gg4r-jv3p-qx3c](https://github.com/advisories/GHSA-gg4r-jv3p-qx3c), [GHSA-pcrw-h46h-c93h](https://github.com/advisories/GHSA-pcrw-h46h-c93h), [GHSA-wr5m-5jph-8m96](https://github.com/advisories/GHSA-wr5m-5jph-8m96), [GHSA-8332-j7wj-wjw4](https://github.com/advisories/GHSA-8332-j7wj-wjw4), and [GHSA-6972-9mcm-vhwj](https://github.com/advisories/GHSA-6972-9mcm-vhwj). The npm registry could not be reached from the local shell, so a registry-generated lockfile, clean `npm ci`, resolved dependency audit, and integration compatibility check could not be validated. No hand-edited lockfile, audit suppression, or force upgrade was used. Resolve this in a Node 22 environment with registry access before release.
++
++## Rollback
++
++Revert the Phase 5 workflow and smoke-script changes together to restore the previous CI behavior. Restore the hero card only after evidence and owner approval; the current replacement contains no metric.
+diff --git a/docs/adm-optimization/PHASE5_RELEASE_GATES.md b/docs/adm-optimization/PHASE5_RELEASE_GATES.md
+new file mode 100644
+index 0000000..4a0ffd9
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_RELEASE_GATES.md
+@@ -0,0 +1,30 @@
++# Phase 5 release gates
++
++**Recommendation: NO-GO.** This source patch is reviewable but is not a technical release candidate or production certification.
++
++| Gate | Status | Evidence / blocker |
++|---|---|---|
++| Source control | BLOCKED | `.git` is read-only; no branch, commit, PR, or Phase 5 CI run. Patch and changed-file manifest supplied for owner review. |
++| Dependencies | BLOCKED | Mongoose manifest/lock unchanged. Registry unavailable; no clean `npm ci` or resolved audit. Phase 4 audit failed on a critical advisory. |
++| Types and tests | PARTIAL | Local `npm run typecheck` exit 0. `npm test` discovered 15 files but exited before execution because Node 26 `tsx` setup failed at `os.userInfo()` (`uv_os_get_passwd returned ENOMEM`). Node 22 CI run is required. |
++| Lint | FAIL | Whole-repo lint exit 1: **2 errors / 79 warnings**. Remaining errors are `no-explicit-any` in `src/repositories/base.repository.ts` and `src/repositories/blog.repository.ts`. Warnings: `no-img-element` 24, `no-unused-vars` 25, `import/no-anonymous-default-export` 29, `react-hooks/incompatible-library` 1. No rule was globally disabled. |
++| Build and smoke | BLOCKED | Workflow now supplies synthetic build-only values and calls the stronger static smoke script. No local build or HTTP smoke pass, and no new Actions run. |
++| CMS | PARTIAL | Source pagination/date/outage handling and unit cases added. Healthy staging completeness, 503 behavior, actual published records, and missing-slug behavior were not exercised. |
++| Public trust | OWNER-REVIEW | Metric replaced; logo/metric/portfolio/testimonial proof is default-gated. Contact/legal/leadership/service claims still require owner/legal decisions. |
++| Funnel | BLOCKED | Contact and consultation delivery, routing, abuse, persistence, and notifications not exercised. No form submitted. |
++| Experience / SEO | BLOCKED | CI smoke is implemented but not run. No browser, accessibility, canonical-host, CWV, or Search Console evidence. |
++| Deployment | BLOCKED | Production SHA and live host not independently checked; no deployment or production access. |
++
++## Required next evidence
++
++1. In clean Node 22 with registry access: install from lock, update Mongoose manifest and lock to a verified patched release, run high-severity audit, typecheck, tests, full lint, and production build/smoke.
++2. Push reviewed changes from an authorized writable clone and link the resulting Actions run; do not promote synthetic build output.
++3. Run healthy/outage sitemap and 404/503 checks in authorized staging; exercise forms without real personal data; complete browser/accessibility/SEO checks.
++4. Record owner/legal decisions for public proof, contact identity, and legal/privacy language; independently verify deployed SHA and rollback/observability before any GO.
++
++## Rollback map
++
++- CI/smoke: revert `.github/workflows/quality.yml` and `scripts/verify-static-seo.py`.
++- Trust gates: revert presentation switches and homepage/portfolio/testimonial usage only after explicit owner decision.
++- Seed guard: retain fail-closed behavior; do not roll back to the destructive seed implementation.
++- Sitemap: revert dynamic route, pagination helper, career query bound, date handling, and related tests together; keep the static sitemap DB-independent.
+diff --git a/docs/adm-optimization/PHASE5_SECURITY_AND_DATA_SAFETY.md b/docs/adm-optimization/PHASE5_SECURITY_AND_DATA_SAFETY.md
+new file mode 100644
+index 0000000..d2fa21f
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_SECURITY_AND_DATA_SAFETY.md
+@@ -0,0 +1,21 @@
++# Phase 5 security and data safety
++
++## Seed command
++
++`src/database/seed.ts` now exits with an error before connecting to MongoDB. The former implementation deleted all `Role` records and recreated them with empty permission arrays. This conflicts with the current `Role` permission schema and could remove active authorization data. The script was not run; no production or staging database was contacted. Its test asserts the hard stop and absence of connection or destructive role operations.
++
++The existing `src/lib/seed/roles.seed.ts` performs upserts that overwrite role permissions; it is not an approved replacement. Do not enable either seeding path until the owner approves an idempotent role fixture with an explicit environment boundary.
++
++## Authentication and CI
++
++Production runtime validation remains strict. The synthetic JWT values and unreachable database address are scoped to the quality workflow build job and must not be used as runtime configuration or as a promotable artifact. No values from `.env.local` were read or copied.
++
++## Forms and data access
++
++No form submissions, outbound email, migrations, seed runs, or database writes were made. Contact and consultation delivery, abuse controls, idempotency, retention, and routing have not been verified against staging. Existing API and validator behavior was not intentionally changed.
++
++The CMS sitemap now uses bounded pagination for blog/service data, batches page fetches, limits careers reads to 50,001 records to detect overflow, and returns non-cacheable 503 with `Retry-After` on data failure or an incomplete/over-limit set. Healthy-DB publication completeness and actual query timing remain staging checks.
++
++## Rollback
++
++Revert `src/database/seed.ts` and its test together only if the seed path remains operationally disabled by other means; the prior script is destructive and must never be run. Revert sitemap route/service/repository changes together if deployment reveals query incompatibility, while retaining the static sitemap path.
+diff --git a/docs/adm-optimization/PHASE5_STAGING_AND_SEO.md b/docs/adm-optimization/PHASE5_STAGING_AND_SEO.md
+new file mode 100644
+index 0000000..a6ed304
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_STAGING_AND_SEO.md
+@@ -0,0 +1,19 @@
++# Phase 5 staging, sitemap, and SEO evidence
++
++## Source changes
++
++- Static `/sitemap.xml` remains in `src/app/sitemap.ts` and does not access MongoDB.
++- CMS `/cms-sitemap.xml` now collects all available published blog/service pages in batches of four, with a 1,000-record page size. A 50,000 URL ceiling is enforced; incomplete or over-limit results fail rather than returning a partial 200. Open careers are read with a 50,001 cap to detect overflow.
++- Career dates and content dates are checked before XML serialization. Invalid and out-of-range dates are omitted. Slugs with path/query/fragment separators are excluded; safe slugs are percent-encoded, and XML text is escaped.
++- Sitemap tests cover career dates/slugs, XML escaping, 2,501 records across pages, and incomplete page rejection.
++- `scripts/verify-static-seo.py` is wired into CI to test static routes over HTTP after build.
++
++## Evidence status
++
++The static HTTP smoke, healthy/unavailable staging DB behavior, publication-set completeness, withdrawn-record removal, real response timings, and 404-versus-503 detail-route behavior are **not measured** in this checkout. The local test command discovered 15 files but Node 26 failed in `tsx` setup before executing tests. No staging credentials were supplied or used.
++
++No browser screenshots, form exercises, accessibility audit, structured-data review, canonical-host crawl, Search Console review, Lighthouse lab data, or CrUX field data were collected. No score or production SEO claim is made. These remain staging/owner-dependent release gates.
++
++## Rollback
++
++Revert the dynamic sitemap route, career repository/service limit option, pagination helper, sitemap date handling, and its tests as a unit if staging shows incompatible pagination results. Keep the DB-independent static sitemap and its robots advertisement available.
+diff --git a/docs/adm-optimization/PHASE5_TRUST_DECISIONS.md b/docs/adm-optimization/PHASE5_TRUST_DECISIONS.md
+new file mode 100644
+index 0000000..3f8c293
+--- /dev/null
++++ b/docs/adm-optimization/PHASE5_TRUST_DECISIONS.md
+@@ -0,0 +1,21 @@
++# Phase 5 public trust decisions
++
++This register records source presentation controls, not a claim that the underlying claims are false. No customer evidence, permissions, or owner approvals were supplied in this task. Evidence owner/reviewer: **company owner, pending**. No private identifiers are recorded.
++
++| Claim group | Source / public location | Current presentation | Evidence / owner decision |
++|---|---|---|---|
++| `98% Organization Satisfaction` | `src/components/home/hero/Hero.tsx`, `/` | Removed and replaced by non-quantified Data Insights content. | No approved source located; owner approval pending before any metric restoration. |
++| Client logos / trusted-company proof | `TrustedCompanies` on `/` | Disabled by `publicProofVisibility.homepageClientLogos` default false. | Permission and logo ownership unverified. |
++| Aggregate statistics | `StatsSection` on `/` | Disabled by `homepageMetrics` default false. | Definitions, source, period, and evidence unverified. |
++| Portfolio outcomes and count proof | `PortfolioSection` on `/`; `/portfolio` | Homepage section gated; portfolio route presents a neutral selected-work message while evidence gating is off. | Customer status, outcomes, and permission require item-level owner review. |
++| Testimonials, portraits, ratings | `TestimonialsSection`, `/testimonials` | Homepage testimonials and testimonial route proof sections disabled by default; neutral review message shown. | Quote attribution, image permission, rating source, and approval pending. |
++| Reach and global operating claims | Existing copy across public pages | No broad copy rewrite was authorized; aspirational copy remains subject to claim-by-claim review. | Operational footprint is unverified. Owner/legal review pending. |
++| Leadership and team | Existing leadership/team pages | Not hidden by this change. | Identity, current role, and consent must be confirmed by the owner. |
++| Products, services, delivery guarantees | Existing service/CMS copy | Not rewritten. | Product status and service commitments require review. |
++| Contact details, legal entity, policy dates, jurisdiction, consent/retention | Contact and legal routes | Not changed. | Explicit owner/legal approval and real contact routing are blocked. No contact facts were guessed. |
++
++The reversible switches are in `src/config/public-proof-visibility.ts`; all proof switches default to false. Re-enable a claim only after a dated trust-register row records exact wording/asset, source, public URL, evidence owner, permission, expiry, and reviewer decision. The switches affect presentation only; they do not edit CMS records.
++
++## Rollback
++
++Restore a gated section by changing its switch only after the required evidence and approval are recorded. Reverting the homepage/portfolio/testimonial files restores prior public rendering and should not be done without owner review because unverified proof would become visible again.
+diff --git a/scripts/verify-static-seo.py b/scripts/verify-static-seo.py
+new file mode 100644
+index 0000000..9d36db5
+--- /dev/null
++++ b/scripts/verify-static-seo.py
+@@ -0,0 +1,51 @@
++import json
++import os
++import time
++import urllib.request
++import xml.etree.ElementTree as ET
++
++
++base_url = os.environ.get("SMOKE_BASE_URL", "http://127.0.0.1:3000").rstrip("/")
++canonical_origin = os.environ["CANONICAL_ORIGIN"].rstrip("/")
++namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
++
++
++def fetch(path):
++    start = time.monotonic()
++    request = urllib.request.Request(f"{base_url}{path}", headers={"User-Agent": "adm-ci-smoke/1.0"})
++    with urllib.request.urlopen(request, timeout=10) as response:
++        body = response.read()
++        return response.status, response.headers.get("Content-Type", ""), body, time.monotonic() - start
++
++
++robots_status, robots_type, robots_body, _ = fetch("/robots.txt")
++sitemap_status, sitemap_type, sitemap_body, sitemap_seconds = fetch("/sitemap.xml")
++
++assert robots_status == 200, f"robots status: {robots_status}"
++assert robots_type.lower().startswith("text/plain"), f"robots content type: {robots_type}"
++robots_text = robots_body.decode("utf-8")
++assert f"Sitemap: {canonical_origin}/sitemap.xml" in robots_text
++assert f"Sitemap: {canonical_origin}/cms-sitemap.xml" in robots_text
++
++assert sitemap_status == 200, f"sitemap status: {sitemap_status}"
++assert sitemap_type.lower().startswith(("application/xml", "text/xml")), f"sitemap content type: {sitemap_type}"
++assert sitemap_seconds < 2, f"static sitemap took {sitemap_seconds:.3f}s"
++root = ET.fromstring(sitemap_body)
++assert root.tag == f"{{{namespace['sm']}}}urlset", f"unexpected XML root: {root.tag}"
++locations = [node.text or "" for node in root.findall("sm:url/sm:loc", namespace)]
++assert f"{canonical_origin}/" in locations, "home URL missing"
++for path in ("/services/technology", "/services/marketing", "/services/ai", "/services/data"):
++    assert f"{canonical_origin}{path}" in locations, f"expected route missing: {path}"
++for absent_path in ("/team", "/faq", "/portfolio/example", "/industries/example"):
++    assert f"{canonical_origin}{absent_path}" not in locations, f"unexpected route present: {absent_path}"
++assert all(location.startswith(f"{canonical_origin}/") for location in locations)
++
++print(json.dumps({
++    "robots_status": robots_status,
++    "robots_content_type": robots_type,
++    "sitemap_status": sitemap_status,
++    "sitemap_content_type": sitemap_type,
++    "sitemap_seconds": round(sitemap_seconds, 3),
++    "sitemap_url_count": len(locations),
++    "canonical_origin": canonical_origin,
++}, sort_keys=True))
+diff --git a/src/config/public-proof-visibility.test.ts b/src/config/public-proof-visibility.test.ts
+new file mode 100644
+index 0000000..4b168df
+--- /dev/null
++++ b/src/config/public-proof-visibility.test.ts
+@@ -0,0 +1,7 @@
++import assert from "node:assert/strict";
++import test from "node:test";
++import { publicProofVisibility } from "./public-proof-visibility";
++
++test("unverified public proof groups remain hidden by default", () => {
++  assert.deepEqual(Object.values(publicProofVisibility), [false, false, false, false, false, false]);
++});
+diff --git a/src/config/public-proof-visibility.ts b/src/config/public-proof-visibility.ts
+new file mode 100644
+index 0000000..5faa801
+--- /dev/null
++++ b/src/config/public-proof-visibility.ts
+@@ -0,0 +1,12 @@
++/**
++ * Public proof stays hidden unless the corresponding evidence and permissions
++ * have been reviewed. Flip a section only with its completed trust-register row.
++ */
++export const publicProofVisibility = {
++  homepageClientLogos: false,
++  homepageMetrics: false,
++  homepagePortfolioProof: false,
++  homepageTestimonials: false,
++  portfolioEvidence: false,
++  testimonialEvidence: false,
++} as const;
+diff --git a/src/database/seed.test.ts b/src/database/seed.test.ts
+new file mode 100644
+index 0000000..2155cb3
+--- /dev/null
++++ b/src/database/seed.test.ts
+@@ -0,0 +1,11 @@
++import assert from "node:assert/strict";
++import { readFileSync } from "node:fs";
++import { fileURLToPath } from "node:url";
++import test from "node:test";
++
++test("legacy role seed is hard-stopped before database access or deletion", () => {
++  const source = readFileSync(fileURLToPath(new URL("./seed.ts", import.meta.url)), "utf8");
++
++  assert.match(source, /Role seed disabled/);
++  assert.doesNotMatch(source, /mongoose\.connect|Role\.deleteMany|Role\.insertMany/);
++});
+diff --git a/src/lib/seo/sitemap-pagination.ts b/src/lib/seo/sitemap-pagination.ts
+new file mode 100644
+index 0000000..fba0062
+--- /dev/null
++++ b/src/lib/seo/sitemap-pagination.ts
+@@ -0,0 +1,36 @@
++export type SitemapPage<T> = {
++  pagination: { total: number; totalPages: number };
++  records: T[];
++};
++
++export async function collectSitemapPages<T>(
++  fetchPage: (page: number, limit: number) => Promise<SitemapPage<T>>,
++  firstPage: SitemapPage<T>,
++  options: { pageSize: number; maxRecords: number; batchSize?: number }
++): Promise<T[]> {
++  const { pageSize, maxRecords, batchSize = 4 } = options;
++  const totalPages = firstPage.pagination.totalPages;
++  if (
++    !Number.isInteger(totalPages) ||
++    totalPages < 1 ||
++    firstPage.pagination.total > maxRecords ||
++    totalPages > Math.ceil(maxRecords / pageSize)
++  ) {
++    throw new Error("Sitemap content exceeds the supported limit.");
++  }
++
++  const records = [...firstPage.records];
++  for (let start = 2; start <= totalPages; start += batchSize) {
++    const pages = Array.from(
++      { length: Math.min(batchSize, totalPages - start + 1) },
++      (_, index) => start + index
++    );
++    const results = await Promise.all(pages.map((page) => fetchPage(page, pageSize)));
++    for (const result of results) records.push(...result.records);
++  }
++
++  if (records.length !== firstPage.pagination.total) {
++    throw new Error("Sitemap pagination returned an incomplete record set.");
++  }
++  return records;
++}

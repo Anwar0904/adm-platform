@@ -52,7 +52,7 @@ export interface ISettings {
   updatedAt: Date;
 }
 
-export interface SettingsMethods { }
+export type SettingsMethods = Record<never, never>;
 
 export interface SettingsStatics {
   getSettings(): Promise<SettingsDocument | null>;
@@ -62,5 +62,6 @@ export type SettingsDocument =
   HydratedDocument<ISettings, SettingsMethods>;
 
 export type SettingsModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<ISettings, {}, SettingsMethods> &
   SettingsStatics;

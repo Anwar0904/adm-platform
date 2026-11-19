@@ -35,7 +35,7 @@ export default function PortfolioHero() {
               <p className="max-w-xl text-lg leading-8 text-slate-300">
                 Explore a collection of websites, AI platforms, enterprise
                 systems, SaaS products, branding projects and modern digital
-                experiences we've crafted for ambitious businesses worldwide.
+                experiences we&apos;ve crafted for ambitious businesses worldwide.
               </p>
             </div>
 

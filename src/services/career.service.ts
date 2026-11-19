@@ -35,13 +35,13 @@ function hasSupportedCareerOptions(career: { employmentType: string; workplace: 
 }
 
 class CareerService {
-  async getPublicCareers() {
+  async getPublicCareers(options: { limit?: number } = {}) {
     await connectDB();
 
     const settings = await CareerRepository.getPublicSettings();
     if (settings?.features?.careersEnabled === false) return [];
 
-    const careers = await CareerRepository.findOpenCareers();
+    const careers = await CareerRepository.findOpenCareers(options.limit);
     return careers.filter(hasSupportedCareerOptions).map((career): PublicCareerListing => ({
       title: career.title,
       slug: career.slug,

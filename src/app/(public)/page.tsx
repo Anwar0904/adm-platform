@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import CallToActionSection from "@/components/home/CallToActionSection";
 import FaqSection from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/hero";
+import { publicProofVisibility } from "@/config/public-proof-visibility";
 import LatestBlogsSection from "@/components/home/LatestBlogsSection";
 import PortfolioSection from "@/components/home/PortfolioSection";
 import ProcessSection from "@/components/home/ProcessSection";
@@ -29,12 +30,12 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <TrustedCompanies />
+      {publicProofVisibility.homepageClientLogos && <TrustedCompanies />}
       <ServicesSection />
-      <StatsSection />
+      {publicProofVisibility.homepageMetrics && <StatsSection />}
       <ProcessSection />
-      <PortfolioSection />
-      <TestimonialsSection />
+      {publicProofVisibility.homepagePortfolioProof && <PortfolioSection />}
+      {publicProofVisibility.homepageTestimonials && <TestimonialsSection />}
       <FaqSection />
       <LatestBlogsSection />
       <CallToActionSection />

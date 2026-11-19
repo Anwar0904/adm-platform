@@ -34,7 +34,7 @@ export interface ICategory {
   deletedAt?: Date | null;
 }
 
-export interface CategoryMethods { }
+export type CategoryMethods = Record<never, never>;
 
 export interface CategoryStatics {
   findBySlug(slug: string): Promise<CategoryDocument | null>;
@@ -48,5 +48,6 @@ export type CategoryDocument =
   HydratedDocument<ICategory, CategoryMethods>;
 
 export type CategoryModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<ICategory, {}, CategoryMethods> &
   CategoryStatics;

@@ -126,7 +126,7 @@ export default function ServiceFAQs() {
           </h3>
 
           <p className="mx-auto mt-4 max-w-2xl text-blue-100">
-            Speak directly with our experts. We'll help you choose
+            Speak directly with our experts. We&apos;ll help you choose
             the right technology, architecture and engagement model
             for your business.
           </p>

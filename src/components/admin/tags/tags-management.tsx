@@ -305,7 +305,8 @@ export default function TagsManagement() {
     );
 
     useEffect(() => {
-        fetchTags();
+        const timer = window.setTimeout(() => void fetchTags(), 0);
+        return () => window.clearTimeout(timer);
     }, [fetchTags]);
 
     /* ---------------------------------------------------------------------- */

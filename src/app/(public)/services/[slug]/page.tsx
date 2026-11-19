@@ -64,24 +64,66 @@ function resolveMediaUrl(value: unknown): string | null {
   return null;
 }
 
-function normalizeService(service: any): any {
+type ServiceView = {
+  slug: string;
+  title: string;
+  shortDescription: string;
+  content: string;
+  seo?: { metaTitle?: string; metaDescription?: string; keywords?: string[] };
+  featuredImage?: string | null;
+  image: string | null;
+  featureList: Array<{ title: string; description?: string }>;
+  faqList: Array<{ question: string; answer: string }>;
+  gallery: string[];
+};
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object"
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function normalizeService(service: unknown): ServiceView | null {
   if (!service) return null;
 
-  const plain = deepPlain(service) as Record<string, any>;
+  const plain = asRecord(deepPlain(service));
   const gallery = Array.isArray(plain.gallery) ? plain.gallery : [];
-  const firstImage = resolveMediaUrl(plain.featuredImage) ?? gallery.map(resolveMediaUrl).find(Boolean) ?? null;
+  const seoRecord = asRecord(plain.seo);
+  const featureList = Array.isArray(plain.features)
+    ? plain.features.flatMap((value) => {
+      const feature = asRecord(value);
+      return typeof feature.title === "string"
+        ? [{ title: feature.title, ...(typeof feature.description === "string" ? { description: feature.description } : {}) }]
+        : [];
+    })
+    : [];
+  const faqList = Array.isArray(plain.faqs)
+    ? plain.faqs.flatMap((value) => {
+      const faq = asRecord(value);
+      return typeof faq.question === "string" && typeof faq.answer === "string"
+        ? [{ question: faq.question, answer: faq.answer }]
+        : [];
+    })
+    : [];
+  const images = gallery.map(resolveMediaUrl).filter((item): item is string => typeof item === "string");
+  const firstImage = resolveMediaUrl(plain.featuredImage) ?? images[0] ?? null;
 
-  const normalized: Record<string, any> = {
-    ...plain,
+  return {
+    slug: typeof plain.slug === "string" ? plain.slug : "",
+    title: typeof plain.title === "string" ? plain.title : "Service",
+    shortDescription: typeof plain.shortDescription === "string" ? plain.shortDescription : "",
+    content: typeof plain.content === "string" ? plain.content : "",
+    seo: {
+      metaTitle: typeof seoRecord.metaTitle === "string" ? seoRecord.metaTitle : undefined,
+      metaDescription: typeof seoRecord.metaDescription === "string" ? seoRecord.metaDescription : undefined,
+      keywords: Array.isArray(seoRecord.keywords) ? seoRecord.keywords.filter((item): item is string => typeof item === "string") : undefined,
+    },
+    featuredImage: resolveMediaUrl(plain.featuredImage),
     image: firstImage,
-    featureList: Array.isArray(plain.features) ? plain.features : [],
-    faqList: Array.isArray(plain.faqs) ? plain.faqs : [],
-    gallery: gallery
-      .map((item: unknown) => resolveMediaUrl(item))
-      .filter((item: string | null): item is string => typeof item === "string" && Boolean(item)),
+    featureList,
+    faqList,
+    gallery: images,
   };
-
-  return normalized;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

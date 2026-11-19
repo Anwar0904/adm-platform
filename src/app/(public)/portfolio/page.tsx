@@ -8,6 +8,8 @@ import PortfolioFilter from "@/components/portfolio/PortfolioFilter";
 import PortfolioFinalCTA from "@/components/portfolio/PortfolioFinalCTA";
 import PortfolioTestimonials from "@/components/portfolio/PortfolioTestimonials";
 import ProjectProcess from "@/components/portfolio/ProjectProcess";
+import Link from "next/link";
+import { publicProofVisibility } from "@/config/public-proof-visibility";
 
 export const metadata: Metadata = {
     title: { absolute: "Selected Work | Arazi Digital Media" },
@@ -25,17 +27,30 @@ export const metadata: Metadata = {
 
 export default function PortfolioPage() {
     return (
-        <>
-            <PortfolioHero />
-            <PortfolioFilter />
-            <PortfolioMasonry />
-            <IndustriesShowcase />
-            <ClientSuccessMetrics />
-            <ProjectProcess />
-            <PortfolioTestimonials />
-            <PortfolioFAQ />
-            <PortfolioFinalCTA />
-        </>
+        publicProofVisibility.portfolioEvidence ? (
+            <>
+                <PortfolioHero />
+                <PortfolioFilter />
+                <PortfolioMasonry />
+                <IndustriesShowcase />
+                <ClientSuccessMetrics />
+                <ProjectProcess />
+                <PortfolioTestimonials />
+                <PortfolioFAQ />
+                <PortfolioFinalCTA />
+            </>
+        ) : (
+            <section className="mx-auto max-w-5xl px-4 py-24 text-center text-white sm:px-6">
+                <h1 className="text-4xl font-bold">Selected Work</h1>
+                <p className="mx-auto mt-6 max-w-2xl text-slate-300">
+                    Portfolio examples are being reviewed before publication. Explore ADM&apos;s
+                    Technology, Marketing, AI and Data capabilities in the meantime.
+                </p>
+                <Link href="/services" className="mt-8 inline-flex rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700">
+                    Explore our capabilities
+                </Link>
+            </section>
+        )
     )
 }
 import type { Metadata } from "next";

@@ -167,7 +167,8 @@ export default function CategoriesManagement() {
     }
 
     useEffect(() => {
-        loadCategories();
+        const timer = window.setTimeout(() => void loadCategories(), 0);
+        return () => window.clearTimeout(timer);
     }, []);
 
     const filteredCategories =

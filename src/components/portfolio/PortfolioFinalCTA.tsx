@@ -42,7 +42,7 @@ export default function PortfolioFinalCTA() {
                             </h2>
 
                             <p className="mt-8 max-w-xl text-xl leading-9 text-slate-200">
-                                Whether you're launching an AI-powered platform,
+                                Whether you&apos;re launching an AI-powered platform,
                                 enterprise application, SaaS product,
                                 or complete digital transformation,
                                 ADM is ready to turn your vision into

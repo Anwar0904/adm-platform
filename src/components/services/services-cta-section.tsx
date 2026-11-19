@@ -17,7 +17,7 @@ export default function ServicesCTASection() {
         className="relative mx-auto max-w-5xl px-6 text-center text-white"
       >
         <span className="rounded-full border border-white/20 bg-white/8 px-4 py-2 text-sm font-semibold backdrop-blur">
-          Let's Build Together
+          Let&apos;s Build Together
         </span>
 
         <h2 className="mt-8 text-4xl font-black lg:text-6xl">
@@ -28,7 +28,7 @@ export default function ServicesCTASection() {
         </h2>
 
         <p className="mx-auto mt-8 max-w-3xl text-lg leading-8 text-slate-200">
-          Whether you're launching a startup, transforming an enterprise,
+          Whether you&apos;re launching a startup, transforming an enterprise,
           or integrating Artificial Intelligence into your business,
           ADM is ready to help.
         </p>

@@ -243,7 +243,8 @@ export default function ServicesManagement() {
     }
 
     useEffect(() => {
-        void loadServices();
+        const timer = window.setTimeout(() => void loadServices(), 0);
+        return () => window.clearTimeout(timer);
     }, []);
 
     function createService() {

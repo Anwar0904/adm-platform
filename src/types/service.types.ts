@@ -51,7 +51,7 @@ export interface IService {
   deletedAt?: Date | null;
 }
 
-export interface ServiceMethods { }
+export type ServiceMethods = Record<never, never>;
 
 export interface ServiceStatics {
   findBySlug(
@@ -67,5 +67,6 @@ export type ServiceDocument =
   HydratedDocument<IService, ServiceMethods>;
 
 export type ServiceModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<IService, {}, ServiceMethods> &
   ServiceStatics;

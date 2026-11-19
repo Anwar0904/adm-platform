@@ -56,7 +56,7 @@ export default function IndustryCTA() {
                 >
 
                     <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-semibold text-white backdrop-blur-md">
-                        Let's Build Something Extraordinary
+                        Let&apos;s Build Something Extraordinary
                     </span>
 
                     <h2 className="mt-8 text-4xl font-black leading-tight text-white lg:text-6xl">
@@ -67,7 +67,7 @@ export default function IndustryCTA() {
                     </h2>
 
                     <p className="mx-auto mt-8 max-w-3xl text-lg leading-9 text-blue-100">
-                        Whether you're building a next-generation startup,
+                        Whether you&apos;re building a next-generation startup,
                         modernizing enterprise software or integrating AI into
                         existing systems, ADM helps businesses create products that
                         stand out and scale confidently.

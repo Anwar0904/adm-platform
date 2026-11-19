@@ -54,7 +54,7 @@ export interface IBlog {
   updatedAt: Date;
 }
 
-export interface BlogMethods { }
+export type BlogMethods = Record<never, never>;
 
 export interface BlogStatics {
   findBySlug(slug: string): Promise<BlogDocument | null>;
@@ -68,5 +68,6 @@ export type BlogDocument =
   HydratedDocument<IBlog, BlogMethods>;
 
 export type BlogModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
   Model<IBlog, {}, BlogMethods> &
   BlogStatics;

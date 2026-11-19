@@ -102,7 +102,7 @@ export interface IPublicTeamMember {
     cvUrl?: string;
 }
 
-export interface TeamMemberMethods { }
+export type TeamMemberMethods = Record<never, never>;
 
 export interface TeamMemberStatics {
     findBySlug(
@@ -127,6 +127,7 @@ export type TeamMemberDocument =
 export type TeamMemberModel =
     Model<
         ITeamMember,
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
         {},
         TeamMemberMethods
     > &

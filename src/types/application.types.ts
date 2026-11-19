@@ -59,7 +59,7 @@ export interface IApplication {
   updatedAt: Date;
 }
 
-export interface ApplicationMethods {}
+export type ApplicationMethods = Record<never, never>;
 
 export interface ApplicationStatics {
   findByCareer(
@@ -82,6 +82,7 @@ export type ApplicationDocument =
 export type ApplicationModel =
   Model<
     IApplication,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
     {},
     ApplicationMethods
   > &

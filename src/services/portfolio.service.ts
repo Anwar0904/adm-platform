@@ -47,8 +47,7 @@ export interface CreatePortfolioInput {
     sortOrder?: number;
 }
 
-export interface UpdatePortfolioInput
-    extends Partial<CreatePortfolioInput> { }
+export type UpdatePortfolioInput = Partial<CreatePortfolioInput>;
 
 export class PortfolioService {
     /**

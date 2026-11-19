@@ -85,11 +85,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     const [sessionRenewalError, setSessionRenewalError] = useState(false);
 
     useEffect(() => {
-        setUser(getUser());
+        const timer = window.setTimeout(() => setUser(getUser()), 0);
+        return () => window.clearTimeout(timer);
     }, []);
 
     useEffect(() => {
-        setSidebarOpen(false);
+        const timer = window.setTimeout(() => setSidebarOpen(false), 0);
+        return () => window.clearTimeout(timer);
     }, [pathname]);
 
     useEffect(() => {

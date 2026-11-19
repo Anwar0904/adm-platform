@@ -147,7 +147,7 @@ export default function ServiceProcessSection() {
 
           <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-blue-600 to-sky-500 p-10 text-white">
             <h3 className="mb-8 text-2xl font-bold">
-              What You'll Receive
+              What You&apos;ll Receive
             </h3>
 
             <div className="grid gap-4 sm:grid-cols-2">

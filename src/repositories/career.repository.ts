@@ -35,11 +35,12 @@ class CareerRepository {
       .lean();
   }
 
-  async findOpenCareers() {
-    return Career.find(getOpenCareerFilter())
+  async findOpenCareers(limit?: number) {
+    const query = Career.find(getOpenCareerFilter())
       .select(PUBLIC_LIST_FIELDS)
-      .sort({ featured: -1, sortOrder: 1, createdAt: -1 })
-      .lean();
+      .sort({ featured: -1, sortOrder: 1, createdAt: -1 });
+    if (limit !== undefined) query.limit(limit);
+    return query.lean();
   }
 
   async findOpenCareerBySlug(slug: string) {

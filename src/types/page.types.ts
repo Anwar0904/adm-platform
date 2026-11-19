@@ -44,7 +44,7 @@ export interface IPage {
 
 }
 
-export interface PageMethods{}
+export type PageMethods = Record<never, never>;
 
 export interface PageStatics{
 
@@ -60,5 +60,6 @@ export type PageDocument =
 HydratedDocument<IPage,PageMethods>;
 
 export type PageModel =
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Mongoose uses an empty query-helper type here.
 Model<IPage,{},PageMethods> &
 PageStatics;
