@@ -42,7 +42,7 @@ const sections: LegalSection[] = [
     {
         id: "contact",
         title: "Contact us",
-        paragraphs: ["Questions about these terms can be sent to hello@adm.com. We will always try to resolve concerns directly and constructively."],
+        paragraphs: ["For questions about these terms, use the contact form and include the relevant section in your message."],
     },
 ];
 

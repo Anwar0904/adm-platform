@@ -83,7 +83,7 @@ export default function IndustryCTA() {
                         >
                             <CalendarDays className="mr-3 h-6 w-6" />
 
-                            Book Free Consultation
+                            Request a Consultation
 
                             <ArrowRight className="ml-3 h-5 w-5 transition group-hover:translate-x-1" />
                         </Link>
@@ -96,48 +96,6 @@ export default function IndustryCTA() {
 
                             Talk To Our Experts
                         </Link>
-
-                    </div>
-
-                    {/* Metrics */}
-
-                    <div className="mt-20 grid grid-cols-2 gap-6 md:grid-cols-4">
-
-                        {[
-                            {
-                                value: "50+",
-                                label: "Engagements Delivered",
-                            },
-                            {
-                                value: "98%",
-                                label: "Organization Satisfaction",
-                            },
-                            {
-                                value: "10+",
-                                label: "Industries Served",
-                            },
-                            {
-                                value: "24/7",
-                                label: "Technical Support",
-                            },
-                        ].map((item) => (
-                            <motion.div
-                                whileHover={{
-                                    y: -8,
-                                    scale: 1.03,
-                                }}
-                                key={item.label}
-                                className="rounded-3xl border border-white/20 bg-white/10 p-8 backdrop-blur-xl"
-                            >
-                                <h3 className="text-4xl font-black text-white">
-                                    {item.value}
-                                </h3>
-
-                                <p className="mt-3 text-sm font-medium text-blue-100">
-                                    {item.label}
-                                </p>
-                            </motion.div>
-                        ))}
 
                     </div>
 

@@ -13,15 +13,15 @@ import {
 const faqs = [
     {
         category: "General",
-        question: "How quickly do you respond to inquiries?",
+        question: "What should I include in an inquiry?",
         answer:
-            "Our team typically responds within 24 business hours. Urgent enterprise inquiries are prioritized whenever possible.",
+            "Share the challenge you are exploring, the people or systems involved, and any constraints that would help frame a useful conversation.",
     },
     {
         category: "Engagements",
         question: "Can you work with international clients?",
         answer:
-            "Absolutely. ADM works with businesses worldwide through online meetings, collaborative tools and agile workflows.",
+            "Meeting format and working arrangements can be discussed when the project context and participants are known.",
     },
     {
         category: "Pricing",
@@ -45,7 +45,7 @@ const faqs = [
         category: "Consultation",
         question: "Is the initial consultation free?",
         answer:
-            "Yes. Every project begins with a completely free consultation to understand your goals and recommend the best solution.",
+            "Share your goals and questions; the team can discuss whether an initial conversation is useful.",
     },
 ];
 

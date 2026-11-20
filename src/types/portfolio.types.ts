@@ -43,6 +43,30 @@ export interface IPortfolio {
 
   status: ContentStatus;
 
+  publicProof?: {
+    approvalStatus: "pending" | "approved" | "revoked";
+    approvedAt?: Date | null;
+    approvedByRole?: string;
+    referenceId?: string;
+    permittedElements: Array<
+      | "title"
+      | "shortDescription"
+      | "classification"
+      | "category"
+      | "visual"
+      | "technologies"
+      | "industries"
+      | "clientName"
+      | "projectUrl"
+      | "capabilities"
+    >;
+    consentExpiresAt?: Date | null;
+    revokedAt?: Date | null;
+    revokedByRole?: string;
+    classification?: "client-project" | "adm-product" | "anonymized-engagement" | "concept-prototype";
+    capabilities?: Array<"Technology" | "Marketing" | "AI" | "Data">;
+  };
+
   sortOrder: number;
 
   author: Types.ObjectId;

@@ -4,8 +4,9 @@ import {
     portfolioService,
 } from "@/services/portfolio.service";
 import { connectDB } from "@/lib/db";
-import { requirePermission } from "@/lib/auth/require-auth";
 import { PERMISSIONS } from "@/constants/permissions";
+import { requirePermission } from "@/lib/auth/require-auth";
+import { withPortfolioReadAuthorization } from "@/lib/api/portfolio-read-handler";
 
 interface RouteContext {
     params: Promise<{
@@ -14,10 +15,10 @@ interface RouteContext {
 }
 
 export async function GET(
-    _request: NextRequest,
+        request: NextRequest,
     context: RouteContext
 ) {
-    try {
+    return withPortfolioReadAuthorization(request, async () => {
         await connectDB();
 
         const { id } =
@@ -37,34 +38,7 @@ export async function GET(
                 status: 200,
             }
         );
-    } catch (error) {
-        console.error(
-            "GET /api/portfolio/[id] error:",
-            error
-        );
-
-        const message =
-            error instanceof Error
-                ? error.message
-                : "Failed to fetch portfolio project.";
-
-        const status =
-            message.includes(
-                "not found"
-            )
-                ? 404
-                : 400;
-
-        return NextResponse.json(
-            {
-                success: false,
-                message,
-            },
-            {
-                status,
-            }
-        );
-    }
+    });
 }
 
 export async function PATCH(

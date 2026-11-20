@@ -66,38 +66,6 @@ export default function ContactFinalCTASection() {
                             technology partner.
                         </p>
 
-                        {/* Stats */}
-
-                        <div className="mt-14 grid gap-8 sm:grid-cols-3">
-                            {[
-                                {
-                                    value: "<24 Hours",
-                                    label: "Response Time",
-                                },
-                                {
-                                    value: "100%",
-                                    label: "Free Consultation",
-                                },
-                                {
-                                    value: "∞",
-                                    label: "Long-Term Partnership",
-                                },
-                            ].map((item) => (
-                                <div
-                                    key={item.label}
-                                    className="rounded-3xl border border-white/10 bg-white/5 p-6"
-                                >
-                                    <h3 className="text-3xl font-black text-white">
-                                        {item.value}
-                                    </h3>
-
-                                    <p className="mt-3 text-slate-400">
-                                        {item.label}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-
                         {/* CTA Buttons */}
 
                         <div className="mt-16 flex flex-col items-center justify-center gap-5 sm:flex-row">

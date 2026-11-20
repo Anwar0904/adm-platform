@@ -42,7 +42,7 @@ const sections: LegalSection[] = [
     {
         id: "contact",
         title: "Contact us",
-        paragraphs: ["If you have a question about our use of cookies, email hello@adm.com and we will help clarify it."],
+        paragraphs: ["If you have a question about our use of cookies, use the contact form and include the relevant page or cookie setting in your message."],
     },
 ];
 

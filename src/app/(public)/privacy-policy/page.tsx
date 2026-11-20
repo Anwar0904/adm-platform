@@ -42,7 +42,7 @@ const sections: LegalSection[] = [
     {
         id: "contact",
         title: "Contact us",
-        paragraphs: ["For privacy questions or requests, email hello@adm.com with the subject \"Privacy request\". We may need to verify your identity before completing a request."],
+        paragraphs: ["For privacy questions or requests, use the contact form and include \"Privacy request\" in your message. We may need to verify your identity before completing a request."],
     },
 ];
 

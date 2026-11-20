@@ -23,6 +23,7 @@ export const PERMISSIONS = {
   PORTFOLIO_CREATE: "portfolio.create",
   PORTFOLIO_UPDATE: "portfolio.update",
   PORTFOLIO_DELETE: "portfolio.delete",
+  PORTFOLIO_APPROVE: "portfolio.approve",
 
   MEDIA_READ: "media.read",
   MEDIA_CREATE: "media.create",

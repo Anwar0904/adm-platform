@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import {
     portfolioService,
 } from "@/services/portfolio.service";
+import { withPortfolioReadAuthorization } from "@/lib/api/portfolio-read-handler";
 
-export async function GET() {
-    try {
+export async function GET(request: NextRequest) {
+    return withPortfolioReadAuthorization(request, async () => {
         const stats =
             await portfolioService.getStats();
 
@@ -18,21 +19,5 @@ export async function GET() {
                 status: 200,
             }
         );
-    } catch (error) {
-        console.error(
-            "GET /api/portfolio/stats error:",
-            error
-        );
-
-        return NextResponse.json(
-            {
-                success: false,
-                message:
-                    "Failed to fetch portfolio statistics.",
-            },
-            {
-                status: 500,
-            }
-        );
-    }
+    });
 }

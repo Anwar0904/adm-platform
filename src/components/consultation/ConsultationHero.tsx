@@ -41,10 +41,10 @@ const pipeline = [
 ];
 
 const highlights = [
-    "Free initial consultation",
-    "Fast response within 24 hours",
-    "Secure file sharing for your brief",
-    "Custom proposal for every project",
+    "Discuss your goals and constraints",
+    "Share relevant project context",
+    "Explore a suitable next step",
+    "Ask questions about the process",
 ];
 
 export default function ConsultationHeroSection() {
@@ -115,20 +115,20 @@ export default function ConsultationHeroSection() {
 
                         <div className="mt-16 grid grid-cols-2 gap-5 md:grid-cols-4">
                             <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                                <h3 className="text-4xl font-black text-white">24h</h3>
-                                <p className="mt-2 text-sm text-slate-400">Response</p>
+                                <h3 className="text-2xl font-bold text-white">Technology</h3>
+                                <p className="mt-2 text-sm text-slate-400">Digital platforms</p>
                             </div>
                             <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                                <h3 className="text-4xl font-black text-white">100%</h3>
-                                <p className="mt-2 text-sm text-slate-400">Free Call</p>
+                                <h3 className="text-2xl font-bold text-white">Marketing</h3>
+                                <p className="mt-2 text-sm text-slate-400">Audience experiences</p>
                             </div>
                             <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                                <h3 className="text-4xl font-black text-white">4-Step</h3>
-                                <p className="mt-2 text-sm text-slate-400">Pipeline</p>
+                                <h3 className="text-2xl font-bold text-white">AI</h3>
+                                <p className="mt-2 text-sm text-slate-400">Automation and intelligence</p>
                             </div>
                             <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
-                                <h3 className="text-4xl font-black text-white">Secure</h3>
-                                <p className="mt-2 text-sm text-slate-400">Upload</p>
+                                <h3 className="text-2xl font-bold text-white">Data</h3>
+                                <p className="mt-2 text-sm text-slate-400">Information and insight</p>
                             </div>
                         </div>
                     </motion.div>
@@ -190,7 +190,7 @@ export default function ConsultationHeroSection() {
                                 <div className="mt-8 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 p-5 text-white">
                                     <div className="flex items-center gap-3">
                                         <Clock3 size={20} />
-                                        <p className="font-semibold">Typical response in less than 24 hours</p>
+                                        <p className="font-semibold">The team can follow up using your preferred contact details</p>
                                     </div>
                                 </div>
                             </div>

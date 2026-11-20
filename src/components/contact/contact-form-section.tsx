@@ -137,19 +137,18 @@ export default function ContactFormSection() {
                         </h2>
 
                         <p className="mt-5 text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-                            Tell us about your project and our team will contact you
-                            within 24 hours with ideas, recommendations and the next
-                            steps.
+                            Tell us about your project and how you would like the team to
+                            follow up. Include your goals, constraints and questions.
                         </p>
 
                         <div className="mt-8 space-y-3">
                             <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
                                 <h4 className="text-sm font-bold text-white">
-                                    ✔ Free Consultation
+                                    ✔ Consultation request
                                 </h4>
 
                                 <p className="mt-1 text-sm text-slate-400">
-                                    No commitment required.
+                                    Share context for an initial discussion.
                                 </p>
                             </div>
 
@@ -165,11 +164,11 @@ export default function ContactFormSection() {
 
                             <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
                                 <h4 className="text-sm font-bold text-white">
-                                    ✔ Fast Response
+                                    ✔ Follow-up
                                 </h4>
 
                                 <p className="mt-1 text-sm text-slate-400">
-                                    Usually within one business day.
+                                    The team can respond using the contact details you provide.
                                 </p>
                             </div>
                         </div>

@@ -62,7 +62,7 @@ export default function ConsultationFinalCTASection() {
                                 size={22}
                             />
 
-                            Book Free Consultation
+                            Request a Consultation
 
                             <ArrowRight
                                 size={20}
@@ -76,42 +76,7 @@ export default function ConsultationFinalCTASection() {
                         >
                             Explore Our Work
                         </Link>
-                    </div>
-
-                    {/* Trust Indicators */}
-
-                    <div className="mt-16 grid gap-6 border-t border-white/15 pt-12 sm:grid-cols-3">
-                        <div>
-                            <h3 className="text-3xl font-black text-white">
-                                50+
-                            </h3>
-
-                            <p className="mt-2 text-blue-100">
-                                Successful Projects
-                            </p>
-                        </div>
-
-                        <div>
-                            <h3 className="text-3xl font-black text-white">
-                                98%
-                            </h3>
-
-                            <p className="mt-2 text-blue-100">
-                                Organization Satisfaction
-                            </p>
-                        </div>
-
-                        <div>
-                            <h3 className="text-3xl font-black text-white">
-                                24h
-                            </h3>
-
-                            <p className="mt-2 text-blue-100">
-                                Average Response Time
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+                    </div></motion.div>
             </div>
         </section>
     );

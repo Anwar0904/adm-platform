@@ -41,25 +41,6 @@ const reasons = [
     },
 ];
 
-const stats = [
-    {
-        value: "50+",
-        label: "Engagements Delivered",
-    },
-    {
-        value: "98%",
-        label: "Organization Satisfaction",
-    },
-    {
-        value: "<24h",
-        label: "Average Response",
-    },
-    {
-        value: "100%",
-        label: "Transparent Process",
-    },
-];
-
 export default function WhyChooseADMSection() {
     return (
         <section className="relative overflow-hidden bg-slate-950 py-24 lg:py-32">
@@ -164,36 +145,6 @@ export default function WhyChooseADMSection() {
                     </div>
                 </div>
 
-                {/* Bottom Stats */}
-
-                <motion.div
-                    initial={{
-                        opacity: 0,
-                        y: 40,
-                    }}
-                    whileInView={{
-                        opacity: 1,
-                        y: 0,
-                    }}
-                    viewport={{
-                        once: true,
-                    }}
-                    className="mt-24 rounded-[36px] bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 p-12 text-white"
-                >
-                    <div className="grid gap-10 text-center sm:grid-cols-2 lg:grid-cols-4">
-                        {stats.map((stat) => (
-                            <div key={stat.label}>
-                                <h3 className="text-5xl font-black bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                                    {stat.value}
-                                </h3>
-
-                                <p className="mt-3 text-slate-300">
-                                    {stat.label}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </motion.div>
             </div>
         </section>
     );

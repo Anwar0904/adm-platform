@@ -122,6 +122,37 @@ const PortfolioSchema =
         default: CONTENT_STATUS.DRAFT,
       },
 
+      // Existing records remain pending by omission. Public visibility requires
+      // a deliberate, traceable approval and is never inferred from status.
+      publicProof: {
+        approvalStatus: {
+          type: String,
+          enum: ["pending", "approved", "revoked"],
+          default: "pending",
+        },
+        approvedAt: { type: Date, default: null },
+        approvedByRole: { type: String, trim: true, default: "" },
+        referenceId: { type: String, trim: true, maxlength: 120, default: "" },
+        permittedElements: {
+          type: [String],
+          enum: ["title", "shortDescription", "classification", "category", "visual", "technologies", "industries", "clientName", "projectUrl", "capabilities"],
+          default: [],
+        },
+        consentExpiresAt: { type: Date, default: null },
+        revokedAt: { type: Date, default: null },
+        revokedByRole: { type: String, trim: true, default: "" },
+        classification: {
+          type: String,
+          enum: ["client-project", "adm-product", "anonymized-engagement", "concept-prototype"],
+          default: null,
+        },
+        capabilities: {
+          type: [String],
+          enum: ["Technology", "Marketing", "AI", "Data"],
+          default: [],
+        },
+      },
+
       sortOrder: {
         type: Number,
         default: 0,

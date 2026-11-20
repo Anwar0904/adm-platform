@@ -21,21 +21,19 @@ export default function CallToActionSection() {
           </span>
 
           <h2 className="mt-4 text-2xl font-black leading-[1.08] tracking-tight text-white sm:mt-6 sm:text-3xl md:text-4xl lg:mt-8 lg:text-5xl xl:text-6xl">
-            Ready To Transform
-            <br className="hidden sm:block" /> Your Business?
+            Ready to explore what comes next?
           </h2>
 
           <p className="mx-auto mt-4 max-w-3xl text-sm leading-6 text-slate-200 sm:mt-6 sm:text-base sm:leading-7 md:text-lg md:leading-8 lg:text-xl lg:leading-9">
-            Whether you&apos;re launching a startup, modernizing an enterprise, or
-            integrating Artificial Intelligence into your business, ADM is
-            ready to turn your vision into reality.
+            Bring us a technology, marketing, AI or data challenge. We can discuss
+            your goals and explore a practical next step together.
           </p>
 
           <div className="mt-8 grid grid-cols-2 overflow-hidden rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl sm:mt-12 sm:grid-cols-4 sm:rounded-2xl md:mt-16 lg:rounded-3xl">
-            <Stat value="50+" label="Engagements" />
-            <Stat value="98%" label="Organization Satisfaction" />
-            <Stat value="24/7" label="Support" />
-            <Stat value="AI" label="Powered" />
+            <Stat value="Technology" label="Digital platforms and systems" />
+            <Stat value="Marketing" label="Audience and experience" />
+            <Stat value="AI" label="Automation and intelligence" />
+            <Stat value="Data" label="Information and insight" />
           </div>
 
           <div className="mt-8 flex flex-col justify-center gap-3 sm:mt-12 sm:flex-row sm:gap-4 md:gap-5 lg:mt-16">
@@ -45,7 +43,7 @@ export default function CallToActionSection() {
             >
               <CalendarDays className="h-5 w-5 shrink-0 text-blue-700 sm:h-6 sm:w-6" />
 
-              <span className="text-blue-700">Book Free Consultation</span>
+              <span className="text-blue-700">Request a Consultation</span>
 
               <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1.5 sm:group-hover:translate-x-2" />
             </Link>
@@ -59,10 +57,10 @@ export default function CallToActionSection() {
           </div>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-2 text-xs text-slate-200 sm:mt-12 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2 md:mt-14 lg:mt-16 lg:text-sm lg:gap-x-8">
-            <Benefit>Free Discovery Call</Benefit>
-            <Benefit>No Hidden Charges</Benefit>
-            <Benefit>AI-First Solutions</Benefit>
-            <Benefit>Dedicated Support</Benefit>
+            <Benefit>Technology</Benefit>
+            <Benefit>Marketing</Benefit>
+            <Benefit>AI</Benefit>
+            <Benefit>Data</Benefit>
           </div>
         </div>
       </div>
@@ -73,7 +71,7 @@ export default function CallToActionSection() {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="px-3 py-6 sm:px-5 sm:py-8 lg:px-6 lg:py-10">
-      <h3 className="text-3xl font-black text-white sm:text-4xl lg:text-5xl">
+      <h3 className="text-lg font-black text-white sm:text-2xl lg:text-3xl">
         {value}
       </h3>
 

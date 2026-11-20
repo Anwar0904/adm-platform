@@ -120,6 +120,7 @@ const PERMISSION_GROUPS = [
             "portfolio.create",
             "portfolio.update",
             "portfolio.delete",
+            "portfolio.approve",
         ],
     },
     {

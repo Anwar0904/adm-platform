@@ -21,12 +21,13 @@ import {
     Video,
     X,
 } from "lucide-react";
+import { portfolioStatusLabel } from "@/utils/portfolio-admin-status";
 
 /* =========================================================
    TYPES
 ========================================================= */
 
-type ProjectStatus = "Published" | "Draft";
+type ProjectStatus = "published" | "draft" | "archived";
 
 type MediaType = "image" | "video" | "document";
 
@@ -254,7 +255,7 @@ export default function PortfolioManagement() {
         useState("");
 
     const [status, setStatus] =
-        useState<ProjectStatus>("Draft");
+        useState<ProjectStatus>("draft");
 
     const [featured, setFeatured] =
         useState(false);
@@ -493,13 +494,13 @@ export default function PortfolioManagement() {
             published: projects.filter(
                 (project) =>
                     project.status ===
-                    "Published"
+                    "published"
             ).length,
 
             drafts: projects.filter(
                 (project) =>
                     project.status ===
-                    "Draft"
+                    "draft"
             ).length,
 
             featured: projects.filter(
@@ -524,7 +525,7 @@ export default function PortfolioManagement() {
 
         setDescription("");
 
-        setStatus("Draft");
+        setStatus("draft");
 
         setFeatured(false);
 
@@ -1037,6 +1038,7 @@ export default function PortfolioManagement() {
                             "All",
                             "Published",
                             "Draft",
+                            "Archived",
                         ].map(
                             (filter) => (
                                 <button
@@ -1045,13 +1047,13 @@ export default function PortfolioManagement() {
                                     }
                                     onClick={() =>
                                         setStatusFilter(
-                                            filter as
-                                            | "All"
-                                            | ProjectStatus
+                                            filter === "All"
+                                                ? "All"
+                                                : (filter.toLowerCase() as ProjectStatus)
                                         )
                                     }
                                     className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold transition ${statusFilter ===
-                                            filter
+                                            (filter === "All" ? "All" : filter.toLowerCase())
                                             ? "bg-blue-600 text-white"
                                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                         }`}
@@ -1127,14 +1129,12 @@ export default function PortfolioManagement() {
                                         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
                                             <span
                                                 className={`rounded-full px-3 py-1 text-[10px] font-black backdrop-blur ${project.status ===
-                                                        "Published"
+                                                        "published"
                                                         ? "bg-emerald-50/95 text-emerald-700"
                                                         : "bg-amber-50/95 text-amber-700"
                                                     }`}
                                             >
-                                                {
-                                                    project.status
-                                                }
+                                                {portfolioStatusLabel(project.status)}
                                             </span>
 
                                             {project.featured && (
@@ -1630,12 +1630,15 @@ export default function PortfolioManagement() {
                                         }
                                         className="input"
                                     >
-                                        <option value="Draft">
+                                        <option value="draft">
                                             Draft
                                         </option>
 
-                                        <option value="Published">
+                                        <option value="published">
                                             Published
+                                        </option>
+                                        <option value="archived">
+                                            Archived
                                         </option>
                                     </select>
                                 </Field>

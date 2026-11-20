@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { ApiError } from "@/lib/api/api-error";
 
 import {
     CONTENT_STATUS,
@@ -78,9 +79,7 @@ export class PortfolioService {
             await portfolioRepository.findById(id);
 
         if (!portfolio) {
-            throw new Error(
-                "Portfolio project not found."
-            );
+            throw new ApiError(404, "Portfolio project not found.");
         }
 
         return portfolio;

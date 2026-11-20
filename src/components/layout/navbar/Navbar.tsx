@@ -134,7 +134,7 @@ export default function Navbar() {
 
     return (
         <header className={`site-nav sticky top-0 z-50 w-full bg-slate-950/60 transition-all duration-300 ${scrolled ? "shadow-[0_20px_50px_rgba(8,15,30,0.45)] backdrop-blur-md" : "shadow-none"}`}>
-            <div className={`mx-auto flex w-full max-w-7xl items-center justify-between px-4 transition-all duration-300 sm:px-5 lg:px-8 ${scrolled ? "h-13 sm:h-16 lg:h-14" : "h-16 sm:h-14 lg:h-16"}`}>
+            <div className={`mx-auto flex w-full max-w-7xl items-center justify-between px-4 transition-all duration-300 sm:px-5 lg:px-8 ${scrolled ? "h-13 sm:h-16 lg:h-14" : "h-18 sm:h-14 lg:h-16"}`}>
                 <div className="shrink-0">
                     <NavLogo compact={scrolled} />
                 </div>

@@ -13,13 +13,14 @@ import {
     isEnumValue,
 } from "@/utils/enum.utils";
 import { connectDB } from "@/lib/db";
-import { requirePermission } from "@/lib/auth/require-auth";
 import { PERMISSIONS } from "@/constants/permissions";
+import { requirePermission } from "@/lib/auth/require-auth";
+import { withPortfolioReadAuthorization } from "@/lib/api/portfolio-read-handler";
 
 export async function GET(
     request: NextRequest
 ) {
-    try {
+    return withPortfolioReadAuthorization(request, async () => {
         await connectDB();
 
         const { searchParams } =
@@ -109,23 +110,7 @@ export async function GET(
                 status: 200,
             }
         );
-    } catch (error) {
-        console.error(
-            "GET /api/portfolio error:",
-            error
-        );
-
-        return NextResponse.json(
-            {
-                success: false,
-                message:
-                    "Failed to fetch portfolio projects.",
-            },
-            {
-                status: 500,
-            }
-        );
-    }
+    });
 }
 export async function POST(
     request: NextRequest

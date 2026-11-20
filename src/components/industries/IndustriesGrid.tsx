@@ -14,14 +14,14 @@ import {
 } from "lucide-react";
 
 const industries = [
-    { title: "Healthcare", slug: "healthcare", description: "AI-powered healthcare platforms, patient management systems and secure medical solutions.", image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=900&q=80", icon: HeartPulse, services: 8, color: "from-blue-600 to-cyan-500", tags: ["AI", "Cloud", "HIPAA"] },
-    { title: "Education", slug: "education", description: "Modern LMS platforms, virtual classrooms and AI learning assistants.", image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=900&q=80", icon: GraduationCap, services: 6, color: "from-indigo-600 to-blue-500", tags: ["LMS", "AI", "Analytics"] },
-    { title: "Finance", slug: "finance", description: "Secure fintech applications, payment systems and financial automation.", image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=80", icon: Landmark, services: 10, color: "from-blue-700 to-sky-500", tags: ["FinTech", "Security", "Automation"] },
-    { title: "E-Commerce", slug: "ecommerce", description: "Scalable online stores, AI recommendations and customer engagement.", image: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?w=900&q=80", icon: ShoppingCart, services: 9, color: "from-cyan-600 to-blue-600", tags: ["Next.js", "Payments", "AI"] },
-    { title: "Logistics", slug: "logistics", description: "Fleet management, warehouse automation and supply-chain intelligence.", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=900&q=80", icon: Truck, services: 7, color: "from-sky-600 to-blue-600", tags: ["Tracking", "IoT", "Automation"] },
-    { title: "Real Estate", slug: "real-estate", description: "Property portals, CRM solutions and intelligent real-estate systems.", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80", icon: Building2, services: 6, color: "from-blue-500 to-indigo-600", tags: ["CRM", "Portal", "Maps"] },
-    { title: "Manufacturing", slug: "manufacturing", description: "Smart factories powered by AI, IoT and predictive analytics.", image: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&q=80", icon: Factory, services: 8, color: "from-cyan-700 to-blue-700", tags: ["IoT", "AI", "ERP"] },
-    { title: "Technology", slug: "technology", description: "Enterprise SaaS platforms, cloud-native architecture and AI products.", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80", icon: Cpu, services: 12, color: "from-indigo-600 to-cyan-500", tags: ["Cloud", "SaaS", "DevOps"] },
+    { title: "Healthcare", slug: "healthcare", description: "Healthcare platforms, patient management systems and digital workflows.", image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=900&q=80", icon: HeartPulse, color: "from-blue-600 to-cyan-500", tags: ["AI", "Cloud", "Workflows"] },
+    { title: "Education", slug: "education", description: "Learning platforms, virtual classrooms and digital learning tools.", image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=900&q=80", icon: GraduationCap, color: "from-indigo-600 to-blue-500", tags: ["LMS", "AI", "Analytics"] },
+    { title: "Finance", slug: "finance", description: "Fintech applications, payment systems and financial automation.", image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=900&q=80", icon: Landmark, color: "from-blue-700 to-sky-500", tags: ["FinTech", "Payments", "Automation"] },
+    { title: "E-Commerce", slug: "ecommerce", description: "Online stores, recommendations and customer experiences.", image: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?w=900&q=80", icon: ShoppingCart, color: "from-cyan-600 to-blue-600", tags: ["Next.js", "Payments", "AI"] },
+    { title: "Logistics", slug: "logistics", description: "Fleet management, warehouse workflows and supply-chain data.", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=900&q=80", icon: Truck, color: "from-sky-600 to-blue-600", tags: ["Tracking", "IoT", "Automation"] },
+    { title: "Real Estate", slug: "real-estate", description: "Property portals, customer systems and digital property experiences.", image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=900&q=80", icon: Building2, color: "from-blue-500 to-indigo-600", tags: ["CRM", "Portal", "Maps"] },
+    { title: "Manufacturing", slug: "manufacturing", description: "Manufacturing systems, connected workflows and operational data.", image: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&q=80", icon: Factory, color: "from-cyan-700 to-blue-700", tags: ["IoT", "AI", "ERP"] },
+    { title: "Technology", slug: "technology", description: "SaaS platforms, cloud architecture and software products.", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80", icon: Cpu, color: "from-indigo-600 to-cyan-500", tags: ["Cloud", "SaaS", "DevOps"] },
 ];
 
 export default function IndustriesGrid() {
@@ -67,7 +67,7 @@ export default function IndustriesGrid() {
                                     </div>
                                     <div className="absolute bottom-6 left-6">
                                         <h3 className="text-2xl font-bold text-white">{industry.title}</h3>
-                                        <p className="mt-2 text-white/90">{industry.services} Solutions</p>
+                                        <p className="mt-2 text-white/90">Explore the context</p>
                                     </div>
                                 </div>
 

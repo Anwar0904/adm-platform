@@ -440,10 +440,10 @@ export default function ConsultationRequestSection() {
 
                         <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-slate-600">
                             Your consultation request
-                            has been received. Our team
-                            will review the details and
-                            contact you within 24
-                            business hours.
+                            has been received. The team
+                            can review the details and
+                            follow up using the contact
+                            information you provided.
                         </p>
 
                         <button
@@ -1242,7 +1242,7 @@ export default function ConsultationRequestSection() {
                                             title:
                                                 "Initial response",
                                             text:
-                                                "We contact you within 24 business hours.",
+                                                "The team reviews your request and follows up using the details you provide.",
                                         },
                                         {
                                             number: "03",

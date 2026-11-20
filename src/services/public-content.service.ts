@@ -19,6 +19,7 @@ import type {
 } from "@/types/team-member.types";
 import { Testimonial } from "@/models/testimonial.model";
 import LeadService from "@/services/lead.service";
+import { normalizePublicMediaUrl, normalizePublicUrl, publicProofMongoFilter } from "@/utils/portfolio-public-proof";
 
 const publicFields =
     "-createdBy -updatedBy -isDeleted -deletedAt";
@@ -43,6 +44,46 @@ type PublicContactInput = {
     interestedServices: string[];
     message: string;
 };
+
+type PublicPortfolioSource = {
+    _id: { toString(): string };
+    title?: string;
+    slug?: string;
+    clientName?: string;
+    shortDescription?: string;
+    category?: unknown;
+    featuredImage?: { url?: string; alt?: string } | null;
+    industries?: unknown[];
+    technologies?: string[];
+    projectUrl?: string;
+    publicProof?: { permittedElements?: string[]; classification?: string; capabilities?: string[] };
+};
+
+function publicPortfolioRecord(input: unknown) {
+    const project = input as PublicPortfolioSource;
+    const permitted = new Set(project.publicProof?.permittedElements ?? []);
+    const value: Record<string, unknown> = { id: project._id.toString() };
+
+    if (permitted.has("title")) value.title = project.title ?? "";
+    if (permitted.has("shortDescription")) value.shortDescription = project.shortDescription ?? "";
+    if (permitted.has("classification")) value.classification = project.publicProof?.classification;
+    if (permitted.has("clientName")) value.clientName = project.clientName ?? "";
+    if (permitted.has("capabilities")) value.capabilities = project.publicProof?.capabilities ?? [];
+    if (permitted.has("category")) value.category = project.category ?? null;
+    if (permitted.has("visual")) {
+        const url = normalizePublicMediaUrl(project.featuredImage?.url);
+        value.featuredImage = url
+            ? { url, alt: project.featuredImage?.alt || project.title || "Approved project visual" }
+            : null;
+    }
+    if (permitted.has("technologies")) value.technologies = project.technologies ?? [];
+    if (permitted.has("industries")) value.industries = project.industries ?? [];
+    if (permitted.has("projectUrl")) value.projectUrl = normalizePublicUrl(project.projectUrl);
+
+    // Slugs are needed to resolve the approved detail endpoint and are not private data.
+    value.slug = project.slug ?? "";
+    return value;
+}
 
 function pagination(page: number, limit: number, total: number) {
     return {
@@ -223,18 +264,37 @@ class PublicContentService {
     }
 
     async getPortfolio(query: Pagination) {
-        const filter = contentFilter(query);
+        // Search must not match private CMS fields such as clientName or content.
+        const filter = {
+            status: CONTENT_STATUS.PUBLISHED,
+            isDeleted: false,
+            ...publicProofMongoFilter(),
+        };
         const [portfolio, total] = await Promise.all([
-            Portfolio.find(filter).select(publicFields).populate("featuredImage").populate("services", "title slug").populate("industries", "title slug").sort({ sortOrder: 1, createdAt: -1 }).skip((query.page - 1) * query.limit).limit(query.limit),
+            Portfolio.find(filter)
+                .select("title slug clientName shortDescription category featuredImage industries technologies projectUrl publicProof")
+                .populate("category", "name title slug")
+                .populate({ path: "featuredImage", select: "url alt", match: { isDeleted: false } })
+                .populate("industries", "title slug")
+                .sort({ sortOrder: 1, createdAt: -1, _id: 1 })
+                .skip((query.page - 1) * query.limit)
+                .limit(Math.min(query.limit, 50)),
             Portfolio.countDocuments(filter),
         ]);
-        return { portfolio, pagination: pagination(query.page, query.limit, total) };
+        return {
+            portfolio,
+            pagination: pagination(query.page, Math.min(query.limit, 50), total),
+        };
     }
 
     async getPortfolioBySlug(slug: string) {
-        const portfolio = await Portfolio.findOne({ slug, status: CONTENT_STATUS.PUBLISHED, isDeleted: false }).select(publicFields).populate("featuredImage").populate("gallery").populate("services", "title slug").populate("industries", "title slug");
+        const portfolio = await Portfolio.findOne({ slug, status: CONTENT_STATUS.PUBLISHED, isDeleted: false, ...publicProofMongoFilter() })
+            .select("title slug clientName shortDescription category featuredImage industries technologies projectUrl publicProof")
+            .populate("category", "name title slug")
+            .populate({ path: "featuredImage", select: "url alt", match: { isDeleted: false } })
+            .populate("industries", "title slug");
         if (!portfolio) throw new ApiError(404, "Portfolio not found.");
-        return portfolio;
+        return publicPortfolioRecord(portfolio);
     }
 
     async getTeamMembers(query: TeamMemberPagination): Promise<{
@@ -366,9 +426,11 @@ class PublicContentService {
                 featured: true,
                 status: CONTENT_STATUS.PUBLISHED,
                 isDeleted: false,
+                ...publicProofMongoFilter(),
             })
-                .select(publicFields)
-                .populate("featuredImage")
+                .select("title slug clientName shortDescription category featuredImage industries technologies projectUrl publicProof")
+                .populate("category", "name title slug")
+                .populate({ path: "featuredImage", select: "url alt", match: { isDeleted: false } })
                 .sort({
                     sortOrder: 1,
                 })
@@ -436,7 +498,7 @@ class PublicContentService {
         return {
             page,
             services,
-            portfolio,
+            portfolio: portfolio.map((project) => publicPortfolioRecord(project)),
             industries,
             testimonials,
             teamMembers,

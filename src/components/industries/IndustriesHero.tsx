@@ -62,26 +62,10 @@ export default function IndustriesHero() {
                                 href="/portfolio"
                                 className="inline-flex items-center rounded-2xl border border-slate-700 bg-slate-900/60 px-7 py-4 font-semibold text-slate-100 transition hover:border-blue-400 hover:text-blue-200"
                             >
-                                View Case Studies
+                                Explore ADM capabilities
                             </Link>
                         </div>
 
-                        <div className="mt-14 grid grid-cols-3 gap-6">
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                <h3 className="text-3xl font-black text-blue-300">15+</h3>
-                                <p className="mt-2 text-sm text-slate-300">Industries</p>
-                            </div>
-
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                <h3 className="text-3xl font-black text-blue-300">50+</h3>
-                                <p className="mt-2 text-sm text-slate-300">Engagements</p>
-                            </div>
-
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                <h3 className="text-3xl font-black text-blue-300">98%</h3>
-                                <p className="mt-2 text-sm text-slate-300">Satisfaction</p>
-                            </div>
-                        </div>
                     </motion.div>
 
                     <motion.div

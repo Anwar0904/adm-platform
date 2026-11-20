@@ -81,49 +81,6 @@ export default function ContactHeroSection() {
                             </Link>
                         </div>
 
-                        {/* Stats */}
-
-                        <div className="mt-16 grid grid-cols-2 gap-6 md:grid-cols-4">
-                            <div>
-                                <h3 className="text-4xl font-black text-white">
-                                    50+
-                                </h3>
-
-                                <p className="mt-2 text-slate-400">
-                                    Projects
-                                </p>
-                            </div>
-
-                            <div>
-                                <h3 className="text-4xl font-black text-white">
-                                    98%
-                                </h3>
-
-                                <p className="mt-2 text-slate-400">
-                                    Success
-                                </p>
-                            </div>
-
-                            <div>
-                                <h3 className="text-4xl font-black text-white">
-                                    24h
-                                </h3>
-
-                                <p className="mt-2 text-slate-400">
-                                    Response
-                                </p>
-                            </div>
-
-                            <div>
-                                <h3 className="text-4xl font-black text-white">
-                                    100%
-                                </h3>
-
-                                <p className="mt-2 text-slate-400">
-                                    Dedicated
-                                </p>
-                            </div>
-                        </div>
                     </motion.div>
 
                     {/* Right */}
@@ -151,22 +108,9 @@ export default function ContactHeroSection() {
                                 <h3 className="mt-6 text-3xl font-black text-white">Free Strategy Call</h3>
 
                                 <p className="mt-4 leading-8 text-slate-300">
-                                    Schedule a free consultation with our experts to discuss your business goals,
-                                    technical challenges and project vision.
+                                    Share the context for your technology, marketing, AI or data
+                                    challenge and the kind of next step you are exploring.
                                 </p>
-
-                                <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-900 p-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white">
-                                            <MessageSquare size={22} />
-                                        </div>
-
-                                        <div>
-                                            <h4 className="font-bold text-white">Average Response Time</h4>
-                                            <p className="text-sm text-slate-400">Less than 24 hours</p>
-                                        </div>
-                                    </div>
-                                </div>
 
                                 <Link href="#contact-form" className="mt-8 flex w-full items-center justify-center rounded-2xl bg-blue-600 py-4 font-semibold text-white transition hover:bg-blue-500">
                                     Book Consultation
@@ -185,14 +129,7 @@ export default function ContactHeroSection() {
                                 }}
                                 className="absolute -left-8 -bottom-8 hidden rounded-3xl border border-white/10 bg-white/10 p-6 backdrop-blur-2xl lg:block"
                             >
-                                <p className="text-sm text-cyan-200">
-                                    Trusted by startups,
-                                    enterprises & innovators
-                                </p>
-
-                                <h3 className="mt-2 text-3xl font-black text-white">
-                                    50+
-                                </h3>
+                                <p className="text-sm text-cyan-200">Technology · Marketing · AI · Data</p>
                             </motion.div>
                         </div>
                     </motion.div>
