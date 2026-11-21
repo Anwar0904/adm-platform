@@ -8,9 +8,11 @@ import { ApiErrorHandler } from "@/lib/api/api-error";
 import AuthService from "@/services/auth/auth.service";
 
 import { ResetPasswordSchema } from "@/validators/auth/reset-password.validator";
+import { enforceSameOrigin } from "@/lib/security/same-origin";
 
 export async function POST(request: NextRequest) {
     try {
+        enforceSameOrigin(request);
         await connectDB();
 
         const body = await request.json();

@@ -97,6 +97,10 @@ export async function PATCH(
                 body
             );
 
+        if (parsedData.role !== undefined) {
+            await requirePermission(request, PERMISSIONS.ROLE_UPDATE);
+        }
+
         const data = {
             ...parsedData,
 

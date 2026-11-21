@@ -3,17 +3,17 @@
 ## Local implementation status
 
 - Component and public-data audit: complete; see `PORTFOLIO_COMPONENT_DECISIONS.md`.
-- Portfolio experience implementation: complete in the current worktree; no branch, commit, PR, push or deployment was created.
-- Starting checkout was `main` at `8f1c2deedb4dbbaecbef0b9922b8e6e0b5776a39`; all implementation remains uncommitted and should be reviewed before a commit is prepared.
+- Portfolio experience implementation: site-alignment updates are in the current worktree; no commit, PR, push or deployment was created.
+- Starting checkout was `main` at `8b924efdc123b0c9d3464f826be80e70574f2b45`. Creating `design/portfolio-site-alignment` failed because Git could not write `.git/refs`; `.git` is read-only in this workspace. Changes remain uncommitted on `main` for review; no permissions were bypassed.
 - Approved-public record policy: preserved; no database writes or seed actions performed.
 - Screenshots: not captured; see `PORTFOLIO_VISUAL_QA.md`.
 - CI URL / current deployed SHA: not verified in this session. Do not treat the supplied prompt's historical GitHub/live observations as current production evidence.
 
 ## Commands and results
 
-For the current worktree, `npm.cmd run typecheck` passed after Next generated route types; `npm.cmd run lint` passed with 0 errors and 78 warnings; targeted ESLint on all new portfolio experience files, the homepage teaser and route passed with no warnings; and `npm.cmd run build` passed, compiling `/portfolio` as a dynamic route. Build ran on Node 26.13.0, outside the project's requested `>=22 <23` range. `npm.cmd test` discovered 21 test files but all failed before assertions when the Node 26 `tsx` bootstrap called `os.userInfo()` and received `uv_os_get_passwd returned ENOMEM`. The first parallel typecheck invocation also encountered a transient missing `.next/types/routes.js` while the build was generating route types; the rerun after build passed. A first attempt to call `npm` through PowerShell was blocked before running scripts; `npm.cmd` was used successfully thereafter. `npm ci` was not run because supported Node 22 is unavailable. `git diff --check` passed with existing LF-to-CRLF warnings. The earlier local public route smoke check covered `/`, `/robots.txt`, `/sitemap.xml`, `/about`, `/contact` and `/industries`; it deliberately did not request DB-backed `/portfolio`.
+For the site-alignment pass, `npm.cmd run typecheck` passed, `npm.cmd run build` passed with `/portfolio` compiled as a dynamic route, and `npm.cmd run lint` passed with 0 errors and 78 warnings. Targeted ESLint for the portfolio experience and route passed without warnings. Build used Node 26.13.0, outside the project's `>=22 <23` engine range. `npm.cmd test` discovered 21 files, but all failed before assertions when Node 26 `tsx` startup called `os.userInfo()` and received `uv_os_get_passwd returned ENOMEM`. Node 22 and browser screenshots are unavailable here, so `npm ci` and browser QA were not run. `git diff --check` passed with LF-to-CRLF warnings. The earlier local public-route smoke check deliberately omitted DB-backed `/portfolio`.
 
-Before release, rerun typecheck, lint, tests, and build under supported Node 22. Also run auth/privacy tests, responsive screenshots, keyboard/axe checks, and staging-safe DB tests.
+Re-run quality checks under Node 22. Also run auth/privacy tests, responsive screenshots at the README's target widths, keyboard/axe checks, and staging-safe DB tests before release.
 
 ## Release decision: NO-GO
 

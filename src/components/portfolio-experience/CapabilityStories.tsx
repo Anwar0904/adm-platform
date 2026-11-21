@@ -14,25 +14,25 @@ function Motif({ kind }: { kind: (typeof stories)[number]["motif"] }) {
 
 export default function CapabilityStories({ unavailable }: { unavailable: boolean }) {
   return (
-    <section id="capability-stories" aria-labelledby="capability-stories-title" className="px-5 py-20 sm:px-8 sm:py-28 lg:px-12">
-      <div className="mx-auto max-w-[1400px]">
+    <section id="capability-stories" aria-labelledby="capability-stories-title" className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
+      <div className="mx-auto max-w-7xl">
         <div className="grid gap-7 border-b border-white/10 pb-10 lg:grid-cols-[.9fr_1.1fr] lg:items-end lg:pb-14">
-          <div><p className="text-[11px] font-semibold uppercase tracking-[.24em] text-cyan-200">A studio for connected challenges</p><h2 id="capability-stories-title" className="mt-4 max-w-[14ch] text-4xl font-semibold leading-[1.04] tracking-[-.045em] sm:text-5xl lg:text-6xl">Ways we turn complexity into useful systems.</h2></div>
+          <div><p className="inline-flex rounded-full border border-blue-400/25 bg-blue-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-blue-200 sm:text-sm">A studio for connected challenges</p><h2 id="capability-stories-title" className="mt-5 max-w-[14ch] text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">Ways we turn complexity into useful systems.</h2></div>
           <div className="max-w-xl lg:justify-self-end"><p className="text-base leading-7 text-slate-300 sm:text-lg">The work often begins between disciplines: where a tool, a customer journey, an intelligent workflow and a decision all meet.</p><p className="mt-4 text-sm leading-6 text-slate-400">{unavailable ? "The public project catalogue is temporarily unavailable. This overview describes ADM’s capabilities and does not imply that any project example has been approved." : "Public project examples are shared when publication permissions allow."}</p></div>
         </div>
         <div className="divide-y divide-white/10">
-          {stories.map((story, i) => <article key={story.name} className={`grid gap-6 py-9 sm:py-12 lg:grid-cols-[.16fr_.84fr] lg:gap-10 ${i % 2 ? "" : ""}`}>
+          {stories.map((story) => <article key={story.name} className="grid gap-6 py-8 sm:py-10 lg:grid-cols-[.16fr_.84fr] lg:gap-10">
             <div className="flex items-start gap-4 lg:block"><span className="font-mono text-xs tracking-widest text-cyan-200">{story.no}</span><span className="h-px w-8 translate-y-2 bg-cyan-200/50 lg:mt-6 lg:block" /></div>
-            <div className="grid gap-6 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:gap-12">
-              <div><p className="text-[10px] font-semibold uppercase tracking-[.2em] text-slate-500">{story.eyebrow}</p><h3 className="mt-2 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">{story.name}</h3><p className="mt-5 text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">{story.challenge}</p></div>
-              <div className="grid min-h-[210px] overflow-hidden rounded-2xl border border-white/[.08] bg-[#081725] sm:grid-cols-[.75fr_1.25fr]">
+            <div className="grid gap-6 lg:grid-cols-[7fr_5fr] lg:items-center lg:gap-10">
+              <div><p className="text-xs font-semibold uppercase tracking-wider text-blue-300">{story.eyebrow}</p><h3 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">{story.name}</h3><p className="mt-4 text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">{story.challenge}</p></div>
+              <div className="grid min-h-[210px] overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 shadow-xl shadow-black/20 sm:grid-cols-[.75fr_1.25fr]">
                 <div className="flex items-center justify-center border-b border-white/[.06] px-6 py-5 sm:border-b-0 sm:border-r"><p className="max-w-xs text-sm leading-6 text-slate-300">{story.response}</p></div>
                 <div className="relative flex min-h-[145px] items-center justify-center p-5"><div className="absolute inset-0 opacity-80 [background:radial-gradient(ellipse_at_center,rgba(34,211,238,.1),transparent_65%)]"/><Motif kind={story.motif}/><span className="absolute bottom-3 right-4 text-[9px] uppercase tracking-[.2em] text-slate-600">Illustrative system map</span></div>
               </div>
             </div>
           </article>)}
         </div>
-        <p className="mt-8 border-l border-cyan-200/50 pl-4 text-sm leading-6 text-slate-400">These are examples of challenges ADM can help explore. They are not descriptions of completed client engagements.</p>
+        <p className="mt-8 rounded-xl border border-blue-400/20 bg-blue-500/5 px-5 py-4 text-sm leading-6 text-slate-300">These are examples of challenges ADM can help explore. They are not descriptions of completed client engagements.</p>
       </div>
     </section>
   );
