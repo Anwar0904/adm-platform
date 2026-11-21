@@ -21,7 +21,7 @@ export async function GET(
                 ? user.avatar
                 : user.avatar?.url ?? null;
 
-        return ApiResponse.success(
+        const response = ApiResponse.success(
             {
                 _id: user._id.toString(),
                 name: `${user.firstName} ${user.lastName}`.trim(),
@@ -31,6 +31,9 @@ export async function GET(
             },
             "Current user fetched successfully."
         );
+        response.headers.set("Cache-Control", "no-store, private");
+        response.headers.set("Pragma", "no-cache");
+        return response;
     } catch (error) {
         return ApiErrorHandler.handle(error);
     }

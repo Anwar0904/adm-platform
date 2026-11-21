@@ -128,6 +128,10 @@ export async function POST(
                 body
             );
 
+        // Assigning a role is a privilege-management action, separate from creating
+        // an ordinary user record.
+        await requirePermission(request, PERMISSIONS.ROLE_UPDATE);
+
         const data = {
             ...parsedData,
 

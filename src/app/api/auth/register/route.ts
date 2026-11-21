@@ -2,31 +2,31 @@ import { NextRequest } from "next/server";
 
 import { connectDB } from "@/lib/db";
 
-import { ApiResponse } from "@/lib/api/api-response";
 import { ApiErrorHandler } from "@/lib/api/api-error";
 
 import AuthService from "@/services/auth/auth.service";
+import { AuthEmailService } from "@/services/auth/auth-email.service";
+import { authFlowAcceptedResponse, authFlowRateLimitedResponse, authFlowUnavailableResponse, authFlowNotFoundResponse } from "@/lib/api/auth-flow-response";
+import { isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
+import { enforceSameOrigin } from "@/lib/security/same-origin";
 
 import { RegisterSchema } from "@/validators/auth/register.validator";
 
 export async function POST(request: NextRequest) {
+  if (process.env.AUTH_PUBLIC_SIGNUP_ENABLED !== "true") return authFlowNotFoundResponse();
   try {
-    // Connect to MongoDB
-    await connectDB();
+    enforceSameOrigin(request, { requireOrigin: true });
+    if (!AuthEmailService.isConfigured()) return authFlowUnavailableResponse();
 
-    // Parse request body
     const body = await request.json();
-
-    // Validate request
     const data = RegisterSchema.parse(body);
+    if (isAuthRequestRateLimited(request, "register", data.email, { identifierLimit: 3, ipLimit: 10, windowMs: 60 * 60_000 })) {
+      return authFlowRateLimitedResponse();
+    }
 
-    // Register user
-    const user = await AuthService.register(data);
-    // Return success response
-    return ApiResponse.created(
-      user,
-      "User registered successfully."
-    );
+    await connectDB();
+    await AuthService.register(data);
+    return authFlowAcceptedResponse();
   } catch (error) {
     return ApiErrorHandler.handle(error);
   }

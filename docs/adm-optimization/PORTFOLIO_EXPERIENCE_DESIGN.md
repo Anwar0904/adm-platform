@@ -12,9 +12,11 @@ The public route keeps server-side portfolio retrieval and composes five editori
 
 ## Visual and responsive decisions
 
-The page keeps the midnight navy/cyan ADM palette and shared navigation. It uses a split, high-contrast hero with a fine grid texture and a responsive illustrative stage. The hero scales its headline with `clamp`, shifts to a single column on smaller screens and retains all four touch-sized selectors. The zero-record stories vary their editorial number, copy, and diagram layout rather than repeating four icon cards. Approved work uses an asymmetric feature, then a responsive grid. Facets appear only when there are multiple values to choose from.
+The page keeps the midnight navy/cyan ADM palette and shared navigation. Its layout now follows the public site's `max-w-7xl` content width, `px-4 sm:px-6 lg:px-8` gutters, and 20–28-unit section rhythm. Typography follows the site hierarchy with bold 3xl–5xl headings, compact pill kickers and familiar body sizes. Primary actions reuse `site-button-primary`; secondary actions use the shared rounded-xl treatment. Panels use rounded-2xl/3xl surfaces, blue/cyan edge accents and the soft border/shadow language used across homepage and service sections.
 
-SVG and CSS illustrations avoid stock photography and avoid looking like fabricated client product screenshots. Approved CMS visuals are used only when provided by the approved-public service. Motion is limited to subtle hover/indicator behavior and respects reduced-motion preferences; essential content renders without animation. No added package dependencies.
+The split hero retains a responsive illustrative stage. The hero shifts to one column at smaller widths and retains all four touch-sized selectors. The zero-record stories vary their editorial number, copy and diagram layout rather than repeating four icon cards. Approved work uses a 7/5 asymmetric feature, then a responsive grid. Facets appear only when there are multiple values to choose from.
+
+SVG and CSS illustrations avoid stock photography and avoid looking like fabricated client product screenshots. Approved CMS visuals are used only when provided by the approved-public service. Motion is limited to subtle hover/indicator behavior and respects reduced-motion preferences; essential content renders without animation. No added package dependencies. All nine route/experience files were aligned in place; `types.ts`, APIs, CMS records and authorization were not changed for this design pass.
 
 ## Copy and interaction rationale
 

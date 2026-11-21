@@ -8,9 +8,12 @@ import { ApiErrorHandler } from "@/lib/api/api-error";
 import AuthService from "@/services/auth/auth.service";
 
 import { ChangePasswordSchema } from "@/validators/auth/change-password.validator";
+import { requireAuth } from "@/lib/auth/require-auth";
+import { enforceSameOrigin } from "@/lib/security/same-origin";
 
 export async function POST(request: NextRequest) {
     try {
+        enforceSameOrigin(request, { requireOrigin: true });
         await connectDB();
 
         const body = await request.json();
@@ -18,15 +21,10 @@ export async function POST(request: NextRequest) {
         const data =
             ChangePasswordSchema.parse(body);
 
-        /**
-         * Temporary
-         * We'll replace this after auth middleware.
-         */
-
-        const userId = body.userId;
+        const currentUser = await requireAuth(request);
 
         await AuthService.changePassword(
-            userId,
+            currentUser._id.toString(),
             data
         );
 

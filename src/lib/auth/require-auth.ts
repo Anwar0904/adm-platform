@@ -9,6 +9,7 @@ import { getUserFromToken } from "@/lib/auth/get-user";
 import { JwtService } from "@/lib/auth/jwt";
 import { AuthorizationService } from "@/lib/auth/authorization";
 import AuthService from "@/services/auth/auth.service";
+import { enforceSameOrigin } from "@/lib/security/same-origin";
 
 const ACCESS_TOKEN_COOKIE = "adm_access_token";
 const REFRESH_TOKEN_COOKIE = "adm_refresh_token";
@@ -41,6 +42,7 @@ async function renewRequestSession(refreshToken: string) {
 }
 
 export async function requireAuth(request: NextRequest) {
+    enforceSameOrigin(request);
     const authorization = request.headers.get("authorization");
 
     if (

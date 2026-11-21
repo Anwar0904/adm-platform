@@ -24,6 +24,8 @@ const UPLOAD_DIR = path.join(
 );
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_REQUEST_SIZE = 32 * 1024 * 1024;
+const MAX_FILES = 5;
 
 const USE_BLOB_STORAGE =
     process.env.NODE_ENV === "production";
@@ -33,51 +35,53 @@ const ALLOWED_MIME_TYPES = [
     "image/png",
     "image/webp",
     "image/gif",
-    "image/svg+xml",
-
     "video/mp4",
     "video/webm",
 
     "application/pdf",
 ];
 
-let publicIdIndexMigration: Promise<void> | null = null;
-
-async function ensurePublicIdIndex() {
-    if (!publicIdIndexMigration) {
-        publicIdIndexMigration = (async () => {
-            const collection = Media.collection;
-            const indexes = await collection.indexes();
-            const publicIdIndex = indexes.find(
-                (index) => index.name === "publicId_1"
-            );
-
-            if (
-                publicIdIndex?.unique &&
-                publicIdIndex.sparse
-            ) {
-                return;
-            }
-
-            if (publicIdIndex) {
-                await collection.dropIndex("publicId_1");
-            }
-
-            await collection.createIndex(
-                { publicId: 1 },
-                {
-                    name: "publicId_1",
-                    unique: true,
-                    sparse: true,
-                }
-            );
-        })().catch((error) => {
-            publicIdIndexMigration = null;
-            throw error;
-        });
+async function readBoundedFormData(request: NextRequest) {
+    const contentLength = Number(request.headers.get("content-length"));
+    if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_SIZE) {
+        throw new ApiError(413, "Upload request is too large.");
     }
+    if (!request.body) throw new ApiError(400, "Upload body is required.");
 
-    await publicIdIndexMigration;
+    const reader = request.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            total += value.byteLength;
+            if (total > MAX_REQUEST_SIZE) {
+                await reader.cancel();
+                throw new ApiError(413, "Upload request is too large.");
+            }
+            chunks.push(value);
+        }
+    } finally {
+        reader.releaseLock();
+    }
+    const body = Buffer.concat(chunks.map((chunk) => Buffer.from(chunk)));
+    return new Response(body, { headers: request.headers }).formData();
+}
+
+function hasValidSignature(mimeType: string, bytes: Buffer) {
+    if (mimeType === "image/jpeg") return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+    if (mimeType === "image/png") return bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+    if (mimeType === "image/gif") return ["GIF87a", "GIF89a"].includes(bytes.subarray(0, 6).toString("ascii"));
+    if (mimeType === "image/webp") return bytes.subarray(0, 4).toString("ascii") === "RIFF" && bytes.subarray(8, 12).toString("ascii") === "WEBP";
+    if (mimeType === "application/pdf") return bytes.subarray(0, 5).toString("ascii") === "%PDF-";
+    if (mimeType === "video/mp4") return bytes.subarray(4, 8).toString("ascii") === "ftyp";
+    if (mimeType === "video/webm") return bytes.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]));
+    return false;
+}
+
+function escapeRegex(value: string) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function getMediaType(mimeType: string) {
@@ -107,6 +111,19 @@ function getSafeExtension(filename: string) {
         .replace(/[^a-z0-9.]/g, "");
 }
 
+function hasMatchingExtension(mimeType: string, extension: string) {
+    const allowed: Record<string, string[]> = {
+        "image/jpeg": [".jpg", ".jpeg"],
+        "image/png": [".png"],
+        "image/webp": [".webp"],
+        "image/gif": [".gif"],
+        "video/mp4": [".mp4", ".m4v"],
+        "video/webm": [".webm"],
+        "application/pdf": [".pdf"],
+    };
+    return allowed[mimeType]?.includes(extension) ?? false;
+}
+
 export async function GET(request: NextRequest) {
     try {
         await connectDB();
@@ -130,13 +147,13 @@ export async function GET(request: NextRequest) {
             filter.$or = [
                 {
                     name: {
-                        $regex: search.trim(),
+                        $regex: escapeRegex(search.trim().slice(0, 100)),
                         $options: "i",
                     },
                 },
                 {
                     originalName: {
-                        $regex: search.trim(),
+                        $regex: escapeRegex(search.trim().slice(0, 100)),
                         $options: "i",
                     },
                 },
@@ -158,6 +175,7 @@ export async function GET(request: NextRequest) {
             .sort({
                 createdAt: -1,
             })
+            .limit(100)
             .lean();
 
         return ApiResponse.success(
@@ -179,8 +197,6 @@ export async function POST(request: NextRequest) {
                 PERMISSIONS.MEDIA_CREATE
             );
 
-        await ensurePublicIdIndex();
-
         if (
             USE_BLOB_STORAGE &&
             !process.env.BLOB_READ_WRITE_TOKEN
@@ -191,8 +207,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const formData =
-            await request.formData();
+        const formData = await readBoundedFormData(request);
 
         const files = formData
             .getAll("files")
@@ -221,6 +236,9 @@ export async function POST(request: NextRequest) {
                 400,
                 "No files uploaded."
             );
+        }
+        if (files.length > MAX_FILES) {
+            throw new ApiError(400, `Upload no more than ${MAX_FILES} files at a time.`);
         }
 
         if (!USE_BLOB_STORAGE) {
@@ -268,6 +286,9 @@ export async function POST(request: NextRequest) {
                 getSafeExtension(
                     file.name
                 );
+            if (!hasMatchingExtension(file.type, extension)) {
+                throw new ApiError(400, "File extension does not match its declared type.");
+            }
 
             const originalBaseName =
                 path.basename(
@@ -299,6 +320,10 @@ export async function POST(request: NextRequest) {
 
                 const buffer =
                     Buffer.from(arrayBuffer);
+
+                if (!hasValidSignature(file.type, buffer)) {
+                    throw new ApiError(400, "File content does not match its declared type.");
+                }
 
                 if (USE_BLOB_STORAGE) {
                     const blob = await put(

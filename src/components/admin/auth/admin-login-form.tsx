@@ -454,6 +454,11 @@ export default function AdminLoginForm() {
                                 </button>
                             </form>
 
+                            <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
+                                <Link href="/auth/forgot-password" className="font-semibold text-blue-700 hover:text-blue-900">Forgot password?</Link>
+                                <Link href="/auth/resend-verification" className="font-semibold text-blue-700 hover:text-blue-900">Resend verification email</Link>
+                            </div>
+
                             {/* Security note */}
 
                             <div className="mt-6 flex items-start gap-3 rounded-2xl bg-slate-50 p-3.5">

@@ -1,10 +1,13 @@
 import { NextRequest } from "next/server";
 
 import { connectDB } from "@/lib/db";
-import { ApiResponse } from "@/lib/api/api-response";
 import { ApiErrorHandler } from "@/lib/api/api-error";
 
 import AuthService from "@/services/auth/auth.service";
+import { AuthEmailService } from "@/services/auth/auth-email.service";
+import { authFlowAcceptedResponse, authFlowRateLimitedResponse, authFlowUnavailableResponse } from "@/lib/api/auth-flow-response";
+import { isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
+import { enforceSameOrigin } from "@/lib/security/same-origin";
 import { ResendVerificationSchema } from "@/middleware/resend-verification.validator";
 
 
@@ -12,25 +15,17 @@ export async function POST(
     request: NextRequest
 ) {
     try {
+        enforceSameOrigin(request);
+        const body = await request.json();
+        const data = ResendVerificationSchema.parse(body);
+
+        if (!AuthEmailService.isConfigured()) return authFlowUnavailableResponse();
+        if (isAuthRequestRateLimited(request, "email-verification", data.email, { identifierLimit: 3, ipLimit: 15, windowMs: 60 * 60_000 })) {
+            return authFlowRateLimitedResponse();
+        }
         await connectDB();
-
-        const body =
-            await request.json();
-
-        const data =
-            ResendVerificationSchema.parse(
-                body
-            );
-
-        const result =
-            await AuthService.resendVerificationEmail(
-                data.email
-            );
-
-        return ApiResponse.success(
-            result,
-            "Verification email sent."
-        );
+        await AuthService.resendVerificationEmail(data.email);
+        return authFlowAcceptedResponse();
     } catch (error) {
         return ApiErrorHandler.handle(
             error

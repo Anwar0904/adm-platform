@@ -8,9 +8,11 @@ import {
     getRefreshToken,
     setAuthCookies,
 } from "@/lib/auth/auth-cookies";
+import { enforceSameOrigin } from "@/lib/security/same-origin";
 
 export async function POST(request: NextRequest) {
     try {
+        enforceSameOrigin(request, { requireOrigin: true });
         await connectDB();
 
         const refreshToken = await getRefreshToken();
@@ -51,10 +53,13 @@ export async function POST(request: NextRequest) {
             result.sessionExpiresAt
         );
 
-        return ApiResponse.success(
+        const response = ApiResponse.success(
             {},
             "Session refreshed successfully."
         );
+        response.headers.set("Cache-Control", "no-store, private");
+        response.headers.set("Pragma", "no-cache");
+        return response;
     } catch (error) {
         return ApiErrorHandler.handle(error);
     }
