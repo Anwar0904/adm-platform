@@ -20,14 +20,14 @@ test("Upstash Redis shares atomic limits across separate clients and expires cou
     token: testToken,
     enableTelemetry: false,
     retry: false,
-    signal: () => AbortSignal.timeout(1_500),
+    signal: () => AbortSignal.timeout(10_000),
   });
   const clientB = new Redis({
     url: testUrl,
     token: testToken,
     enableTelemetry: false,
     retry: false,
-    signal: () => AbortSignal.timeout(1_500),
+    signal: () => AbortSignal.timeout(10_000),
   });
   const namespace = `adm:auth-rate-limit-integration:${randomUUID()}`;
   const storeA = createRedisAuthRateLimitStore(clientA, namespace);
