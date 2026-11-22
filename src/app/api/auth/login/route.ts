@@ -11,7 +11,8 @@ import { LoginSchema } from "@/validators/auth/login.validator";
 
 import { setAuthCookies } from "@/lib/auth/auth-cookies";
 import { toAuthUserResponse } from "@/dto/auth/auth-user-response.dto";
-import { isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
+import { AUTH_REQUEST_LIMITS, isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
+import { authFlowRateLimitedResponse } from "@/lib/api/auth-flow-response";
 import { enforceSameOrigin } from "@/lib/security/same-origin";
 
 export async function POST(
@@ -25,11 +26,8 @@ export async function POST(
     const data =
       LoginSchema.parse(body);
 
-    if (isAuthRequestRateLimited(request, "login", data.email, { identifierLimit: 8, ipLimit: 30, windowMs: 15 * 60_000 })) {
-      return Response.json(
-        { success: false, message: "Too many requests. Try again later." },
-        { status: 429, headers: { "Cache-Control": "no-store, private" } },
-      );
+    if (await isAuthRequestRateLimited(request, "login", data.email, AUTH_REQUEST_LIMITS.login)) {
+      return authFlowRateLimitedResponse();
     }
     await connectDB();
 

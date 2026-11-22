@@ -6,7 +6,7 @@ import { ApiErrorHandler } from "@/lib/api/api-error";
 import AuthService from "@/services/auth/auth.service";
 import { AuthEmailService } from "@/services/auth/auth-email.service";
 import { authFlowAcceptedResponse, authFlowRateLimitedResponse, authFlowUnavailableResponse } from "@/lib/api/auth-flow-response";
-import { isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
+import { AUTH_REQUEST_LIMITS, isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
 import { enforceSameOrigin } from "@/lib/security/same-origin";
 import { ResendVerificationSchema } from "@/middleware/resend-verification.validator";
 
@@ -20,7 +20,7 @@ export async function POST(
         const data = ResendVerificationSchema.parse(body);
 
         if (!AuthEmailService.isConfigured()) return authFlowUnavailableResponse();
-        if (isAuthRequestRateLimited(request, "email-verification", data.email, { identifierLimit: 3, ipLimit: 15, windowMs: 60 * 60_000 })) {
+        if (await isAuthRequestRateLimited(request, "email-verification", data.email, AUTH_REQUEST_LIMITS.emailVerification)) {
             return authFlowRateLimitedResponse();
         }
         await connectDB();

@@ -7,7 +7,7 @@ import { ApiErrorHandler } from "@/lib/api/api-error";
 import AuthService from "@/services/auth/auth.service";
 import { AuthEmailService } from "@/services/auth/auth-email.service";
 import { authFlowAcceptedResponse, authFlowRateLimitedResponse, authFlowUnavailableResponse, authFlowNotFoundResponse } from "@/lib/api/auth-flow-response";
-import { isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
+import { AUTH_REQUEST_LIMITS, isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
 import { enforceSameOrigin } from "@/lib/security/same-origin";
 
 import { RegisterSchema } from "@/validators/auth/register.validator";
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const data = RegisterSchema.parse(body);
-    if (isAuthRequestRateLimited(request, "register", data.email, { identifierLimit: 3, ipLimit: 10, windowMs: 60 * 60_000 })) {
+    if (await isAuthRequestRateLimited(request, "register", data.email, AUTH_REQUEST_LIMITS.register)) {
       return authFlowRateLimitedResponse();
     }
 
