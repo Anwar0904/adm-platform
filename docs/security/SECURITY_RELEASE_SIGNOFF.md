@@ -1,101 +1,109 @@
 # ADM security release signoff
 
-**Review date:** 2026-11-21  
+**Review date:** 2026-11-22
+
 **Branch:** `security/platform-hardening-review`
 
-**Base candidate:** `3dff3ecb9c9a5a7b337940038ee171ebf6835907`
-**Pull request:** [#3](https://github.com/Anwar0904/adm-platform/pull/3), currently Draft  
-**Decision:** **NO-GO — do not merge or deploy. Keep PR #3 Draft.**
+**Candidate commit:** `c596d6878b06d1b2dd2094f21f0db43d07821e66`
 
-The process-local rate-limit vulnerability has been remediated in the current uncommitted working tree with a shared Redis-backed implementation. This working tree has not been deployed or checked by GitHub/Vercel. The six passing checks are for the base candidate SHA above, not these changes. A dedicated Redis integration endpoint and Preview credentials are unavailable, so cross-client integration and Preview behavior remain unverified. Production configuration was not inspected or changed.
+**Pull request:** [#3](https://github.com/Anwar0904/adm-platform/pull/3)
+
+**Decision:** **NO-GO for merge and Production release.** Keep PR #3 unmerged; do not mark it Ready for Review pending the gates below.
 
 ## 1. Vulnerability and remediation
 
-The prior limiter stored counters in a JavaScript `Map` within one Vercel function process. Requests routed to other instances or cold starts did not share those counters, allowing an attacker to spread login and recovery attempts across instances and bypass the intended budgets.
+The former authentication limiter stored counters in a JavaScript `Map` inside one Vercel function process. Counters were not shared between independently scaled or cold-started instances, so distributing attempts could bypass route budgets.
 
-The updated `src/lib/security/auth-request-limit.ts` uses the maintained `@upstash/redis` TypeScript SDK (version `1.41.0` in the lockfile), an HTTP client designed for serverless environments. A single Redis Lua script checks and increments all applicable account/IP counters atomically and sets each counter's expiry on its first accepted request. The script's keys use a shared action hash tag for Redis Cluster compatibility. Upstash documents the [TypeScript SDK](https://upstash.com/docs/redis/sdks/ts/overview) and [atomic Lua scripting](https://upstash.com/docs/redis/sdks/ts/commands/scripts/eval).
+The candidate uses `@upstash/redis` and one Redis Lua script to inspect and update account/IP counters atomically. Per-route budgets and first-request fixed-window expiry remain unchanged:
 
-The existing route budgets and fixed-window expiry behavior are preserved:
-
-| Endpoint | Per-account budget | Per-IP budget | Window |
+| Endpoint | Per-account | Per-IP | Window |
 | --- | ---: | ---: | --- |
 | Login | 8 | 30 | 15 minutes |
 | Registration | 3 | 10 | 1 hour |
 | Password reset | 3 | 15 | 15 minutes |
 | Verification resend | 3 | 15 | 1 hour |
 
-Keys include an action namespace and HMAC-SHA256 digests of normalized account/IP identifiers; raw emails, IP addresses, passwords, JWTs, and recovery tokens are not put in keys. Production uses Vercel's proxy-overwritten `x-forwarded-for` header and fails closed if it is missing or invalid; the header cannot be selected from an environment variable in Production. Vercel documents the trusted forwarding behavior in its [request headers reference](https://vercel.com/docs/headers/request-headers). Other client-supplied forwarding headers are ignored.
+Limiter keys use a route namespace and HMAC digests, not raw account identifiers, IP addresses, passwords, JWTs, or recovery tokens. Production uses Vercel's overwritten `x-forwarded-for` header and does not accept an environment-selected client-IP header. Redis errors and timeouts fail closed with a generic 503; limit exhaustion returns the existing generic 429. Production has no in-memory fallback. SDK and provider references: [Upstash TypeScript SDK](https://upstash.com/docs/redis/sdks/ts/overview), [Redis EVAL/Lua](https://upstash.com/docs/redis/sdks/ts/commands/scripts/eval), [Vercel request headers](https://vercel.com/docs/headers/request-headers).
 
-When Redis is unavailable, partially configured, or times out, auth requests receive a generic HTTP 503. Production never falls back to process-local memory. Local development without Redis can use an in-memory store; it is not available as a Production fallback. Limit exhaustion continues to return the existing generic HTTP 429 response. Provider errors are not logged or returned.
+## 2. Verification evidence
 
-## 2. Configuration requirements and assessment
+### Source and automated evidence
 
-Set these **server-side** variables separately for Preview and Production:
+- The local branch and its configured upstream both point to `c596d6878b06d1b2dd2094f21f0db43d07821e66`. GitHub commit metadata confirms that commit changes only the two integration-test client timeouts from 1.5 seconds to 10 seconds. The Production limiter's `REDIS_TIMEOUT_MS` remains 1,500 ms.
+- GitHub Actions run 10 for this commit completed successfully. The Dependency advisory audit, Production build, TypeScript/unit tests, and ESLint jobs all report success.
+- GitHub reports a successful Vercel commit status attached to this SHA. The deployment detail URL could not be opened from this workspace, so this verifies the status associated with the SHA, not the runtime alias or environment-variable scopes serving Preview.
+- The operator reported a real Redis integration run on 2026-11-22: **1 passed, 0 failed, 0 skipped; 6,360 ms total**. It used two separate Upstash Redis clients and exercised concurrent shared-counter enforcement and expiry with a 10-second timeout on both test clients. This is recorded as operator-provided evidence; the run was not repeated in this review session. It demonstrates the tested Redis store behavior under those conditions, not production latency or the full Vercel authentication path.
 
-- `UPSTASH_REDIS_REST_URL` — HTTPS REST endpoint for the environment's Redis database.
-- `UPSTASH_REDIS_REST_TOKEN` — scoped credential for that database.
-- `AUTH_RATE_LIMIT_KEY_SECRET` — independent random secret of at least 32 UTF-8 bytes, used only for HMAC key derivation.
+### Preview and Production configuration evidence
 
-Do not use `NEXT_PUBLIC_` names. Use separate Redis databases and separate credentials/secrets for Preview and Production. Keep Redis limited to the required project/environment. Do not print values in deployment output or evidence. Production also requires Vercel's trusted `x-forwarded-for` header to be present as documented. `ADM_TRUSTED_CLIENT_IP_HEADER` may be used only for a deliberately trusted non-Production proxy; it cannot override the Production choice.
+No Vercel CLI or linked `.vercel/project.json` is available here, and no Vercel settings connector is available. The Vercel dashboard deployment URL is inaccessible to this review. Therefore the deployed Preview SHA/alias, Preview environment-variable presence and scope, function region, Preview MongoDB isolation, mail routing, and Preview-to-Production separation could not be independently confirmed. No secret values were read, printed, or changed. The successful Vercel status is not evidence of configuration correctness.
 
-**Assessment:** No Upstash integration credentials, dedicated Redis test endpoint, Vercel CLI, or linked `.vercel/project.json` are available here. No Preview or Production environment settings were read or changed. A key-name-only local environment scan found no `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, or `AUTH_RATE_LIMIT_KEY_SECRET`; no values were displayed. The presence and scope of Preview and Production configuration and the user-stated Preview MongoDB isolation remain unverified. Redis configuration is a release blocker until an owner attests presence and scope and the Preview runtime check below passes.
+Production settings were not inspected or modified. Local environment files do not establish Vercel environment scope.
 
-## 3. Automated test evidence
+The limiter requires server-side `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `AUTH_RATE_LIMIT_KEY_SECRET` (minimum 32 UTF-8 bytes). Do not prefix these with `NEXT_PUBLIC_`. Preview and Production must use separate Redis databases, access tokens, and HMAC secrets. Presence, environment scope, and connectivity remain unverified here.
 
-Checks run against the current working tree on Node `v22.23.5`:
+## 3. Production timeout operational assessment
 
-| Check | Result |
-| --- | --- |
-| `npm run typecheck` | Passed. |
-| `npm run lint` | Passed with 0 errors and 77 warnings. Warnings are existing repository lint warnings; no rule was disabled. |
-| `npm test` | Plain invocation could not start test files because this Windows environment's TSX temp-directory initialization hit `uv_os_get_passwd returned ENOMEM`. Rerun unchanged with a temporary Node preload that supplies only a test temp username: 25 test files; 77 passed, 0 failed, 1 skipped. The shim was removed and did not alter tests. |
-| `npm run build` | Passed; Next.js compiled and generated all 74 static pages. |
-| `npm audit --audit-level=high` | Passed; `found 0 vulnerabilities`. The first sandboxed registry request was blocked; rerun with registry access succeeded. |
+The current Production limiter uses a 1,500 ms abort timeout for each Upstash HTTP request. The Upstash Node client passes the configured `AbortSignal` to `fetch`; the deadline therefore bounds the Redis HTTP operation, not the whole Vercel invocation. Vercel cold-start and application initialization time before the Redis fetch still adds to the user's end-to-end response time. The first Redis request from a cold instance may also pay DNS/TLS/connection setup; the client enables keep-alive, which can help on reused instances.
 
-The new unit tests cover existing budgets, below/above-limit behavior, expiry semantics, concurrent calls against the in-memory test store, shared counters between separate limiter instances using a shared fake store, route namespace separation, trusted IP selection, HMAC key privacy, generic 503 fail-closed behavior, no Production memory fallback, and HTTP 429 response shape. These are unit tests and do not prove Redis distributes state.
+Vercel documents that Node functions normally execute in `iad1` unless configured, and recommends placing compute near its data source. Vercel can scale functions down to zero, then reuse or start instances as demand changes ([function lifecycle](https://vercel.com/docs/functions), [regions](https://vercel.com/docs/functions/configuring-functions/region)). Upstash regional writes are handled at the primary region. This limiter's Lua script writes counters, so a Redis primary far from the Vercel function region can add cross-region round-trip latency; read replicas in an Upstash Global database do not remove the primary write path ([Upstash Global database](https://upstash.com/docs/redis/features/globaldatabase)). Actual Preview function region and Redis primary region were not available to inspect.
 
-An opt-in real Redis integration test creates two separate Upstash clients, submits concurrent requests against one shared Redis namespace, and checks expiry. It was **skipped**, because `AUTH_RATE_LIMIT_TEST_REDIS_URL` and `AUTH_RATE_LIMIT_TEST_REDIS_TOKEN` for a dedicated non-Production test database are not configured. No mock result is represented as distributed-backend evidence. The `@upstash/redis` dependency installation reported no vulnerabilities; the full audit result above includes the updated dependency tree.
+If the Redis operation exceeds 1.5 seconds or errors, these limited authentication endpoints fail closed with HTTP 503 and the generic message `Authentication is temporarily unavailable.` Login, registration when enabled, password-reset initiation, and verification resend are then unavailable for that request. The request is not allowed through without the limiter. This is a deliberate security-versus-availability choice, but repeated slow calls can prevent users from logging in or recovering accounts.
 
-The six GitHub/Vercel checks previously reported successful apply to base SHA `3dff3ecb9c9a5a7b337940038ee171ebf6835907`. They do not validate or deploy the current uncommitted changes. After review and commit by an authorized owner, CI must run on the resulting candidate SHA.
+**Suitability conclusion:** 1.5 seconds may be adequate when Vercel compute and the Redis primary are close and measured tail latency has headroom, but it is not verified for this deployment. The operator-reported 6,360 ms is the duration of the complete concurrent integration test, including its expiry wait; it does not give per-request p95/p99 latency and cannot validate a 1.5-second deadline. Do not increase or otherwise change the Production timeout based on this test alone. Before release, measure the deployed Preview limiter from warm and cold function instances, including first-request connection setup and expected concurrency. Record p50/p95/p99 and timeout/error counts, correlate function region with Redis primary, and agree an availability target. Keep the current value only if the observed tail has comfortable margin below 1.5 seconds; otherwise adjust region/provider placement first, then review a timeout change with a fresh test and CI. No Production timeout change was made.
 
-## 4. Preview verification procedure
+## 4. Controlled Preview authentication procedure
 
-No staging behavior has been verified. No Preview request, account, database, or mailbox was accessed during this work. After an owner configures dedicated Preview Redis, deploys the reviewed candidate to Preview, and confirms Preview database and mail routing are isolated from Production, perform these steps with dedicated test identities. Capture status codes, sanitized response shapes, and request IDs only. Keep credentials, cookies, bearer tokens, recovery links, raw Redis keys, and full HAR files out of output and logs.
+This procedure is pending. No end-to-end authentication or RBAC behavior is claimed as verified. Run only after an owner confirms the target is Preview, its database and mail sink are isolated from Production, and the deployed SHA is the reviewed candidate. Use pre-provisioned disposable accounts and controlled inboxes; do not use customer accounts or Production data. Capture only status codes, redacted response fields, timestamps, request IDs, and function-region evidence. Never capture passwords, cookies, bearer/recovery/verification tokens, full HAR files, raw Redis keys, or secret values.
 
-1. **Read-only preflight:** Confirm the deployed SHA; Preview `NODE_ENV=production` behavior; separate MongoDB cluster/database; Preview-only mail sink/provider and callback origin; and presence/scope of the three Redis variables. Do not copy secret values or connection strings. Stop if isolation or scope is ambiguous.
-2. **Login and throttling:** Use a dedicated active test account. Verify valid credentials return 200 with allowlisted user data and HttpOnly cookies (Secure, SameSite=Lax). Verify a wrong password and an unknown address return the same 401 body shape. From two independent runners or confirmed distinct Preview function instances, send nine invalid login attempts for that same account inside 15 minutes (four from A, five from B). Exactly eight should reach credential verification; excess attempts should return generic 429. Confirm the shared account counter without exposing its key or identifier. Do not use customer accounts.
-3. **Logout and revocation:** Authenticate two isolated browser contexts for the same dedicated account, keeping cookie jars only in memory. In context A call `/api/auth/me`, then POST `/api/auth/logout`; verify its cookies are cleared. Replay context B's pre-logout cookies to `/api/auth/me` and `/api/auth/refresh`; both should reject the revoked session. Never print cookie values.
-4. **Refresh rotation and access renewal:** Log in to a fresh session. POST `/api/auth/refresh` with a valid later `activityAt`; verify success and updated session cookies. Replay the prior refresh state from the second context and expect 409; verify the new state remains authenticated. For automatic access-token renewal, use only a Preview deployment with a temporary short access-token TTL, call a protected endpoint with both cookies after access expiry, verify renewal, then restore the ordinary Preview TTL. Do not change Production settings.
-5. **Password reset:** Request reset for a known test address and an unknown address; expect the same generic 202 response and no token in either response. Only the controlled known-account inbox should receive the message. Verify the link token is in the URL fragment and is removed by the client before its API request. Reset once; verify the new password works, old password fails, sessions are revoked, and token reuse returns 400. For expiry, issue a separate test token, wait 16 minutes (15-minute token lifetime), and expect 400 with no password change. Repeat four reset requests within 15 minutes across two runners; expect only three allowed and excess request(s) to receive 429.
-6. **Email verification:** For a dedicated unverified account, compare resend responses with an unknown address; expect the same generic status/body and mail only to the controlled inbox. Verify once; reusing that token must return 400. Use a second test account/token, wait 16 minutes, and verify expiry rejection while the account remains unverified. Verify no token appears in API responses or logs.
-7. **RBAC and restricted routes:** With no cookies, request `/api/users`, `/api/roles`, `/api/media`, and `/api/settings`; expect 401/403 and no protected data. Repeat reads/writes with a read-only account and expect unauthorized writes to fail. With a disposable `USER_CREATE` but no `ROLE_UPDATE` test role, attempt role assignment to a disposable Preview record; expect 403 and no record change. Verify an admin can perform only its assigned permissions. Do not invoke destructive endpoints.
-8. **Diagnostics and errors:** After confirming Preview runs production mode, GET `/api/test-db` and send an unauthenticated POST to `/api/seed/roles`; both should return 404 before database/seed work. Review sanitized Preview logs and responses for absence of tokens, cookies, credentials, raw exception messages, database details, or provider bodies.
-9. **Closeout:** Record test date, deployed SHA, runner/region evidence, request outcomes, and masked configuration-presence attestations. Do not record secrets, raw Redis keys, or account identifiers. Preserve fixtures for the staging owner; do not perform cleanup writes or touch Production.
+### Preflight
 
-## 5. Remaining vulnerabilities and limitations
+1. Read-only confirm the Preview URL and deployment SHA from Vercel, and confirm the serving deployment is the reviewed candidate. The current GitHub-linked Vercel success is attached to `c596d687`; the exact Preview alias remains to be attested by the deployment owner.
+2. In read-only settings, confirm `NODE_ENV=production` behavior and presence/scope (not values) of `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `AUTH_RATE_LIMIT_KEY_SECRET`. Confirm Preview uses its own Redis database, token, and independent HMAC secret, and Production is a separate scope.
+3. Confirm Preview MongoDB cluster/database, mail provider/sink, callback origin, and allowed origins are distinct from Production. Stop if any target is ambiguous. Do not copy connection strings or credentials into notes.
+4. Prepare separate fixtures: active standard user, unverified user, read-only user, a role with `USER_CREATE` but without `ROLE_UPDATE`, and an admin fixture. Use disposable Preview identities and a controlled inbox. Ensure a Preview owner can restore any test-only role/account state without using destructive endpoints.
+5. Establish the function region and Redis primary region using deployment/provider metadata. Record masked configuration presence and regions, never secret values. Start with warm requests, then repeat after an idle interval to capture a cold/first request. Do not induce load against Production.
 
-- No known Critical source vulnerability was found in the prior review; the existing fixes for recovery-token disclosure and caller-supplied password-change identity still require deployed behavior confirmation.
-- The identified High distributed-rate-limit weakness is fixed in the current source tree, but real Redis integration and Preview cross-instance enforcement have not been verified. Until then, treat the production control as unproven and release-blocking.
-- Preview/Production Redis variable presence, scope, connectivity, failover behavior, and Vercel trusted client-IP propagation remain unverified. If Redis is unavailable, authentication endpoints intentionally fail closed with 503, which protects the limit but impacts availability.
-- Full staging flows remain untested: login, session revocation, refresh replay, recovery/verification single use and expiry, account enumeration, email delivery, RBAC, and restricted diagnostics. Upload integration, deployed headers/TLS, database permissions, storage policy, and backup/restore were not in scope for this targeted remediation and retain their prior review gates.
-- There is no independent real Redis execution evidence. The opt-in test can prove atomic multi-client behavior only when run against a dedicated non-Production Redis database. Do not claim the shared fake-store unit test proves distributed correctness.
+### Authentication flows and access boundaries
+
+1. **Login:** In a clean browser profile, valid credentials should return 200, an allowlisted user DTO, and HttpOnly session cookies with Secure and SameSite=Lax in production-mode Preview. Wrong-password and unknown-account cases should have matching 401 status/body shape. Use a separate disposable account for later throttling so failed attempts do not interfere with successful-flow checks. Submit a cookie-based mutation with a hostile Origin and expect 403.
+2. **Logout:** Log in once, then copy that same session cookie jar in memory into two isolated browser contexts. Call `/api/auth/me`, then POST `/api/auth/logout` in context A. Verify cookies are cleared there; replay context B's copy of the same pre-logout session to `/api/auth/me` and `/api/auth/refresh` and expect rejection. Never print cookie contents. Do not log in independently in each context, because that creates separate sessions.
+3. **Refresh rotation:** Sign in with a fresh session. POST `/api/auth/refresh` with a valid later `activityAt`; expect success and updated cookies. Replay the old refresh state from the second context and expect 409; confirm the new session still authenticates. Verify expired access renewal only with a Preview-only short TTL if required, then restore the standard Preview TTL.
+4. **Password recovery:** Request reset for a known test account and an unknown address; expect the same generic 202 response with no token. Only the controlled inbox should receive a message. Verify the client receives the token through the link fragment and removes the fragment before its API request. Complete one reset; verify the new password succeeds, the old password fails, sessions are revoked, and token replay returns 400. For expiry, use a separate test token, wait 16 minutes (token lifetime is 15 minutes), and expect rejection with no password change.
+5. **Email verification:** Request resend for the unverified test account and an unknown address; compare generic status/body and confirm delivery only to the controlled inbox. Verify one token once; replay must return 400. Use a separate fixture/token for expiry, wait 16 minutes, and confirm rejection while the account remains unverified. No token should appear in API responses or logs.
+6. **Role permissions:** With no cookies, request representative protected APIs `/api/users`, `/api/roles`, `/api/media`, and `/api/settings`; expect 401/403 and no protected data. Repeat read/write cases with the read-only user and expect writes denied. With the `USER_CREATE`-without-`ROLE_UPDATE` role, attempt to assign a role to a disposable Preview user; expect 403 and unchanged state. Verify admin actions match assigned permissions. Do not invoke seed, delete, restore, or other destructive operations.
+7. **Restricted routes:** After confirming Preview runs production mode, GET `/api/test-db` and send an unauthenticated POST to `/api/seed/roles`; both should return 404 before diagnostics or seed/database work. Check errors/logs for no token, cookie, credential, raw exception, database detail, or provider response body.
+
+### Shared Redis limiter and latency
+
+1. Use a fresh disposable account and two independent Preview runners. Coordinate nine invalid login attempts in a near-simultaneous batch inside 15 minutes (four from runner A, five from B). The first eight should reach credential verification and the excess request should receive generic 429. Confirm the account counter is shared using an approved provider metric or a masked counter count; do not reveal raw key or identifier. Record Vercel request IDs and function regions where available; a matching region alone does not prove separate function instances.
+2. Send four password-reset requests in 15 minutes to a controlled mailbox; the account budget is three and excess request(s) should receive 429. Stop after the limit; do not generate repeated email. For IP behavior, use the real proxy-provided client IP and confirm arbitrary client-provided forwarding headers do not change the trusted bucket.
+3. Repeat warm and after-idle requests while recording only response status and elapsed time. Include enough samples to assess p95/p99 and timeout/error rates under expected Preview concurrency. Compare Vercel function region with the Upstash primary region. Do not treat the standalone 10-second integration-test timeout as an operational target.
+4. If Redis is slow/unavailable, confirm the limited authentication request returns generic 503, does not continue to credential or recovery processing, and does not disclose provider details. Record the event and stop if repeated failures make the Preview flow unavailable.
+5. Close out with deployed SHA, Preview alias, test date, account fixture labels (not addresses), mail sink result, sanitized status shapes, latency percentiles, timeout count, function/primary regions, and masked config attestations. Preserve fixtures for owner review; do not clean up by deleting records or touch Production.
+
+## 5. Remaining vulnerabilities and release blockers
+
+- No new Critical source vulnerability was identified in this targeted review. Previously reviewed recovery-token disclosure and password-change identity fixes still need deployed behavior confirmation.
+- The distributed limiter is implemented, and the operator-reported real Redis test verifies atomic shared counters and expiry across two clients. The deployed Vercel authentication path, Preview cross-instance outcome, and Redis failure-to-503 behavior remain unverified end to end.
+- The 1.5-second Production timeout has no measured Preview cold/warm latency evidence. Slow or unavailable Redis intentionally makes limited auth flows return 503. Function region, Redis primary placement, and tail latency must be verified before accepting this availability risk.
+- The Vercel status is successful for candidate commit `c596d687`, but the deployed Preview alias and environment configuration cannot be inspected from this workspace. Preview/Production environment separation, database/mail isolation, and required Redis variable presence/scope are not independently verified.
+- The full Preview login/logout/refresh/recovery/verification/RBAC/restricted-route procedure above remains unperformed. Upload integration, deployed security headers/TLS, database least privilege, storage policy, backup/restore, and other wider release gates also remain outside this targeted verification.
 
 ## 6. Production prerequisites, rollout, and rollback
 
-Before release, an authorized owner must attest **presence and scope only**, without exposing values, for:
+Before any release, an authorized owner must attest **presence and scope only**, without sharing values:
 
-- Production-only `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `AUTH_RATE_LIMIT_KEY_SECRET` with a dedicated Production Redis database and independent >=32-byte HMAC secret; Preview must have a separate database and credentials.
-- `NODE_ENV=production`; public signup disabled (`AUTH_PUBLIC_SIGNUP_ENABLED` unset or `false`).
-- `MONGODB_URI` and `MONGODB_DB` identify the approved Production database and differ from Preview. Confirm with masked identifiers or owner attestation, never by copying connection strings.
+- Production-only `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `AUTH_RATE_LIMIT_KEY_SECRET` with a dedicated Production Redis database and independent secret of at least 32 UTF-8 bytes; Preview has separate credentials/database/secret.
+- Production `NODE_ENV`; public signup disabled unless explicitly approved.
+- Production `MONGODB_URI` and `MONGODB_DB` identify the approved database and differ from Preview; confirm by masked identifiers or owner attestation.
 - Strong, distinct Production `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`.
-- If email flows are enabled: `AUTH_EMAIL_PROVIDER`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `AUTH_EMAIL_BASE_URL`, and `ADM_ALLOWED_ORIGINS` have correct Production scope, verified sender domain, HTTPS origin, and Preview-only mail routing for staging.
-- Vercel's trusted `x-forwarded-for` is present and overwritten by the Vercel edge; Production must not rely on a user-configured spoofable header.
-- The deployment owner has verified TLS, response headers, database/storage access policy, backup/restore, alerting, rollback target, and monitoring owner under the wider release gates.
+- If email is enabled, Production provider, key, sender, HTTPS base URL, and allowed origins are correctly scoped; Preview delivery goes only to the controlled test sink.
+- The Vercel edge overwrites the trusted Production client-IP header. Record Production function region, Redis primary region, cold/warm latency percentiles, 503 rate, and the accepted timeout headroom.
+- TLS/headers, database and storage access policy, backup/restore, alerting, incident owner, rollback target, and post-deployment monitoring are verified under the wider release gates.
 
-No Production values/settings were accessed or changed. Do not deploy until a candidate SHA passes CI, the real Redis integration test, the Preview procedure above, and the separate Production scope attestation.
-
-For an approved rollout, record the last known-good deployment/SHA, candidate SHA, deployment ID, rollback owner, and observation window. Deploy only through the authorized release process. Monitor auth 401/403/429/5xx rates, Redis timeout/error and latency, session refresh conflicts, email failures, MongoDB errors, and user reports. If Redis errors prevent authentication or limits fail, stop rollout and restore the last known-good deployment/configuration; keep rate limiting fail-closed and investigate before retrying. Recheck authentication/session behavior after rollback. Preserve sanitized evidence and rotate credentials/revoke sessions only if exposure is confirmed.
+For an approved rollout, record the last known-good deployment/SHA, candidate SHA, deployment ID, rollback owner, and observation window. Deploy only through the approved release process. Monitor auth 401/403/429/503 rates, Redis latency/timeouts/errors, refresh conflicts, mail failures, database errors, and user reports. If Redis latency causes repeated 503s or limits fail, stop rollout and restore the last known-good deployment/configuration; keep the limiter fail-closed until the cause is understood. Recheck auth/session behavior after rollback. No Production configuration or timeout was changed for this review.
 
 ## 7. Release decision
 
-**NO-GO for merge and Production release.** The local remediation is implemented and all requested code quality checks pass (with the Windows test-runner workaround documented above), but the real Redis integration test was skipped and Preview behavior/configuration is unverified. The six GitHub/Vercel checks cover only the base SHA, not this working tree. Production environment scopes were not inspected. Keep PR #3 Draft; do not merge, deploy, or convert it to Ready for Review until the distributed Redis test, Preview staging procedure, and Production prerequisites are evidenced against the reviewed candidate SHA. No commit, push, merge, or Production deployment was performed.
+**NO-GO for merge and Production release.** The real two-client Redis integration pass is meaningful evidence for the shared atomic store, and CI plus Vercel report success for `c596d687`. Remaining blockers are deployed Preview/configuration attestation, end-to-end Preview authentication and RBAC tests, and measured cold/warm latency and timeout behavior for the unchanged 1.5-second Production deadline. The provided integration test's 6,360 ms total is not per-request latency evidence. Do not mark PR #3 Ready for Review until these gates are recorded against the reviewed deployment. No PR state change, merge, Production deployment, credential change, or Production timeout change was performed.
