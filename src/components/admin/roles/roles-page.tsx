@@ -18,11 +18,16 @@ import {
     Users,
     KeyRound,
     RefreshCw,
-    Check,
     X,
     ChevronLeft,
     ChevronRight,
 } from "lucide-react";
+
+import {
+    humanizePermission,
+    ROLE_ASSIGNABLE_PERMISSIONS,
+    ROLE_PERMISSION_GROUPS,
+} from "@/lib/permissions/role-permission-groups";
 
 type Role = {
     _id: string;
@@ -40,6 +45,10 @@ type ApiResult<T> = {
     success: boolean;
     data: T;
     message?: string;
+    errors?: {
+        fieldErrors?: Record<string, string[]>;
+        formErrors?: string[];
+    } | null;
 };
 
 type RolesResponse = {
@@ -51,148 +60,6 @@ type RolesResponse = {
         totalPages: number;
     };
 };
-
-const PERMISSION_GROUPS = [
-    {
-        label: "Dashboard",
-        permissions: [
-            "dashboard.read",
-        ],
-    },
-    {
-        label: "Users",
-        permissions: [
-            "user.read",
-            "user.create",
-            "user.update",
-            "user.delete",
-        ],
-    },
-    {
-        label: "Roles",
-        permissions: [
-            "role.read",
-            "role.create",
-            "role.update",
-            "role.delete",
-        ],
-    },
-    {
-        label: "Blogs",
-        permissions: [
-            "blog.read",
-            "blog.create",
-            "blog.update",
-            "blog.delete",
-        ],
-    },
-    {
-        label: "Categories",
-        permissions: [
-            "category.read",
-            "category.create",
-            "category.update",
-            "category.delete",
-        ],
-    },
-    {
-        label: "Tags",
-        permissions: [
-            "tag.read",
-            "tag.create",
-            "tag.update",
-            "tag.delete",
-        ],
-    },
-    {
-        label: "Services",
-        permissions: [
-            "service.read",
-            "service.create",
-            "service.update",
-            "service.delete",
-        ],
-    },
-    {
-        label: "Portfolio",
-        permissions: [
-            "portfolio.read",
-            "portfolio.create",
-            "portfolio.update",
-            "portfolio.delete",
-            "portfolio.approve",
-        ],
-    },
-    {
-        label: "Team",
-        permissions: [
-            "team.read",
-            "team.create",
-            "team.update",
-            "team.delete",
-        ],
-    },
-    {
-        label: "Testimonials",
-        permissions: [
-            "testimonial.read",
-            "testimonial.create",
-            "testimonial.update",
-            "testimonial.delete",
-        ],
-    },
-    {
-        label: "FAQs",
-        permissions: [
-            "faq.read",
-            "faq.create",
-            "faq.update",
-            "faq.delete",
-        ],
-    },
-    {
-        label: "Consultations",
-        permissions: [
-            "consultation.read",
-            "consultation.create",
-            "consultation.update",
-            "consultation.delete",
-        ],
-    },
-    {
-        label: "Media",
-        permissions: [
-            "media.read",
-            "media.create",
-            "media.update",
-            "media.delete",
-        ],
-    },
-    {
-        label: "Settings",
-        permissions: [
-            "settings.read",
-            "settings.update",
-        ],
-    },
-];
-
-const ALL_PERMISSIONS =
-    PERMISSION_GROUPS.flatMap(
-        (group) => group.permissions
-    );
-
-function humanizePermission(
-    permission: string
-) {
-    return permission
-        .split(".")
-        .map((part) =>
-            part.charAt(0).toUpperCase() +
-            part.slice(1)
-        )
-        .join(" ");
-}
 
 function humanizeRole(name: string) {
     return name
@@ -1136,9 +1003,22 @@ function RoleFormModal({
     const [error, setError] =
         useState("");
 
+    const [fieldErrors, setFieldErrors] =
+        useState<Record<string, string>>({});
+
+    function clearFieldError(field: string) {
+        setFieldErrors((current) => {
+            if (!(field in current)) return current;
+            const next = { ...current };
+            delete next[field];
+            return next;
+        });
+    }
+
     function togglePermission(
         permission: string
     ) {
+        clearFieldError("permissions");
         setPermissions(
             (current) =>
                 current.includes(permission)
@@ -1156,6 +1036,7 @@ function RoleFormModal({
     function toggleGroup(
         groupPermissions: string[]
     ) {
+        clearFieldError("permissions");
         const allSelected =
             groupPermissions.every(
                 (permission) =>
@@ -1185,6 +1066,15 @@ function RoleFormModal({
         );
     }
 
+    function toggleAllPermissions() {
+        clearFieldError("permissions");
+        setPermissions(
+            permissions.length === ROLE_ASSIGNABLE_PERMISSIONS.length
+                ? []
+                : [...ROLE_ASSIGNABLE_PERMISSIONS],
+        );
+    }
+
     async function submit(
         event: React.FormEvent
     ) {
@@ -1193,6 +1083,7 @@ function RoleFormModal({
         try {
             setSaving(true);
             setError("");
+            setFieldErrors({});
 
             const payload = {
                 name: name.trim(),
@@ -1230,6 +1121,19 @@ function RoleFormModal({
                 !response.ok ||
                 !result.success
             ) {
+                const responseFieldErrors = Object.fromEntries(
+                    Object.entries(result.errors?.fieldErrors ?? {})
+                        .flatMap(([field, messages]) =>
+                            messages.length > 0
+                                ? [[field, messages[0]]]
+                                : [],
+                        ),
+                );
+                if (Object.keys(responseFieldErrors).length > 0) {
+                    setFieldErrors(responseFieldErrors);
+                    setError(result.errors?.formErrors?.[0] ?? "");
+                    return;
+                }
                 throw new Error(
                     result.message ||
                     "Unable to save role."
@@ -1274,29 +1178,43 @@ function RoleFormModal({
                     <Field
                         label="Role name"
                         required
+                        error={fieldErrors.name}
+                        errorId="role-name-error"
                     >
                         <input
+                            id="role-name"
                             required
                             value={name}
-                            onChange={(event) =>
+                            onChange={(event) => {
                                 setName(
                                     event.target.value
-                                )
-                            }
+                                );
+                                clearFieldError("name");
+                            }}
                             placeholder="e.g. content editor"
                             className="input"
+                            aria-invalid={Boolean(fieldErrors.name)}
+                            aria-describedby={fieldErrors.name ? "role-name-error" : undefined}
                         />
                     </Field>
 
-                    <Field label="Status">
+                    <Field
+                        label="Status"
+                        error={fieldErrors.status}
+                        errorId="role-status-error"
+                    >
                         <select
+                            id="role-status"
                             value={status}
-                            onChange={(event) =>
+                            onChange={(event) => {
                                 setStatus(
                                     event.target.value
-                                )
-                            }
+                                );
+                                clearFieldError("status");
+                            }}
                             className="input"
+                            aria-invalid={Boolean(fieldErrors.status)}
+                            aria-describedby={fieldErrors.status ? "role-status-error" : undefined}
                         >
                             <option value="active">
                                 Active
@@ -1308,17 +1226,25 @@ function RoleFormModal({
                     </Field>
                 </div>
 
-                <Field label="Description">
+                <Field
+                    label="Description"
+                    error={fieldErrors.description}
+                    errorId="role-description-error"
+                >
                     <textarea
+                        id="role-description"
                         value={description}
-                        onChange={(event) =>
+                        onChange={(event) => {
                             setDescription(
                                 event.target.value
-                            )
-                        }
+                            );
+                            clearFieldError("description");
+                        }}
                         rows={3}
                         placeholder="Describe what this role is responsible for..."
                         className="input resize-none"
+                        aria-invalid={Boolean(fieldErrors.description)}
+                        aria-describedby={fieldErrors.description ? "role-description-error" : undefined}
                     />
                 </Field>
 
@@ -1355,31 +1281,29 @@ function RoleFormModal({
                             </p>
                             <p className="text-xs text-gray-500">
                                 {permissions.length} of{" "}
-                                {ALL_PERMISSIONS.length} selected
+                                {ROLE_ASSIGNABLE_PERMISSIONS.length} selected
                             </p>
+                            {fieldErrors.permissions && (
+                                <p id="role-permissions-error" role="alert" className="mt-1 text-xs font-medium text-red-600">
+                                    {fieldErrors.permissions}
+                                </p>
+                            )}
                         </div>
 
                         <button
                             type="button"
-                            onClick={() =>
-                                setPermissions(
-                                    permissions.length ===
-                                        ALL_PERMISSIONS.length
-                                        ? []
-                                        : [...ALL_PERMISSIONS]
-                                )
-                            }
+                            onClick={toggleAllPermissions}
                             className="text-xs font-bold text-gray-700 hover:underline"
                         >
                             {permissions.length ===
-                                ALL_PERMISSIONS.length
+                                ROLE_ASSIGNABLE_PERMISSIONS.length
                                 ? "Clear all"
                                 : "Select all"}
                         </button>
                     </div>
 
                     <div className="max-h-[280px] space-y-2 overflow-y-auto pr-1">
-                        {PERMISSION_GROUPS.map(
+                        {ROLE_PERMISSION_GROUPS.map(
                             (group) => {
                                 const selectedCount =
                                     group.permissions.filter(
@@ -1573,7 +1497,7 @@ function PermissionsModal({
                     </p>
                     <p className="text-xs text-gray-500">
                         {permissions.length} /{" "}
-                        {ALL_PERMISSIONS.length}
+                        {ROLE_ASSIGNABLE_PERMISSIONS.length}
                     </p>
                 </div>
 
@@ -1582,22 +1506,22 @@ function PermissionsModal({
                     onClick={() =>
                         setPermissions(
                             permissions.length ===
-                                ALL_PERMISSIONS.length
+                                ROLE_ASSIGNABLE_PERMISSIONS.length
                                 ? []
-                                : [...ALL_PERMISSIONS]
+                                : [...ROLE_ASSIGNABLE_PERMISSIONS]
                         )
                     }
                     className="text-xs font-bold text-gray-700 hover:underline"
                 >
                     {permissions.length ===
-                        ALL_PERMISSIONS.length
+                        ROLE_ASSIGNABLE_PERMISSIONS.length
                         ? "Clear all"
                         : "Select all"}
                 </button>
             </div>
 
             <div className="max-h-[430px] space-y-3 overflow-y-auto pr-1">
-                {PERMISSION_GROUPS.map(
+                {ROLE_PERMISSION_GROUPS.map(
                     (group) => {
                         const selected =
                             group.permissions.filter(
@@ -1854,10 +1778,14 @@ function Field({
     label,
     required = false,
     children,
+    error,
+    errorId,
 }: {
     label: string;
     required?: boolean;
     children: React.ReactNode;
+    error?: string;
+    errorId?: string;
 }) {
     return (
         <label className="block">
@@ -1871,6 +1799,15 @@ function Field({
             </span>
 
             {children}
+            {error && (
+                <span
+                    id={errorId}
+                    role="alert"
+                    className="mt-1 block text-xs font-medium text-red-600"
+                >
+                    {error}
+                </span>
+            )}
         </label>
     );
 }
