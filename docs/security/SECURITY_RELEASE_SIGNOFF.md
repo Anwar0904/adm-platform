@@ -1,14 +1,14 @@
 # ADM security release signoff
 
-**Review date:** 2026-11-22
+**Review date:** 2026-11-24
 
 **Branch:** `security/platform-hardening-review`
 
-**Candidate commit:** `c596d6878b06d1b2dd2094f21f0db43d07821e66`
+**Candidate commit:** `d372c705f2f585a11468c2dbd65700c3bf28b3a9`
 
 **Pull request:** [#3](https://github.com/Anwar0904/adm-platform/pull/3)
 
-**Decision:** **NO-GO for merge and Production release.** Keep PR #3 unmerged; do not mark it Ready for Review pending the gates below.
+**Decision:** **NO-GO for merge and Production release.** Keep PR #3 unmerged and draft. Several staging and ownership gates remain unverified.
 
 ## 1. Vulnerability and remediation
 
@@ -29,14 +29,18 @@ Limiter keys use a route namespace and HMAC digests, not raw account identifiers
 
 ### Source and automated evidence
 
-- The local branch and its configured upstream both point to `c596d6878b06d1b2dd2094f21f0db43d07821e66`. GitHub commit metadata confirms that commit changes only the two integration-test client timeouts from 1.5 seconds to 10 seconds. The Production limiter's `REDIS_TIMEOUT_MS` remains 1,500 ms.
-- GitHub Actions run 10 for this commit completed successfully. The Dependency advisory audit, Production build, TypeScript/unit tests, and ESLint jobs all report success.
-- GitHub reports a successful Vercel commit status attached to this SHA. The deployment detail URL could not be opened from this workspace, so this verifies the status associated with the SHA, not the runtime alias or environment-variable scopes serving Preview.
-- The operator reported a real Redis integration run on 2026-11-22: **1 passed, 0 failed, 0 skipped; 6,360 ms total**. It used two separate Upstash Redis clients and exercised concurrent shared-counter enforcement and expiry with a 10-second timeout on both test clients. This is recorded as operator-provided evidence; the run was not repeated in this review session. It demonstrates the tested Redis store behavior under those conditions, not production latency or the full Vercel authentication path.
+- The local branch is `security/platform-hardening-review` at `d372c705f2f585a11468c2dbd65700c3bf28b3a9`, matching the current PR #3 head reported by GitHub. The PR remains open and draft, unmerged, with no submitted reviews and no requested reviewers.
+- As checked on **2026-11-24**, GitHub Actions quality run **#12** completed successfully for this head. All four jobs passed: Dependency advisory audit (`npm audit --audit-level=high`), ESLint, TypeScript and unit tests, and Production build plus static SEO smoke check. Each workflow job uses `.nvmrc`; `.nvmrc` contains `22`, and `package.json` requires `>=22 <23`. This verifies the CI runtime selection, not the configured Vercel Production runtime.
+- GitHub reports a successful Vercel commit status for this SHA. The PR's Vercel bot comment identifies Preview URL `https://adm-platform-git-security-platform-h-78cfd5-anwar0904s-projects.vercel.app`. This proves the status/URL GitHub associates with the commit, not its live runtime configuration or isolation.
+- CI source-level session tests passed: logout revokes by signed session ID after refresh-token rotation; stale refresh replay returns 409 without revoking the active session; and concurrent refresh rotation has one winner and one 409 loser. These are mocked/unit tests, not a deployed logout/replay test.
+- CI source-level limiter tests passed for configured thresholds, generic 429 response, atomic in-memory behavior, generic 503 on store errors, and no Production in-memory fallback. These do not confirm shared Redis behavior or actual HTTP 429/503 responses in Preview.
+- The operator reports that Preview login succeeds and `/admin/dashboard` opens. This is recorded as operator-provided evidence, not independently reproduced in this session.
+- Direct unauthenticated HEAD probes of `/`, `/admin/dashboard`, `/api/auth/me`, `/api/users`, and `/api/test-db` from this workspace failed to establish TLS (`curl` exit 7, HTTP status `000`). No response was received, so no route status, response header, or runtime behavior is inferred from those probes.
+- The operator-reported real Redis integration run on 2026-11-22 remains: **1 passed, 0 failed, 0 skipped; 6,360 ms total**, with two Upstash clients testing shared counters and expiry. It was not rerun here and does not provide per-request p95/p99, validate the deployed function path, or measure the 1,500 ms production timeout.
 
 ### Preview and Production configuration evidence
 
-No Vercel CLI or linked `.vercel/project.json` is available here, and no Vercel settings connector is available. The Vercel dashboard deployment URL is inaccessible to this review. Therefore the deployed Preview SHA/alias, Preview environment-variable presence and scope, function region, Preview MongoDB isolation, mail routing, and Preview-to-Production separation could not be independently confirmed. No secret values were read, printed, or changed. The successful Vercel status is not evidence of configuration correctness.
+The GitHub Vercel status and bot comment provide a Preview URL for the candidate SHA. However, this workspace cannot reach that host and has no Vercel project settings/runtime inspection connector. The operator reports that login and the dashboard work in Preview, but the deployed SHA/alias, Preview environment-variable presence/scope, function region, MongoDB isolation, mail routing, and Preview-to-Production separation could not be independently confirmed. No secret values were read, printed, or changed. A Ready Vercel status does not prove configuration correctness.
 
 Production settings were not inspected or modified. Local environment files do not establish Vercel environment scope.
 
@@ -54,11 +58,11 @@ If the Redis operation exceeds 1.5 seconds or errors, these limited authenticati
 
 ## 4. Controlled Preview authentication procedure
 
-This procedure is pending. No end-to-end authentication or RBAC behavior is claimed as verified. Run only after an owner confirms the target is Preview, its database and mail sink are isolated from Production, and the deployed SHA is the reviewed candidate. Use pre-provisioned disposable accounts and controlled inboxes; do not use customer accounts or Production data. Capture only status codes, redacted response fields, timestamps, request IDs, and function-region evidence. Never capture passwords, cookies, bearer/recovery/verification tokens, full HAR files, raw Redis keys, or secret values.
+This procedure is partially pending. The operator reports successful Preview login and dashboard access, but logout/revocation, refresh replay, reset, email verification, RBAC, rate-limit exhaustion, and Redis timeout behavior have not been verified end to end. The direct probes in this review could not connect to the Preview host. Continue only against an owner-attested Preview deployment with isolated database and mail sink, using disposable accounts and controlled inboxes. Do not use customer accounts or Production data. Capture only status codes, redacted response fields, timestamps, request IDs, and function-region evidence. Never capture passwords, cookies, bearer/recovery/verification tokens, full HAR files, raw Redis keys, or secret values.
 
 ### Preflight
 
-1. Read-only confirm the Preview URL and deployment SHA from Vercel, and confirm the serving deployment is the reviewed candidate. The current GitHub-linked Vercel success is attached to `c596d687`; the exact Preview alias remains to be attested by the deployment owner.
+1. Read-only confirm the Preview URL and deployment SHA from Vercel. GitHub currently associates the Ready Preview URL above with candidate `d372c705`; the serving deployment and its alias still need confirmation by the deployment owner.
 2. In read-only settings, confirm `NODE_ENV=production` behavior and presence/scope (not values) of `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `AUTH_RATE_LIMIT_KEY_SECRET`. Confirm Preview uses its own Redis database, token, and independent HMAC secret, and Production is a separate scope.
 3. Confirm Preview MongoDB cluster/database, mail provider/sink, callback origin, and allowed origins are distinct from Production. Stop if any target is ambiguous. Do not copy connection strings or credentials into notes.
 4. Prepare separate fixtures: active standard user, unverified user, read-only user, a role with `USER_CREATE` but without `ROLE_UPDATE`, and an admin fixture. Use disposable Preview identities and a controlled inbox. Ensure a Preview owner can restore any test-only role/account state without using destructive endpoints.
@@ -85,10 +89,13 @@ This procedure is pending. No end-to-end authentication or RBAC behavior is clai
 ## 5. Remaining vulnerabilities and release blockers
 
 - No new Critical source vulnerability was identified in this targeted review. Previously reviewed recovery-token disclosure and password-change identity fixes still need deployed behavior confirmation.
-- The distributed limiter is implemented, and the operator-reported real Redis test verifies atomic shared counters and expiry across two clients. The deployed Vercel authentication path, Preview cross-instance outcome, and Redis failure-to-503 behavior remain unverified end to end.
+- Operator-reported Preview login/dashboard success does not cover logout revocation, refresh-token rotation/replay, password reset, email verification, RBAC or protected API boundaries. Dedicated test accounts and a controlled inbox were not provided to this validation session; no requests were sent to those flows.
+- The distributed limiter is implemented, and prior operator-reported two-client Redis integration covers shared counter behavior and expiry. The deployed Vercel authentication path, Preview cross-instance outcome, actual HTTP 429 threshold behavior, and Redis failure/timeout HTTP 503 behavior remain unverified end to end. CI's 429/503 tests are unit-level only.
 - The 1.5-second Production timeout has no measured Preview cold/warm latency evidence. Slow or unavailable Redis intentionally makes limited auth flows return 503. Function region, Redis primary placement, and tail latency must be verified before accepting this availability risk.
-- The Vercel status is successful for candidate commit `c596d687`, but the deployed Preview alias and environment configuration cannot be inspected from this workspace. Preview/Production environment separation, database/mail isolation, and required Redis variable presence/scope are not independently verified.
-- The full Preview login/logout/refresh/recovery/verification/RBAC/restricted-route procedure above remains unperformed. Upload integration, deployed security headers/TLS, database least privilege, storage policy, backup/restore, and other wider release gates also remain outside this targeted verification.
+- The CI workflow selects Node 22, but the actual Production runtime version and rollback target/deployment ID, rollback owner, and observation window have not been attested.
+- GitHub's Vercel status is successful for candidate `d372c705`, and the bot reports a Preview URL, but the Preview host was unreachable from this workspace and runtime configuration cannot be inspected. Preview/Production environment separation, database/mail isolation, and required Redis variable presence/scope remain unverified.
+- Password reset/email verification delivery and replay/expiry behavior, deployed RBAC, protected API denials, and restricted-route behavior remain unverified. Upload integration, deployed security headers/TLS, database least privilege, storage policy, backup/restore, and other wider release gates remain outside this targeted validation.
+- No independent PR review has been submitted. This session could not identify a reviewer handle/team from the PR metadata. A request was attempted as a PR comment, but GitHub rejected comment creation with HTTP 403 (`Resource not accessible by integration`); an independent review remains unrequested until an authorized repository reviewer is assigned.
 
 ## 6. Production prerequisites, rollout, and rollback
 
@@ -106,4 +113,4 @@ For an approved rollout, record the last known-good deployment/SHA, candidate SH
 
 ## 7. Release decision
 
-**NO-GO for merge and Production release.** The real two-client Redis integration pass is meaningful evidence for the shared atomic store, and CI plus Vercel report success for `c596d687`. Remaining blockers are deployed Preview/configuration attestation, end-to-end Preview authentication and RBAC tests, and measured cold/warm latency and timeout behavior for the unchanged 1.5-second Production deadline. The provided integration test's 6,360 ms total is not per-request latency evidence. Do not mark PR #3 Ready for Review until these gates are recorded against the reviewed deployment. No PR state change, merge, Production deployment, credential change, or Production timeout change was performed.
+**NO-GO for merge and Production release.** CI run #12 and Vercel status are successful for `d372c705`; the operator reports Preview login/dashboard success; and mocked session/limiter unit tests passed in CI. Remaining blockers are independent review, owner attestation of Preview and Production separation/readiness, deployed logout/rotation/recovery/verification/RBAC/rate-limit/Redis-503 validation, and measured warm/cold latency and timeout behavior for the unchanged 1.5-second Production deadline. The 6,360 ms integration-suite duration is not per-request latency evidence. Keep PR #3 unmerged and draft until evidence is attached to this candidate. No Production user data, Production configuration, deployment, merge, PR state, or credentials were accessed or changed in this review.
