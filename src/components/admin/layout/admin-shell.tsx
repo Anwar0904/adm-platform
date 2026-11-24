@@ -298,7 +298,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             )?.label ?? "Admin";
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
+        <div className="admin-shell min-h-screen bg-slate-950 text-slate-100">
             {sidebarOpen && (
                 <button
                     aria-label="Close sidebar"

@@ -1841,36 +1841,6 @@ export default function UsersPage() {
                 </div>
             )}
 
-            <style jsx global>{`
-                .input {
-                    height: 2.75rem;
-                    width: 100%;
-                    border-radius: 0.75rem;
-                    border: 1px solid rgb(226 232 240);
-                    background: white;
-                    padding: 0 0.875rem;
-                    font-size: 0.875rem;
-                    color: rgb(15 23 42);
-                    outline: none;
-                    transition: all 150ms;
-                }
-
-                .input:focus {
-                    border-color: rgb(139 92 246);
-                    box-shadow: 0 0 0 4px
-                        rgb(139 92 246 / 0.1);
-                }
-
-                .dark .input {
-                    border-color: rgb(51 65 85);
-                    background: rgb(15 23 42);
-                    color: white;
-                }
-
-                .dark .input:focus {
-                    border-color: rgb(139 92 246);
-                }
-            `}</style>
         </main>
     );
 }
