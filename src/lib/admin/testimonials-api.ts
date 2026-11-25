@@ -41,6 +41,13 @@ export async function requestTestimonialWrite<T>(
 
 function validationMessage(errors: unknown) {
     if (!errors || typeof errors !== "object" || !("fieldErrors" in errors)) return null;
-    const messages = Object.values((errors as { fieldErrors?: Record<string, string[]> }).fieldErrors ?? {}).flat();
+    const fieldErrors = (errors as { fieldErrors?: Record<string, string[]> }).fieldErrors ?? {};
+    const messages = Object.entries(fieldErrors).flatMap(([field, fieldMessages]) =>
+        fieldMessages.map((message) => `${fieldLabel(field)}: ${message}`),
+    );
     return messages.length ? messages.join(" ") : null;
+}
+
+function fieldLabel(field: string) {
+    return field.replace(/([A-Z])/g, " $1").replace(/^./, (first) => first.toUpperCase());
 }

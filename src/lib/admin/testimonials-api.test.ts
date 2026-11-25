@@ -34,3 +34,15 @@ test("successful status without persisted data is not reported as a saved record
         TestimonialWriteError,
     );
 });
+
+test("validation responses identify the rejected testimonial field", async () => {
+    await assert.rejects(
+        requestTestimonialWrite("/api/testimonials", "POST", {}, async () =>
+            Response.json({
+                success: false,
+                message: "Validation failed.",
+                errors: { formErrors: [], fieldErrors: { avatar: ["Must be a valid MongoDB record ID."] } },
+            }, { status: 400 })),
+        (error: unknown) => error instanceof TestimonialWriteError && /Avatar: Must be a valid MongoDB record ID/.test(error.message),
+    );
+});
