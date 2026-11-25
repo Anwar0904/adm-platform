@@ -2,7 +2,7 @@
 
 Complete this form using masked identifiers or yes/no comparisons only. Do not enter secret values, cookies, account addresses, full connection strings, Redis keys, or recovery URLs.
 
-**Candidate SHA:** `da77e82c7f1be92e20839c70248f34e7a0971feb`
+**Security code candidate SHA:** `beb9127e6be3114dbe618c43c122539259c93afb`
 
 **Preview deployment SHA/ID:** ____________________
 

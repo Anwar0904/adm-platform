@@ -6,9 +6,11 @@
 
 **PR:** [#3](https://github.com/Anwar0904/adm-platform/pull/3)
 
-**Candidate SHA:** `da77e82c7f1be92e20839c70248f34e7a0971feb`
+**Security code candidate SHA:** `beb9127e6be3114dbe618c43c122539259c93afb`
 
-**Local worktree:** uncommitted code/test/documentation changes; not part of the deployed SHA or current CI run.
+**Sign-off revision:** Documentation-only follow-up to the code candidate; the final PR head is recorded in GitHub after this sign-off commit.
+
+**Worktree:** Security code and tests are committed on the security branch. This sign-off update is the only pending change; it does not alter runtime code.
 
 **Decision:** **NO-GO for merge or Production release.**
 
@@ -20,21 +22,22 @@ No Production data, configuration, credentials, or services were accessed or cha
 
 | Check | Status | Evidence and limit |
 | --- | --- | --- |
-| GitHub Actions quality workflow #19 | **PASSED** | Run `45623731517` on the current candidate SHA: Dependency advisory audit, Production build, ESLint, and TypeScript/unit tests all completed successfully. |
-| Vercel commit status | **PASSED** | GitHub reports a successful Vercel status for this SHA. This does not attest environment values, data isolation, or live endpoint behavior. |
-| Local checks on current uncommitted worktree | **PASSED LOCALLY WITH HOST LIMITATION** | Typecheck passed; full lint exited 0 with 76 warnings before the final small auth guard change, and targeted ESLint passed afterward with one existing export-style warning; production build passed with synthetic core configuration. The current 32-file TypeScript test suite passed 111, failed 0, skipped 1; the separate Preview policy suite passed 3/3. The skipped test is optional Upstash integration. Plain `npm test` fails before assertions in this Windows Node 22.23.5 sandbox because `tsx` calls `os.userInfo()` and receives `uv_os_get_passwd ENOMEM`; the same test command passed with an invocation-only temporary shim, which was removed. Fresh supported-runtime GitHub CI is still required. |
+| GitHub Actions quality workflow #20 | **PASSED** | Run `45650521859` completed successfully on code SHA `beb9127e6be3114dbe618c43c122539259c93afb`: dependency audit, production build, ESLint, and TypeScript/unit tests. This is the first remote check of the new changes. |
+| GitHub Actions quality workflow #19 | **PASSED (prior SHA)** | Run `45623731517` passed for `da77e82c7f1be92e20839c70248f34e7a0971feb`; it predates the current code candidate. |
+| Vercel status for code candidate | **UNVERIFIED** | GitHub has no current commit status for `beb9127`. The prior Ready Preview comment refers to `da77e82`; it does not establish deployment of this code candidate. |
+| Local checks on code candidate | **PASSED LOCALLY WITH HOST LIMITATION** | Typecheck passed; full lint exited 0 with 76 warnings before the last small auth guard changes and targeted ESLint passed afterward; production build passed with synthetic core configuration. The 32-file TypeScript suite passed 111, failed 0, skipped 1; the separate Preview policy suite passed 3/3. The skipped test is optional Upstash integration. Plain `npm test` fails before assertions in this Windows Node 22.23.5 sandbox because `tsx` calls `os.userInfo()` and receives `uv_os_get_passwd ENOMEM`; the same suite passed with an invocation-only temporary shim, which was removed. Remote Node 22 CI run #20 passed without that workaround. |
 | Users/Role API route-handler authorization tests | **PASSED LOCALLY** | Tests call the actual Users and Roles route handlers with the real `requirePermission` path, fake active session/user fixtures, and stubbed services. They verify viewer denial before JSON parsing/mutation, `ROLE_UPDATE` separation, and Super Admin access. No MongoDB connection or real user records are used. Not yet run by GitHub CI. |
 | Auth expiry/revocation/origin regression tests | **PASSED LOCALLY** | Tests cover logout revocation only with the current refresh token, rejection of stale rotated-token logout, invalid/expired/revoked access sessions, refresh replay/concurrency, reset success/expiry, verification success/expiry, cross-site Bearer rejection by the actual login handler, and auth route origin denial. Service/session storage is mocked; no live session or mail service was exercised. Not yet run by GitHub CI. |
 | Redis adapter tests | **PASSED LOCALLY** | Mocked `eval` tests cover one atomic Lua call, hash-slot colocation, limits/expiry arguments, unexpected result failure, 1,500 ms abort-signal wiring, and generic 503 behavior. The real Upstash integration test skipped because no explicitly confirmed isolated Redis fixture was configured. |
 | Preview smoke harness policy tests | **PASSED LOCALLY** | 3/3 pure tests cover approved ADM Preview host format, Production/custom/other-project target rejection, and the hard cap of nine login requests. The live harness was not run. |
 | Local-only bootstrap deployment guard | **PASSED (static review)** | `.vercelignore` excludes `scripts/bootstrap-preview-admin.local.ts`; the script requires explicit local-only, database, Atlas-host, exclusive staging, and per-write confirmations. The script was not executed and made no database writes. |
-| Independent review | **BLOCKED** | PR #3 is still draft and open; GitHub reports no submitted reviews and no requested reviewers. No independent findings are available to record. No review request was sent. |
+| Independent review | **BLOCKED** | PR #3 is still draft and open; GitHub reports no submitted reviews and no requested reviewers. All PR commits are authored by the PR owner. No eligible independent reviewer was identifiable in available PR metadata, so no reviewer request was sent and no independent findings exist. |
 
-The PR head matches the candidate SHA, has 14 commits and 74 changed files, and remains open/draft/unmerged. The Vercel bot reports a Ready Preview deployment associated with the candidate update and a Preview alias. The exact SHA serving a live request and all Preview environment values remain unverified. CI run #19 does not include the current uncommitted changes.
+At code-candidate review, PR #3 was open/draft/unmerged with 15 commits and 84 changed files (9,519 additions / 743 deletions). The Vercel Ready Preview bot comment still refers to the prior SHA `da77e82`; the latest SHA serving live requests and all Preview environment values remain unverified. CI #20 passed for the code candidate. A follow-up commit will update this sign-off only.
 
 ## PR scope and safe split recommendation
 
-Reviewing `git diff origin/main...HEAD` shows substantial product/design work unrelated to the security objective: `src/components/portfolio-experience/**`, `docs/adm-optimization/PORTFOLIO_*.md`, the `public/logo-blue.png` replacement, admin/theme styling in `src/app/globals.css` and admin layout files, and the large generic cleanup inventory including `docs/cleanup/DEPENDENCY_GRAPH.json`. These contribute to a 74-file PR with 8,531 additions, including a 5,502-line generated dependency graph.
+Reviewing `git diff origin/main...HEAD` shows substantial product/design work unrelated to the security objective: `src/components/portfolio-experience/**`, `docs/adm-optimization/PORTFOLIO_*.md`, the `public/logo-blue.png` replacement, admin/theme styling in `src/app/globals.css` and admin layout files, and the large generic cleanup inventory including `docs/cleanup/DEPENDENCY_GRAPH.json`. PR #3 now contains 84 changed files with 9,519 additions, including the 5,502-line generated dependency graph. Recommend splitting the portfolio/design/cleanup work into a separate PR; do not remove files or rewrite history without maintainer approval.
 
 Keep security-relevant changes in scope, including auth/API controls, roles permission mapping and role-assignment checks, guarded local bootstrap, dependency audit evidence, and security docs. Recommend a separate portfolio/design/cleanup PR from `main`, with its own visual and content review. Do not remove files, rewrite history, or split the existing branch without maintainer approval; the current PR remains intact for review.
 
@@ -56,7 +59,7 @@ Keep security-relevant changes in scope, including auth/API controls, roles perm
 | Preview/Production MongoDB, Redis, and mail isolation | **UNVERIFIED** | Deployment owner read-only attestation using masked identifiers and environment scopes. |
 | Vercel runtime/environment settings and deployed headers | **UNVERIFIED** | Owner confirms Node 22, production-mode cookie behavior, variable presence/scope, TLS and response headers. |
 | Rollback prerequisites | **UNVERIFIED** | Record last-known-good deployment/SHA, rollback owner, runbook, and observation window. |
-| Fresh CI for current local changes | **BLOCKED** | Changes are uncommitted and not present in run #19. After review/commit/push, require fresh CI before merge. |
+| Fresh CI for security code candidate | **PASSED** | Run #20 passed on `beb9127e6be3114dbe618c43c122539259c93afb`. A documentation-only sign-off commit follows this code SHA; require the PR checks on the final head before merge. |
 | Independent security review | **BLOCKED** | No eligible independent reviewer was identifiable from the PR (all commits by the author, no prior reviews, no requested reviewers). Reviewer assignment and evidence are still required. |
 
 No runtime gate is marked FAILED: they were not exercised. A missing result is not a pass.
@@ -65,7 +68,7 @@ No runtime gate is marked FAILED: they were not exercised. A missing result is n
 
 ### Preconditions
 
-1. Confirm the target URL is the Preview deployment serving SHA `da77e82c7f1be92e20839c70248f34e7a0971feb`.
+1. Confirm the target URL is the Preview deployment serving security code candidate SHA `beb9127e6be3114dbe618c43c122539259c93afb`.
 2. Confirm the deployment uses an isolated staging database, Redis, and controlled mail sink before creating test records or sending mail. Stop if any resource identity is ambiguous.
 3. Use disposable `staging_viewer` and Super Admin accounts. Sign in through the Preview UI. Never paste credentials, cookies, recovery links, or tokens into a terminal, ticket, or report.
 4. Run the following probes only in that logged-in Preview browser's DevTools Console. They rely on same-origin browser cookies and print only labels and HTTP statuses; they do not read or print response bodies or cookies.
@@ -154,7 +157,7 @@ Expected: both are 200. For positive write authorization, use the Preview UI/API
 
 Owner attests **presence/scope and masked identity only**; do not send secret values or full URIs.
 
-- **MongoDB:** confirm Preview and Production use separate approved clusters/projects and access scopes; Preview credentials cannot access Production; least-privilege access is in place. The local candidate now fails fast in Production if `MONGODB_DB` is absent instead of defaulting to `adm-website`; set it explicitly in both intended Vercel scopes. This code change is uncommitted and does not change Production settings.
+- **MongoDB:** confirm Preview and Production use separate approved clusters/projects and access scopes; Preview credentials cannot access Production; least-privilege access is in place. Code candidate `beb9127` now fails fast in Production if `MONGODB_DB` is absent instead of defaulting to `adm-website`; set it explicitly in both intended Vercel scopes. No Production setting was changed.
 - **Redis:** confirm distinct Preview and Production Redis resources/databases, tokens, and HMAC secrets. Confirm required settings exist in the correct Vercel scopes: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `AUTH_RATE_LIMIT_KEY_SECRET` (at least 32 UTF-8 bytes). Verify client-IP header behavior and the 1,500 ms timeout's cold/warm latency headroom.
 - **Mail:** confirm Preview delivery is restricted to the controlled sink/test recipients and Production mail credentials/sender are scoped only to Production. Verify sender-domain/DNS and HTTPS reset/verification origins; capture no message URLs or tokens.
 - **JWT/credentials:** confirm distinct strong JWT secrets and scoped credentials in each Vercel environment; attest presence/rotation state without exposing values. Do not change Production settings during this verification.
@@ -181,7 +184,7 @@ Reviewer record to complete: reviewer identity/role; reviewed SHA; date; decisio
 
 - **Critical:** none found in this targeted review; this is not a complete security audit.
 - **High:** live Preview auth/RBAC/rate-limit behavior, environment separation, mail routing, safe rollback/restore readiness, and independent review remain release blockers (all unverified or blocked above). Media upload and existing-index verification from the earlier findings register also remain open.
-- **Medium:** the local candidate removes the Production `MONGODB_DB` fallback, but this fix is uncommitted and CI has not run on it; deployed settings still need owner verification. Vercel/edge headers and HSTS are unverified; CSP remains absent from repository Next headers and needs a compatibility plan.
+- **Medium:** the code candidate requires explicit Production `MONGODB_DB`, but deployed settings still need owner verification. Source sets host-only one-year HSTS; Vercel/edge header delivery is unverified. CSP remains absent pending a nonce-aware compatibility plan.
 - **Low:** ESLint reports 76 warnings despite exit 0; these are not all security issues and were not broadly cleaned up.
 
-**Final recommendation: NO-GO for merge and Production release.** Workflow #19 passed for the old committed SHA `da77e82c7f1be92e20839c70248f34e7a0971feb`, not the current uncommitted fixes. Local source checks passed with the documented Windows test-runner limitation, but live Preview gates, environment owner attestations, independent review, and fresh CI remain incomplete. Keep PR #3 unmerged until those gates have evidence and resulting issues are resolved or explicitly accepted by the release owner. No Production setting or data was touched in this review.
+**Final recommendation: NO-GO for merge and Production release.** CI run #20 passed for code SHA `beb9127e6be3114dbe618c43c122539259c93afb`. The latest Vercel Preview deployment for that SHA, live Preview auth/RBAC/rate-limit behavior, environment owner attestations, and independent review remain unverified or blocked. Keep PR #3 unmerged until those gates have evidence and resulting issues are resolved or explicitly accepted by the release owner. No Production setting or data was touched in this review.

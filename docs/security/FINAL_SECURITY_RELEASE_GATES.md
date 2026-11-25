@@ -6,9 +6,10 @@ Source checks pass on the current local worktree, but live staging and owner/rev
 
 ## Evidence recorded
 
-- Current PR candidate: `da77e82c7f1be92e20839c70248f34e7a0971feb` on `security/platform-hardening-review`.
-- GitHub Actions quality run #19 (`45623731517`) passed Dependency advisory audit, Production build, ESLint, and TypeScript/unit tests for that committed SHA. GitHub reports the Vercel deployment status Ready and its Preview bot comment associates `https://adm-platform-git-security-platform-h-78cfd5-anwar0904s-projects.vercel.app` with the candidate update. The serving SHA was not independently read from a live response.
-- On the uncommitted worktree, typecheck passed; full lint exited 0 with 76 warnings before the final small auth changes and targeted lint passed afterward; `npm test` completed with 111 passed / 0 failed / 1 skipped, and the separate Preview-harness policy suite passed 3/3. A synthetic-config production build passed. The Redis integration test skipped because a dedicated isolated fixture was not configured. Plain local Node 22.23.5 `npm test` fails before assertions on this Windows sandbox because `tsx` calls `os.userInfo()` and gets `uv_os_get_passwd ENOMEM`; an invocation-only temporary shim allowed the same suite to pass and was removed. Fresh Node 22 CI is required.
+- Current security code candidate: `beb9127e6be3114dbe618c43c122539259c93afb` on `security/platform-hardening-review`.
+- GitHub Actions quality run #20 (`45650521859`) passed dependency audit, Production build, ESLint, and TypeScript/unit tests on the security code candidate using the supported Node 22 CI runtime. Run #19 (`45623731517`) passed for the previous SHA `da77e82c7f1be92e20839c70248f34e7a0971feb`.
+- Local typecheck passed; full lint exited 0 with 76 warnings before the final small auth changes and targeted lint passed afterward; tests completed with 111 passed / 0 failed / 1 skipped plus 3/3 Preview-harness policy tests; a synthetic-config production build passed. The Redis integration test skipped because a dedicated isolated fixture was not configured. Plain local Node 22.23.5 `npm test` fails before assertions on this Windows sandbox because `tsx` calls `os.userInfo()` and gets `uv_os_get_passwd ENOMEM`; an invocation-only temporary shim allowed the same suite to pass and was removed. CI run #20 passes without this host workaround.
+- The previous Vercel Ready comment and Preview alias refer to `da77e82`; GitHub currently has no Vercel status for `beb9127`. Deployment of the current code candidate and the exact serving SHA remain unverified.
 - API-handler authorization, reset/verification expiry, Redis-adapter behavior, and Preview-harness policy tests now have local regression coverage. These are mocked/local tests, not live Preview checks.
 
 ## Open gates
@@ -20,10 +21,10 @@ Source checks pass on the current local worktree, but live staging and owner/rev
 - [ ] HTTP 503 timeout/failure behavior. **Do not fault-inject** until a deployment owner confirms an exclusive disposable Preview deployment/Redis fixture and authorizes it.
 - [ ] Owner attestation of Preview/Production MongoDB, Redis, mail, Vercel runtime/environment scopes, deployed headers, and rollback target.
 - [ ] Independent security review of the exact final SHA. PR #3 is still draft; no submitted review or requested reviewer is recorded.
-- [ ] Re-run GitHub CI on the final pushed candidate; current local changes are not included in run #19.
+- [ ] Confirm the required GitHub checks pass on the final PR head after the documentation-only sign-off follow-up commit.
 - [ ] Review and split unrelated portfolio/design/cleanup work if maintainers approve. Do not remove legitimate changes or rewrite history without approval.
 
-The Production `MONGODB_DB` fallback was removed in the current local changes: Production now fails fast unless `MONGODB_DB` is explicitly set. No Production setting was changed. The source adds host-only HSTS (`max-age=31536000`) with no subdomain/preload commitment; deployed header delivery still needs owner verification. CSP remains unenforced because Next.js 16 nonce support requires dynamic rendering and compatibility testing; do not add an untested restrictive CSP.
+The Production `MONGODB_DB` fallback was removed in code candidate `beb9127`: Production now fails fast unless `MONGODB_DB` is explicitly set. No Production setting was changed. The source adds host-only HSTS (`max-age=31536000`) with no subdomain/preload commitment; deployed header delivery still needs owner verification. CSP remains unenforced because Next.js 16 nonce support requires dynamic rendering and compatibility testing; do not add an untested restrictive CSP.
 
 ## Approval rule
 
