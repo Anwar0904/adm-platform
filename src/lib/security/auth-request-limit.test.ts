@@ -33,6 +33,7 @@ test("retains the existing per-route account/IP budgets and windows", () => {
     login: { identifierLimit: 8, ipLimit: 30, windowMs: 15 * 60_000 },
     register: { identifierLimit: 3, ipLimit: 10, windowMs: 60 * 60_000 },
     passwordReset: { identifierLimit: 3, ipLimit: 15, windowMs: 15 * 60_000 },
+    passwordResetCompletion: { identifierLimit: 5, ipLimit: 30, windowMs: 15 * 60_000 },
     emailVerification: { identifierLimit: 3, ipLimit: 15, windowMs: 60 * 60_000 },
   });
 });
