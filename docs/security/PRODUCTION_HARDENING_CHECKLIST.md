@@ -11,7 +11,7 @@
 
 ## Runtime and edge
 
-- [ ] Apply distributed throttling to login, registration, forgot/resend/reset, contact/consultation, view counter, and uploads.
+- [ ] Verify Preview/Production configuration and live thresholds for the implemented Redis-backed auth throttles (login, registration, forgot/resend/reset). Add/review distributed throttling for contact/consultation, view counter, and uploads.
 - [ ] Configure trusted proxy headers and request/body timeouts; impose multipart limits at CDN and application edge.
 - [ ] Verify TLS, redirects, HSTS preload decision, DNS, CAA, and certificate renewal.
 - [ ] Validate response security headers and design a CSP reporting/rollout plan before enforcement.

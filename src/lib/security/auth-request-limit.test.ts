@@ -6,8 +6,11 @@ import { ApiError } from "@/lib/api/api-error";
 import { authFlowRateLimitedResponse } from "@/lib/api/auth-flow-response";
 import {
   AUTH_REQUEST_LIMITS,
+  AUTH_RATE_LIMIT_TIMEOUT_MS,
+  createAuthRateLimitAbortSignal,
   createAuthRequestLimiter,
   createInMemoryAuthRateLimitStore,
+  createRedisAuthRateLimitStore,
   isAuthRequestRateLimited,
 } from "./auth-request-limit";
 
@@ -195,4 +198,54 @@ test("rate-limited auth response is HTTP 429 and contains no identifier", async 
   assert.equal(response.status, 429);
   assert.equal(body.message, "Too many requests. Try again later.");
   assert.equal(JSON.stringify(body).includes("person@example.test"), false);
+});
+
+test("Redis adapter uses one atomic Lua EVAL with co-located counters and bounded expiry", async () => {
+  let invocation: { script: string; keys: string[]; args: string[] } | undefined;
+  const store = createRedisAuthRateLimitStore({
+    async eval(script: string, keys: string[], args: string[]) {
+      invocation = { script, keys, args };
+      return 1;
+    },
+  } as never, "adm:test-rate-limit");
+
+  assert.equal(await store.consume([
+    { key: "login:account:account-digest", limit: 8 },
+    { key: "login:ip:ip-digest", limit: 30 },
+  ], 900_000, 1_000), true);
+
+  assert.ok(invocation);
+  assert.equal(invocation.keys.length, 2);
+  assert.deepEqual(invocation.args, ["8", "30", "900000"]);
+  assert.match(invocation.script, /for i = 1, #KEYS do/);
+  assert.match(invocation.script, /redis\.call\("INCR", KEYS\[i\]\)/);
+  assert.match(invocation.script, /redis\.call\("PEXPIRE", KEYS\[i\], windowMs\)/);
+  assert.deepEqual(
+    invocation.keys.map((key) => key.match(/\{([^}]+)\}/)?.[1]),
+    ["login", "login"],
+    "account and IP counters must share a Redis Cluster hash slot",
+  );
+});
+
+test("Redis adapter rejects unexpected script results rather than treating them as allowed", async () => {
+  const store = createRedisAuthRateLimitStore({
+    async eval() {
+      return "allowed";
+    },
+  } as never);
+
+  await assert.rejects(
+    store.consume([{ key: "login:account:digest", limit: 8 }], 60_000, 1_000),
+    /Unexpected limiter result/,
+  );
+});
+
+test("Redis request timeout uses an abort signal with a bounded default", async () => {
+  assert.equal(AUTH_RATE_LIMIT_TIMEOUT_MS, 1_500);
+  const signal = createAuthRateLimitAbortSignal(5);
+  await new Promise<void>((resolve) => {
+    if (signal.aborted) return resolve();
+    signal.addEventListener("abort", () => resolve(), { once: true });
+  });
+  assert.equal(signal.aborted, true);
 });

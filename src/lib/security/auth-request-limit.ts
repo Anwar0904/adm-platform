@@ -21,11 +21,15 @@ export interface AuthRateLimitStore {
 }
 
 const KEY_NAMESPACE = "adm:auth-rate-limit:v1";
-const REDIS_TIMEOUT_MS = 1_500;
+export const AUTH_RATE_LIMIT_TIMEOUT_MS = 1_500;
 const MAX_LOCAL_BUCKETS = 20_000;
 const LOCAL_DEVELOPMENT_KEY = "adm-local-auth-rate-limit-key-not-for-production";
 const AUTH_RATE_LIMIT_UNAVAILABLE = "Authentication is temporarily unavailable.";
 const VERCEL_TRUSTED_CLIENT_IP_HEADER = "x-forwarded-for";
+
+export function createAuthRateLimitAbortSignal(timeoutMs = AUTH_RATE_LIMIT_TIMEOUT_MS) {
+  return AbortSignal.timeout(timeoutMs);
+}
 
 const ATOMIC_CONSUME_SCRIPT = `
 local blocked = 0
@@ -232,7 +236,7 @@ function getRuntimeLimiter() {
       token,
       enableTelemetry: false,
       retry: false,
-      signal: () => AbortSignal.timeout(REDIS_TIMEOUT_MS),
+      signal: () => createAuthRateLimitAbortSignal(),
     });
     redisStore = createRedisAuthRateLimitStore(redis);
     redisConfigKey = currentConfigKey;

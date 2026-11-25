@@ -485,10 +485,26 @@ class AuthService {
                 throw new ApiError(401, "Invalid session.");
             }
 
+            const session = await SessionRepository.findActiveSessionById(
+                payload.sid,
+                payload.userId,
+            );
+            if (!session) {
+                throw new ApiError(401, "Session is no longer active.");
+            }
+
+            const isCurrentRefreshToken = await PasswordService.compare(
+                refreshToken,
+                session.refreshToken,
+            );
+            if (!isCurrentRefreshToken) {
+                throw new ApiError(401, "Invalid refresh token.");
+            }
+
             const revoked =
-                await SessionRepository.revokeActiveSessionById(
-                    payload.sid,
-                    payload.userId
+                await SessionRepository.revokeActiveSession(
+                    session._id,
+                    session.refreshToken,
                 );
 
             if (!revoked) {

@@ -1,10 +1,12 @@
 import test, { type TestContext } from "node:test";
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { Types } from "mongoose";
 
 import { ApiError } from "@/lib/api/api-error";
 import { PasswordService } from "@/lib/auth/bcrypt";
 import { JwtService } from "@/lib/auth/jwt";
+import { getUserFromToken } from "@/lib/auth/get-user";
 import { User } from "@/models/user.model";
 import SessionRepository from "@/repositories/session.repository";
 import { clearEmailVerificationFields } from "./auth.service";
@@ -52,11 +54,15 @@ test("clears verification fields by setting them to null", () => {
     assert.equal(user.emailVerificationExpires, null);
 });
 
-test("logout revokes a session by its signed ID after refresh-token rotation", async (context) => {
+test("logout revokes a session only when its current refresh token matches", async (context) => {
     const userId = new Types.ObjectId().toString();
     const sessionId = new Types.ObjectId().toString();
-    let revokedSessionId: string | undefined;
-    let comparedRefreshToken = false;
+    const session = {
+        _id: new Types.ObjectId(sessionId),
+        refreshToken: "current-refresh-token-hash",
+    };
+    let revokedSessionId: Types.ObjectId | undefined;
+    let revokedHash: string | undefined;
 
     context.mock.method(
         JwtService,
@@ -69,25 +75,209 @@ test("logout revokes a session by its signed ID after refresh-token rotation", a
     );
     context.mock.method(
         SessionRepository,
-        "revokeActiveSessionById",
-        async (id: string | Types.ObjectId) => {
-            revokedSessionId = String(id);
-            return {} as never;
-        }
+        "findActiveSessionById",
+        async (id: string | Types.ObjectId, user: string) => {
+            assert.equal(String(id), sessionId);
+            assert.equal(user, userId);
+            return session as never;
+        },
     );
     context.mock.method(
         PasswordService,
         "compare",
-        async () => {
-            comparedRefreshToken = true;
-            return false;
-        }
+        async (token: string, hash: string) =>
+            token === "current-refresh-token" && hash === session.refreshToken,
+    );
+    context.mock.method(
+        SessionRepository,
+        "revokeActiveSession",
+        async (id: Types.ObjectId, hash: string) => {
+            revokedSessionId = id;
+            revokedHash = hash;
+            return {} as never;
+        },
     );
 
-    await AuthService.logout("previously-rotated-token");
+    await AuthService.logout("current-refresh-token");
 
-    assert.equal(revokedSessionId, sessionId);
-    assert.equal(comparedRefreshToken, false);
+    assert.equal(revokedSessionId?.toString(), sessionId);
+    assert.equal(revokedHash, session.refreshToken);
+});
+
+test("logout rejects a previously rotated refresh token without revoking the active session", async (context) => {
+    const userId = new Types.ObjectId().toString();
+    const sessionId = new Types.ObjectId().toString();
+    const session = {
+        _id: new Types.ObjectId(sessionId),
+        refreshToken: "current-refresh-token-hash",
+    };
+
+    context.mock.method(JwtService, "verifyRefreshToken", () => ({
+        userId,
+        sub: userId,
+        sid: sessionId,
+    }) as never);
+    context.mock.method(SessionRepository, "findActiveSessionById", async () => session as never);
+    context.mock.method(PasswordService, "compare", async () => false);
+    const revokeSession = context.mock.method(
+        SessionRepository,
+        "revokeActiveSession",
+        async () => {
+            throw new Error("A stale token must not revoke the current session.");
+        },
+    );
+
+    await assert.rejects(
+        AuthService.logout("previously-rotated-token"),
+        (error: unknown) => error instanceof ApiError && error.statusCode === 401,
+    );
+    assert.equal(revokeSession.mock.callCount(), 0);
+});
+
+test("a revoked access session is rejected before a user record is loaded", async (context) => {
+    const userId = new Types.ObjectId().toString();
+    const sessionId = new Types.ObjectId().toString();
+    context.mock.method(JwtService, "verifyAccessToken", () => ({
+        userId,
+        sub: userId,
+        sid: sessionId,
+    }) as never);
+    const lookupUser = context.mock.method(User, "findById", () => {
+        throw new Error("Revoked sessions must stop before user lookup.");
+    });
+    context.mock.method(SessionRepository, "findActiveSessionById", async () => null);
+
+    await assert.rejects(
+        getUserFromToken("Bearer test-only-revoked-access-token"),
+        (error: unknown) => error instanceof ApiError && error.statusCode === 401,
+    );
+    assert.equal(lookupUser.mock.callCount(), 0);
+});
+
+test("an invalid access token is rejected before session and user lookups", async (context) => {
+    context.mock.method(JwtService, "verifyAccessToken", () => {
+        throw new Error("test-only invalid token");
+    });
+    const lookupSession = context.mock.method(SessionRepository, "findActiveSessionById", async () => {
+        throw new Error("Invalid tokens must stop before session lookup.");
+    });
+    const lookupUser = context.mock.method(User, "findById", () => {
+        throw new Error("Invalid tokens must stop before user lookup.");
+    });
+
+    await assert.rejects(
+        getUserFromToken("Bearer test-only-invalid-access-token"),
+        (error: unknown) => error instanceof ApiError && error.statusCode === 401,
+    );
+    assert.equal(lookupSession.mock.callCount(), 0);
+    assert.equal(lookupUser.mock.callCount(), 0);
+});
+
+test("an expired access token is rejected before session and user lookups", async (context) => {
+    context.mock.method(JwtService, "verifyAccessToken", () => {
+        const error = new Error("test-only expired token");
+        error.name = "TokenExpiredError";
+        throw error;
+    });
+    const lookupSession = context.mock.method(SessionRepository, "findActiveSessionById", async () => {
+        throw new Error("Expired tokens must stop before session lookup.");
+    });
+    const lookupUser = context.mock.method(User, "findById", () => {
+        throw new Error("Expired tokens must stop before user lookup.");
+    });
+
+    await assert.rejects(
+        getUserFromToken("Bearer test-only-expired-access-token"),
+        (error: unknown) => error instanceof ApiError && error.statusCode === 401,
+    );
+    assert.equal(lookupSession.mock.callCount(), 0);
+    assert.equal(lookupUser.mock.callCount(), 0);
+});
+
+test("expired password-reset tokens are rejected and do not revoke sessions", async (context) => {
+    context.mock.method(PasswordService, "hash", async () => "test-only-hash");
+    let observedFilter: Record<string, unknown> | undefined;
+    context.mock.method(User, "findOneAndUpdate", (filter: Record<string, unknown>) => {
+        observedFilter = filter;
+        return { select: async () => null } as never;
+    });
+    const revokeSessions = context.mock.method(
+        SessionRepository,
+        "revokeAllUserSessions",
+        async () => undefined as never,
+    );
+
+    const testPassword = `TestPass1!${randomUUID()}`;
+    await assert.rejects(
+        AuthService.resetPassword({
+            token: "test-only-expired-reset-token",
+            password: testPassword,
+            confirmPassword: testPassword,
+        }),
+        (error: unknown) => error instanceof ApiError && error.statusCode === 400,
+    );
+
+    const expiry = (observedFilter?.passwordResetExpires as { $gt?: Date } | undefined)?.$gt;
+    assert.ok(expiry instanceof Date, "reset lookup must require an expiry later than now");
+    assert.equal(revokeSessions.mock.callCount(), 0);
+});
+
+test("a valid password reset consumes its token and revokes sessions", async (context) => {
+    const userId = new Types.ObjectId();
+    const passwordHash = `mocked-hash-${randomUUID()}`;
+    const resetUser = { _id: userId };
+    let update: Record<string, unknown> | undefined;
+    context.mock.method(PasswordService, "hash", async () => passwordHash);
+    context.mock.method(User, "findOneAndUpdate", (_filter: Record<string, unknown>, updateDocument: Record<string, unknown>) => {
+        update = updateDocument;
+        return { select: async () => resetUser } as never;
+    });
+    const revokeSessions = context.mock.method(
+        SessionRepository,
+        "revokeAllUserSessions",
+        async () => undefined as never,
+    );
+    const testPassword = `TestPass1!${randomUUID()}`;
+
+    assert.equal(await AuthService.resetPassword({
+        token: "test-only-valid-reset-token",
+        password: testPassword,
+        confirmPassword: testPassword,
+    }), true);
+    assert.equal((update?.$set as Record<string, unknown> | undefined)?.password, passwordHash);
+    assert.deepEqual(update?.$unset, { passwordResetToken: 1, passwordResetExpires: 1 });
+    assert.equal(revokeSessions.mock.callCount(), 1);
+    assert.equal(revokeSessions.mock.calls[0]?.arguments[0], userId.toString());
+});
+
+test("expired email-verification tokens are rejected with an atomic expiry filter", async (context) => {
+    let observedFilter: Record<string, unknown> | undefined;
+    context.mock.method(User, "findOneAndUpdate", (filter: Record<string, unknown>) => {
+        observedFilter = filter;
+        return { select: async () => null } as never;
+    });
+
+    await assert.rejects(
+        AuthService.verifyEmail("test-only-expired-verification-token"),
+        (error: unknown) => error instanceof ApiError && error.statusCode === 400,
+    );
+
+    const expiry = (observedFilter?.emailVerificationExpires as { $gt?: Date } | undefined)?.$gt;
+    assert.ok(expiry instanceof Date, "verification lookup must require an expiry later than now");
+    assert.deepEqual(observedFilter?.emailVerified, { $ne: true });
+});
+
+test("a valid email-verification token is consumed by one atomic update", async (context) => {
+    let update: Record<string, unknown> | undefined;
+    const verificationUser = { _id: new Types.ObjectId() };
+    context.mock.method(User, "findOneAndUpdate", (_filter: Record<string, unknown>, updateDocument: Record<string, unknown>) => {
+        update = updateDocument;
+        return { select: async () => verificationUser } as never;
+    });
+
+    assert.equal(await AuthService.verifyEmail("test-only-valid-verification-token"), true);
+    assert.deepEqual(update?.$set, { emailVerified: true, isEmailVerified: true });
+    assert.deepEqual(update?.$unset, { emailVerificationToken: 1, emailVerificationExpires: 1 });
 });
 
 test("access-token renewal validates the session without extending or rotating it", async (context) => {

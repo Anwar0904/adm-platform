@@ -27,7 +27,7 @@
 - Reset/verification request responses are generic and token values are never returned by the API. Stored tokens are digested and atomically consumed. Mail links carry tokens in URL fragments; the client removes the fragment before submitting.
 - Signup is off unless explicitly enabled; default role permission safety is checked. The Resend adapter is fixed-host and fails closed when configuration is incomplete.
 - Browser cookie mutations use same-origin checks. Bearer-token clients are exempt because browser ambient-cookie CSRF does not apply to an explicitly supplied Authorization header.
-- The in-memory request limiter is not a production distributed control. `x-forwarded-for` is not trusted by default; the deployment must configure a trusted client-IP header or enforce rate limits at the edge.
+- Auth request limiting now uses an atomic Upstash Redis Lua operation in Production, with retries disabled, a 1,500 ms abort timeout, a fixed Vercel `x-forwarded-for` source, and fail-closed 503 behavior. Production has no process-local fallback. Preview/Production Redis isolation, deployed 429/503 outcomes, trusted proxy behavior, and latency remain unverified. Other public endpoints still need separate abuse-control review.
 - Content security policy is not yet deployed. Rich-text rendering and every HTML sink require a separate review before enforcing CSP.
 - Upload signatures reduce MIME spoofing; complex media decoding, image dimension limits, antivirus scanning, storage lifecycle, and edge request limits need staging validation.
 - Admin authorization is evidenced by source pattern scans, not a route-by-route adversarial test. Route drift and nested handlers remain a review risk.

@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { resolveMongoDbName } from "./env-validation";
 
 const getEnvValue = (key: string, fallback = "") => {
   const value = process.env[key]?.trim();
@@ -25,7 +26,7 @@ export const env = {
     "mongodb://127.0.0.1:27017/adm-platform"
   ),
 
-  MONGODB_DB: getEnvValue("MONGODB_DB", "adm-website"),
+  MONGODB_DB: resolveMongoDbName(process.env.MONGODB_DB, process.env.NODE_ENV),
 
   JWT_ACCESS_SECRET: getRequiredEnvValue(
     "JWT_ACCESS_SECRET",

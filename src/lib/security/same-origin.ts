@@ -61,8 +61,7 @@ function hasExpectedHost(request: NextRequest) {
 export function enforceSameOrigin(request: NextRequest, options: { requireOrigin?: boolean } = {}) {
   if (SAFE_METHODS.has(request.method.toUpperCase())) return;
 
-  const authorization = request.headers.get("authorization");
-  if (authorization?.startsWith("Bearer ")) return;
+  const hasBearerAuthorization = request.headers.get("authorization")?.startsWith("Bearer ") ?? false;
 
   if (!hasExpectedHost(request)) throw new ApiError(403, "Cross-origin request denied.");
 
@@ -80,7 +79,10 @@ export function enforceSameOrigin(request: NextRequest, options: { requireOrigin
         !new Set([...configuredOrigins(), ...vercelPreviewOrigins()]).has(parsed.origin)) {
       throw new ApiError(403, "Cross-origin request denied.");
     }
-  } else if (options.requireOrigin || (request.cookies.getAll().length > 0 && fetchSite !== "same-origin" && fetchSite !== "same-site")) {
+  } else if (
+    (options.requireOrigin && !hasBearerAuthorization) ||
+    (request.cookies.getAll().length > 0 && fetchSite !== "same-origin" && fetchSite !== "same-site")
+  ) {
     throw new ApiError(403, "Origin header is required for this request.");
   }
 }

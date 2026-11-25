@@ -4,13 +4,22 @@
 
 - Auth tokens are delivered by an explicit, fixed-host Resend adapter and are never returned in JSON. Mail links put the token in the URL fragment, and the client strips it before API submission.
 - Reset and verification use hashed expiring values and atomic one-use MongoDB updates. Reset/change password revoke active sessions.
-- Signup is disabled by default; generic anti-enumeration responses, allowlisted user DTO, same-origin protection, and process-local throttles were added.
+- Signup is disabled by default; generic anti-enumeration responses, allowlisted user DTO, and same-origin protection were added. Auth throttles now use an atomic Upstash Redis limiter in Production; non-Production local fallback is not a distributed control.
 - Change password uses authenticated user identity; API error logs no longer serialize arbitrary exceptions.
 - User create/update role assignment requires `ROLE_UPDATE` in addition to user create/update authorization.
+- Reset completion has a per-token/IP limiter before password hashing, and Production now requires an explicit `MONGODB_DB` rather than silently selecting `adm-website`.
 - Production DB test route is hidden; media uploads are byte-bounded before form parsing, disallow SVG, cap file count, check file signatures, and no longer alter DB indexes at request time.
 - Media search is literal, bounded, and capped; obsolete XSS header removed.
 
-## Checks executed
+## Current candidate verification (2026-11-25)
+
+The current committed PR SHA is `da77e82c7f1be92e20839c70248f34e7a0971feb`. GitHub Actions quality run #19 passed its four jobs (typecheck/unit tests, ESLint, Production build, and dependency audit) for that SHA. The local worktree now also contains uncommitted route-handler authorization/CSRF tests, reset/verification expiry tests, Redis adapter/timeout tests, an explicit database-name guard, and a bounded local Preview smoke harness.
+
+The local worktree checks passed: typecheck; full lint before the last small auth change (0 errors, 76 warnings) and targeted ESLint afterward (0 errors, one existing export-style warning); tests (111 passed, 0 failed, 1 skipped) plus 3/3 Preview harness policy tests; and a synthetic-config Production build. The skipped test is the optional Upstash integration test, which requires an explicitly confirmed dedicated non-Production Redis fixture. Plain `npm test` fails before assertions on this Windows Node 22.23.5 sandbox because `tsx` calls `os.userInfo()` and receives `uv_os_get_passwd ENOMEM`; an invocation-only temporary shim allowed the same suite to pass and was removed. This is not a permanent workaround. Fresh supported-runtime CI and live Preview evidence remain outstanding.
+
+API integration tests use fake sessions/users and stub mutation services; they do not mutate MongoDB. The bounded Preview smoke harness sends at most one anonymous status GET and nine invalid logins, requires exact Preview-origin and isolated-staging confirmations, has no cookie/credential input, suppresses response bodies/errors, and is excluded from Vercel uploads. It was not run because environment isolation was not attested.
+
+## Historical checks from the initial implementation pass
 
 | Check | Result |
 | --- | --- |
@@ -34,5 +43,5 @@
 
 - Configure `AUTH_EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `AUTH_EMAIL_FROM`, `AUTH_EMAIL_BASE_URL`; ensure the base origin matches `SITE_URL` or approved `ADM_ALLOWED_ORIGINS` and the production URL uses HTTPS.
 - Keep `AUTH_PUBLIC_SIGNUP_ENABLED` unset/false unless product and security owners approve open signup and the default role has no permissions.
-- Configure a distributed edge/shared-store rate limiter. Set `ADM_TRUSTED_CLIENT_IP_HEADER` only to a header overwritten by the trusted proxy.
+- Attest that Preview and Production have separate Redis resources and correct trusted Vercel proxy headers. The source has a distributed limiter; external configuration and deployed behavior remain unverified.
 - Review MongoDB media index state and prepare a separately approved migration if needed; do not run index changes from HTTP requests.

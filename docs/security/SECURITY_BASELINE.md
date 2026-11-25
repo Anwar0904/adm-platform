@@ -3,6 +3,8 @@
 **Review date:** 2026-11-20  
 **Scope:** source review of the working tree in this checkout. This is not a penetration test, CI attestation, production review, or release approval.
 
+> Historical snapshot. Its rate-limiter and verification statements describe the source as of 2026-11-20 and are superseded by the current source and `SECURITY_RELEASE_SIGNOFF.md` for candidate `da77e82c7f1be92e20839c70248f34e7a0971feb`. In the later source, auth throttling uses Upstash Redis; the deployed Preview/Production configuration is still unverified.
+
 ## Application and runtime
 
 - Next.js `16.4.5`; React `19.2.4`; Mongoose `9.12.2` (manifest ranges and lockfile govern exact install).

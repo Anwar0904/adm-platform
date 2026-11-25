@@ -1,98 +1,187 @@
 # ADM security release signoff
 
-**Review date:** 2026-11-24
+**Review date:** 2026-11-25
 
 **Branch:** `security/platform-hardening-review`
 
 **PR:** [#3](https://github.com/Anwar0904/adm-platform/pull/3)
 
-**PR head at review:** `cc555489b91b15dd81fd3a0bc69b77c7310c51f2`
+**Candidate SHA:** `da77e82c7f1be92e20839c70248f34e7a0971feb`
 
-**Working tree:** contains uncommitted security changes listed below; remote CI has not run on these changes.
+**Local worktree:** uncommitted code/test/documentation changes; not part of the deployed SHA or current CI run.
+
 **Decision:** **NO-GO for merge or Production release.**
 
-This is a targeted source review and local verification, not an end-to-end staging or Production penetration test. No Production data, credentials, configuration, or services were accessed or changed. No databases were seeded or reset, and no deployment or merge was performed.
+Status labels: **PASSED** means direct evidence exists for the stated scope; **FAILED** means a check ran and failed; **BLOCKED** means it is unsafe or awaiting an owner/reviewer; **UNVERIFIED** means no direct evidence was collected.
 
-## Executive assessment
+No Production data, configuration, credentials, or services were accessed or changed. No database was seeded/reset, no live Preview request was sent during this review, no fault injection was run, and PR #3 was not merged.
 
-- Server authorization is enforced through `requirePermission` in the Users and Roles API handlers. New regression tests exercise a `USER_READ`-only role and the existing Super Admin bypass.
-- Authentication/session, CSRF, token-expiry, and rate-limit implementation tests pass locally. These tests use mocks or in-memory stores; they do not prove deployed behavior.
-- A source review found that password-reset completion had no distributed request limit, despite hashing a submitted password before checking the reset token. The local candidate now applies a distributed limit before reset processing: 5 per token and 30 per trusted client IP per 15 minutes. It shares the existing fail-closed Redis limiter. This change is uncommitted and has not run in Preview.
-- No live Preview credentials, controlled mail inbox, Redis test configuration, or Vercel settings were available. Runtime flows and environment isolation remain **UNVERIFIED**.
-- GitHub's latest six-check quality run passed for PR head `cc555489`, before this working-tree change. The local candidate still needs to be committed/pushed and pass CI before it is eligible for merge.
+## Verified checks
 
-## Local checks and evidence
-
-Commands were executed in this workspace on Node `v22.23.5`:
-
-| Check | Result | Scope and limitation |
+| Check | Status | Evidence and limit |
 | --- | --- | --- |
-| `npm run typecheck` | **PASS** | TypeScript no-emit check, including the new permission tests. |
-| `npm run lint` | **PASS** | Exit 0; 76 warnings, 0 errors. Warnings include existing unused declarations, anonymous default exports, and `<img>` usage. |
-| `npm test` | **PASS with workaround** | The first run could not start test workers because this host's Node `os.userInfo()` returned `uv_os_get_passwd ENOMEM`. The suite was rerun with a temporary local Node preload shim for `os.userInfo`; the shim was removed afterward and did not change application or test assertions. Result: 92 tests, 91 passed, 0 failed, 1 skipped. The skipped test is the optional Upstash Redis integration test because dedicated test Redis settings were not supplied. |
-| `npm run build` | **PASS** | Next.js 16.4.5 production build completed using synthetic CI-style site/JWT/Mongo settings and a temporary build output directory. Next reported `.env.local` as loaded; its contents were not opened, printed, or recorded. The generated output directory was removed and generated `tsconfig.json` include entries were reverted. No live API flow was exercised by the build. |
-| `git diff --check` | **PASS** | No whitespace errors in the reviewed diff. |
+| GitHub Actions quality workflow #19 | **PASSED** | Run `45623731517` on the current candidate SHA: Dependency advisory audit, Production build, ESLint, and TypeScript/unit tests all completed successfully. |
+| Vercel commit status | **PASSED** | GitHub reports a successful Vercel status for this SHA. This does not attest environment values, data isolation, or live endpoint behavior. |
+| Local checks on current uncommitted worktree | **PASSED LOCALLY WITH HOST LIMITATION** | Typecheck passed; full lint exited 0 with 76 warnings before the final small auth guard change, and targeted ESLint passed afterward with one existing export-style warning; production build passed with synthetic core configuration. The current 32-file TypeScript test suite passed 111, failed 0, skipped 1; the separate Preview policy suite passed 3/3. The skipped test is optional Upstash integration. Plain `npm test` fails before assertions in this Windows Node 22.23.5 sandbox because `tsx` calls `os.userInfo()` and receives `uv_os_get_passwd ENOMEM`; the same test command passed with an invocation-only temporary shim, which was removed. Fresh supported-runtime GitHub CI is still required. |
+| Users/Role API route-handler authorization tests | **PASSED LOCALLY** | Tests call the actual Users and Roles route handlers with the real `requirePermission` path, fake active session/user fixtures, and stubbed services. They verify viewer denial before JSON parsing/mutation, `ROLE_UPDATE` separation, and Super Admin access. No MongoDB connection or real user records are used. Not yet run by GitHub CI. |
+| Auth expiry/revocation/origin regression tests | **PASSED LOCALLY** | Tests cover logout revocation only with the current refresh token, rejection of stale rotated-token logout, invalid/expired/revoked access sessions, refresh replay/concurrency, reset success/expiry, verification success/expiry, cross-site Bearer rejection by the actual login handler, and auth route origin denial. Service/session storage is mocked; no live session or mail service was exercised. Not yet run by GitHub CI. |
+| Redis adapter tests | **PASSED LOCALLY** | Mocked `eval` tests cover one atomic Lua call, hash-slot colocation, limits/expiry arguments, unexpected result failure, 1,500 ms abort-signal wiring, and generic 503 behavior. The real Upstash integration test skipped because no explicitly confirmed isolated Redis fixture was configured. |
+| Preview smoke harness policy tests | **PASSED LOCALLY** | 3/3 pure tests cover approved ADM Preview host format, Production/custom/other-project target rejection, and the hard cap of nine login requests. The live harness was not run. |
+| Local-only bootstrap deployment guard | **PASSED (static review)** | `.vercelignore` excludes `scripts/bootstrap-preview-admin.local.ts`; the script requires explicit local-only, database, Atlas-host, exclusive staging, and per-write confirmations. The script was not executed and made no database writes. |
+| Independent review | **BLOCKED** | PR #3 is still draft and open; GitHub reports no submitted reviews and no requested reviewers. No independent findings are available to record. No review request was sent. |
 
-GitHub Actions run #18 reported all six checks passing for the PR head SHA above. Those results predate the uncommitted changes in this working tree and do not validate them. The PR remains open and unmerged; no independent review is recorded in the PR metadata available to this review.
+The PR head matches the candidate SHA, has 14 commits and 74 changed files, and remains open/draft/unmerged. The Vercel bot reports a Ready Preview deployment associated with the candidate update and a Preview alias. The exact SHA serving a live request and all Preview environment values remain unverified. CI run #19 does not include the current uncommitted changes.
 
-### Automated security coverage
+## PR scope and safe split recommendation
 
-- `src/lib/auth/permission-enforcement.test.ts` verifies that a role with only `USER_READ` can pass that server-side permission check but receives 403 for user create/update/delete and role read/create/update/delete operations. It also checks that Super Admin continues to pass those permission checks. Authentication, session lookup, and the user record are mocked; API handlers are not invoked over HTTP.
-- Existing auth service tests cover logout revocation, stale refresh-token replay, concurrent refresh rotation, session checks, reset/verification token behavior, and generic login errors. They are service-level tests with mocked persistence.
-- Existing same-origin tests cover allowed configured/Preview origins, malformed and untrusted origins, cross-site fetch metadata, and spoofed Host mismatch. These are unit tests, not browser tests against the deployed Vercel host.
-- Existing limiter tests cover atomic budgets, generic 429 responses, generic fail-closed 503 responses, and production refusal to fall back to memory. The shared-store unit test uses an in-memory backend. The optional Upstash integration test was skipped.
-- The new password-reset completion limit is exercised by a configuration assertion in the limiter unit tests. No real Redis or deployed endpoint tested its HTTP 429 behavior.
+Reviewing `git diff origin/main...HEAD` shows substantial product/design work unrelated to the security objective: `src/components/portfolio-experience/**`, `docs/adm-optimization/PORTFOLIO_*.md`, the `public/logo-blue.png` replacement, admin/theme styling in `src/app/globals.css` and admin layout files, and the large generic cleanup inventory including `docs/cleanup/DEPENDENCY_GRAPH.json`. These contribute to a 74-file PR with 8,531 additions, including a 5,502-line generated dependency graph.
 
-## Source review findings
+Keep security-relevant changes in scope, including auth/API controls, roles permission mapping and role-assignment checks, guarded local bootstrap, dependency audit evidence, and security docs. Recommend a separate portfolio/design/cleanup PR from `main`, with its own visual and content review. Do not remove files, rewrite history, or split the existing branch without maintainer approval; the current PR remains intact for review.
 
-### Critical
+## Remaining release gates
 
-No Critical issue was identified in this targeted review. This is not a complete application security audit.
+| Gate | Status | Evidence needed to close |
+| --- | --- | --- |
+| Direct `staging_viewer` Users/Role API denial in Preview | **UNVERIFIED** | Browser-session direct API checks below; verify status 403 and no state change. |
+| Super Admin API authorization in Preview | **UNVERIFIED** | Verify authorized reads and one approved disposable write through the API; remove only that disposable record. |
+| Login/logout and server-side session revocation | **UNVERIFIED** | Live session test with a second in-memory browser context retaining the same pre-logout session. |
+| Refresh rotation/replay | **UNVERIFIED** | Live dual-context test; the stale refresh state should be rejected while the rotated session remains valid. |
+| Password reset and email verification | **UNVERIFIED** | Controlled inbox test for generic response, one-time use, expiry, and session revocation. |
+| Redis-backed HTTP 429/shared counters | **UNVERIFIED** | Controlled Preview requests from separate clients against a dedicated disposable account. |
+| Redis failure/timeout HTTP 503 | **BLOCKED** | No fault injection until an owner confirms exclusive staging Redis/deployment ownership and authorizes a disposable Preview fault test. |
+| Media upload limits, content validation, and Blob access/lifecycle | **UNVERIFIED** | Staging checks for body/file boundaries, MIME/signature mismatch, SVG rejection, storage policy and edge limits. No uploads were sent. |
+| Existing MongoDB media index state/migration | **UNVERIFIED** | Owner checks the `publicId` index on a staging/backup copy; source removed request-time DDL, but live index state was not inspected. |
+| Public contact/consultation abuse controls | **UNVERIFIED** | Review distributed edge limits and bounded processing for public mutation routes. |
+| Backup/restore, monitoring, incident ownership | **UNVERIFIED** | Owner supplies restore-drill evidence, alert ownership and incident contact. |
+| Preview/Production MongoDB, Redis, and mail isolation | **UNVERIFIED** | Deployment owner read-only attestation using masked identifiers and environment scopes. |
+| Vercel runtime/environment settings and deployed headers | **UNVERIFIED** | Owner confirms Node 22, production-mode cookie behavior, variable presence/scope, TLS and response headers. |
+| Rollback prerequisites | **UNVERIFIED** | Record last-known-good deployment/SHA, rollback owner, runbook, and observation window. |
+| Fresh CI for current local changes | **BLOCKED** | Changes are uncommitted and not present in run #19. After review/commit/push, require fresh CI before merge. |
+| Independent security review | **BLOCKED** | No eligible independent reviewer was identifiable from the PR (all commits by the author, no prior reviews, no requested reviewers). Reviewer assignment and evidence are still required. |
 
-### High — release blockers
+No runtime gate is marked FAILED: they were not exercised. A missing result is not a pass.
 
-1. **Deployed authentication and authorization flows are unverified.** Logout/revocation, refresh rotation and replay, expiry, reset and verification email delivery/expiry, role-denied API requests, Super Admin operations, and same-origin behavior were not exercised against Preview. The operator previously reported that Preview login and dashboard access work; that report was not independently reproduced here.
-2. **Distributed limiter runtime is unverified.** No real Preview HTTP 429 threshold, shared Redis behavior through Vercel functions, timeout, or HTTP 503 fail-closed response was measured. The optional Redis integration test was skipped. Production timeout is 1,500 ms; whether cold/warm Redis latency fits that deadline is unknown.
-3. **Environment isolation and Production readiness are unattested.** This review had no read-only access to Vercel environment scopes, MongoDB project/database identity, mail routing, Redis projects, function region, deployment runtime, or rollback target. Source code cannot establish that Preview and Production use separate resources.
-4. **The local candidate has not passed remote CI or independent review.** The six successful GitHub checks are for the prior PR head. The role and reset-limit changes are uncommitted, and no independent PR review is recorded.
+## Concise Preview test checklist
 
-### Medium
+### Preconditions
 
-1. **MongoDB database name has a production fallback.** `src/config/env.ts` defaults `MONGODB_DB` to `adm-website`, including when `NODE_ENV` is production. `src/lib/db.ts` passes that value as Mongoose `dbName`, so the URI's path alone does not prove the selected database. Release owners must explicitly attest the scoped database name and Preview/Production separation. No environment was changed.
-2. **Content Security Policy is not configured in the repository's Next headers.** `next.config.ts` sets frame, MIME sniffing, referrer, and permissions headers but does not define CSP or HSTS. Actual Vercel/edge response headers and TLS behavior were not observed. Assess CSP compatibility and verify deployed headers before release.
-3. **Reset completion required an abuse limit.** The prior handler had no limiter and proceeded to password hashing before token validity was established. The local candidate adds a per-token and per-IP distributed limit before `AuthService.resetPassword`. This is a source-level remediation only; it remains uncommitted and has no deployed verification.
+1. Confirm the target URL is the Preview deployment serving SHA `da77e82c7f1be92e20839c70248f34e7a0971feb`.
+2. Confirm the deployment uses an isolated staging database, Redis, and controlled mail sink before creating test records or sending mail. Stop if any resource identity is ambiguous.
+3. Use disposable `staging_viewer` and Super Admin accounts. Sign in through the Preview UI. Never paste credentials, cookies, recovery links, or tokens into a terminal, ticket, or report.
+4. Run the following probes only in that logged-in Preview browser's DevTools Console. They rely on same-origin browser cookies and print only labels and HTTP statuses; they do not read or print response bodies or cookies.
 
-### Low
+### Bounded unauthenticated smoke harness
 
-1. ESLint exits successfully but reports 76 warnings across the repository. They are not all security issues and were not broadly cleaned up in this focused change.
-2. The test suite requires a host-specific `os.userInfo` shim in this workspace. CI's Linux test result is green on the prior PR head; the local workaround is not part of the repository.
+Only after the owner has attested isolated Preview MongoDB/Redis and mail scope, run from a local interactive Node 22 terminal. The script has no credential/cookie inputs, contacts only the approved ADM Vercel Preview hostname shape, performs one unauthenticated status GET and at most nine invalid login attempts, never follows redirects, and prints statuses only. It writes only the expected Redis limiter counters; it does not mutate user or role data. It does not test Redis outage behavior.
 
-## Configuration, endpoints, and operational review
+```powershell
+$env:ADM_PREVIEW_SECURITY_SMOKE = "1"
+$env:ADM_PREVIEW_SECURITY_TARGET = Read-Host "Current exact ADM Preview origin from the Vercel Ready status"
+try {
+  npm run preview:security-smoke
+} finally {
+  Remove-Item Env:ADM_PREVIEW_SECURITY_SMOKE -ErrorAction SilentlyContinue
+  Remove-Item Env:ADM_PREVIEW_SECURITY_TARGET -ErrorAction SilentlyContinue
+}
+```
 
-- **Runtime:** `.nvmrc` selects Node 22 and `package.json` declares `>=22 <23`. This is the repository/CI runtime intent; the actual Vercel Preview and Production runtime selection remains unverified.
-- **Required server settings:** production code requires `MONGODB_URI`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `AUTH_RATE_LIMIT_KEY_SECRET` for the relevant paths. Redis URL must be HTTPS; the HMAC key must be at least 32 UTF-8 bytes. `MONGODB_DB` currently has a fallback and should be explicitly set. Email delivery uses `AUTH_EMAIL_PROVIDER`, `AUTH_EMAIL_BASE_URL`, `AUTH_EMAIL_FROM`, and `RESEND_API_KEY` when configured. Variable presence and environment scope were not inspected in Vercel. No secret values are included here.
-- **Redis:** Production code uses Upstash with retries disabled and a 1,500 ms abort timeout. Production uses the fixed Vercel `x-forwarded-for` source and refuses missing trusted IP or missing Redis settings; it does not fall back to a process-local limiter. Store failures return generic 503; exhausted limits return generic 429. Preview and Production Redis separation is not verified.
-- **MongoDB:** Production rejects localhost URIs, but the application does not enforce that the URI/database differs from Preview. Database/cluster identity and least-privilege credentials were not checked.
-- **Sessions/cookies:** access and refresh cookies are HttpOnly, SameSite=Lax, path `/`, and use `Secure` when `NODE_ENV === "production"`. Confirm that deployed Preview and Production set production mode. Session and refresh revocation logic has automated service tests but no live-session replay test in this review.
-- **Origin/CSRF:** unsafe cookie-based requests require a valid configured origin; Preview may additionally use exact `VERCEL_URL`/`VERCEL_BRANCH_URL` metadata only when `VERCEL=1` and `VERCEL_ENV=preview`. Cross-site Fetch Metadata and Host mismatch are denied. Production Preview metadata is not trusted by that code path. Tests are unit-level.
-- **Restricted endpoints:** `/api/test-db` returns 404 in production before connecting. `/api/seed/roles` returns 404 in production before DB access; in non-production it requires Super Admin and runs the legacy role seeder if explicitly called. The disabled legacy seed script was not run. No public bootstrap endpoint was found in the reviewed routes.
-- **Logging:** targeted auth code logs mail-delivery failure kind and error code, not credentials or token content. No runtime log review was possible. Do not collect raw cookies, tokens, recovery links, connection strings, Redis keys, or full HARs for manual tests.
-- **Rollback:** no current Production deployment ID, last-known-good SHA, rollback owner, or observation window was available. Do not release until the owner records and verifies those prerequisites.
+The script then requires typing the exact origin and an explicit isolated-staging Redis confirmation. Expected: `GET /api/auth/me` returns 401 without a session; the first eight synthetic login attempts return 401 and the ninth returns 429. Any unexpected status stops the run. This does not prove cross-instance sharing or timeout behavior. The harness was not run in this review because isolation was not owner-attested and the Preview host was inaccessible through the available browsing tool.
 
-## Required Preview-only checks
+### Direct API authorization
 
-Run these only with an owner-confirmed Preview deployment, isolated staging database/Redis, disposable accounts, and a controlled mail sink. Do not use Production traffic or data.
+While signed in as `staging_viewer`, run:
 
-1. Log in and out; replay the same revoked session from a second isolated client and verify `/api/auth/me` and refresh reject it.
-2. Rotate a refresh token, replay the old refresh state, and verify rejection without invalidating the newly rotated session. Confirm expired/invalid sessions reject.
-3. Complete password reset and email verification once; verify token replay and expiry reject, old password no longer works, and all relevant prior sessions are revoked. Compare unknown-account and known-account recovery responses for generic shape.
-4. Use `staging_viewer` to call Users POST/PATCH/DELETE and all role-management endpoints directly; verify 403 and no state change. Verify Super Admin allowed operations through the API. Do not rely on UI visibility.
-5. On a dedicated disposable account, exceed the configured login limit (8 per account and 30 per IP per 15 minutes) and reset-initiation limit (3 per account and 15 per IP per 15 minutes). Verify generic HTTP 429. Also verify reset completion is limited to 5 per token and 30 per IP per 15 minutes. Stop once limits are demonstrated; do not generate repeated mail.
-6. In Preview only, test Redis timeout/unavailability and verify generic HTTP 503 without auth/recovery processing. Measure warm and cold request latency and report p50/p95/p99 and 503 counts against the 1,500 ms Redis deadline. Do not induce this failure in Production.
-7. Read-only attest Preview/Production DB, Redis, mail and secret scopes are distinct; confirm Node 22 runtime, `NODE_ENV`, secure cookies, deployed headers, and a tested rollback target.
+```js
+const randomId = () => crypto.randomUUID().replaceAll("-", "").slice(0, 24);
+const userId = randomId();
+const roleId = randomId();
+const probe = async (label, path, method = "GET", body) => {
+  const response = await fetch(path, {
+    method,
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: body === undefined ? {} : { "content-type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  return { label, status: response.status };
+};
+const results = [];
+results.push(await probe("viewer GET users", "/api/users"));
+results.push(await probe("viewer POST user", "/api/users", "POST", {}));
+results.push(await probe("viewer PATCH user", `/api/users/${userId}`, "PATCH", {}));
+results.push(await probe("viewer DELETE user", `/api/users/${userId}`, "DELETE"));
+results.push(await probe("viewer GET roles", "/api/roles"));
+results.push(await probe("viewer POST role", "/api/roles", "POST", {}));
+results.push(await probe("viewer PATCH role", `/api/roles/${roleId}`, "PATCH", {}));
+results.push(await probe("viewer DELETE role", `/api/roles/${roleId}`, "DELETE"));
+results.push(await probe("viewer assign permissions", `/api/roles/permissions/${roleId}`, "PATCH", {}));
+results.push(await probe("viewer change default role", `/api/roles/default/${roleId}`, "PATCH", {}));
+console.table(results);
+```
 
-Record only deployment SHA, sanitized status codes, timestamps/request IDs, latency summaries, and masked configuration-presence attestations. Never record credential values, tokens, cookies, raw IP/account identifiers, database URIs, or raw Redis keys.
+Expected: `GET /api/users` is 200; every other call is 403. The mutation probes use random IDs and empty bodies. Stop immediately if any mutation returns success; inspect Preview state before continuing.
 
-## Release decision
+While signed in as Super Admin, run read probes:
 
-**NO-GO for merge and Production release.** Local typecheck, lint, automated tests, and build pass with the limitations above. The new authorization tests are mocked, the Upstash integration test was skipped, and the real Preview flows, distributed rate-limit outcomes, environment isolation, Production runtime, and rollback readiness remain unverified. The local security changes need review and a fresh successful CI run. Obtain independent security review and complete the Preview-only gates before reconsidering GO. PR #3 remains unmerged and must stay out of Production until these blockers are closed.
+```js
+const results = await Promise.all([
+  fetch("/api/users", { credentials: "same-origin", cache: "no-store" }).then(r => ({ label: "admin GET users", status: r.status })),
+  fetch("/api/roles", { credentials: "same-origin", cache: "no-store" }).then(r => ({ label: "admin GET roles", status: r.status })),
+]);
+console.table(results);
+```
+
+Expected: both are 200. For positive write authorization, use the Preview UI/API to create one clearly labeled disposable user and one disposable role only if the staging owner approves test writes. Verify creation succeeds, then delete only those disposable records. Never edit or delete existing roles/accounts as a test.
+
+### Login, logout, and refresh replay
+
+1. Sign in as a disposable account; `/api/auth/me` should return 200. Sign out through the Preview UI; `/api/auth/me` should then return 401.
+2. To verify server revocation rather than cookie clearing alone, use an approved local browser automation harness with two contexts. Clone the session cookie jar in memory before logout; do not serialize, inspect, or log it. Verify context B authenticates before logout, sign out in A, then verify B's `/api/auth/me` rejects. Dispose both contexts.
+3. For rotation, start from a fresh session and clone it in memory to contexts A and B. Refresh in A and expect success. Replay B's stale refresh state and expect rejection (normally 409); confirm A's rotated state still authenticates. Never print cookie values. Treat status codes as the evidence.
+
+### Password reset and email verification
+
+1. Request reset for a disposable account and an unknown address; compare generic response status/body shape without recording addresses. Confirm delivery only to the controlled inbox.
+2. Complete reset once; verify the new password works, the prior password fails, the reset state cannot be replayed, and prior sessions are revoked. Use a separate reset request and wait at least 16 minutes to verify expiry. Do not copy reset URLs/tokens into logs.
+3. Repeat for verification: resend for verified/unverified test fixtures and compare generic responses; consume one link once; verify replay fails. Use a separate link and wait at least 16 minutes to verify expiry. Keep links inside the controlled inbox/browser only.
+
+### Redis 429 and 503
+
+1. To verify the account limit, use a fresh disposable Preview account and split nine invalid login attempts across two independent Preview browser clients within 15 minutes. Expected: eight requests reach generic login failure and the ninth receives generic 429. Stop at the ninth attempt. Do not use an administrator account. Record only status and timestamp. An HTTP 429 proves the limit fired; corroborate distributed sharing with masked provider metrics if available, never raw keys.
+2. **Do not test 503 by disrupting shared Redis.** It remains blocked until the deployment owner confirms that the Preview Redis and a disposable Preview deployment are exclusively staging resources and explicitly authorizes fault injection. If authorized, use a separate disposable Preview deployment with a staging-only invalid/unreachable Redis configuration; make one request, expect generic 503, restore the normal staging configuration, redeploy, and confirm recovery. Never apply this test to Production or a shared Redis database.
+
+## Deployment-owner checklist
+
+Owner attests **presence/scope and masked identity only**; do not send secret values or full URIs.
+
+- **MongoDB:** confirm Preview and Production use separate approved clusters/projects and access scopes; Preview credentials cannot access Production; least-privilege access is in place. The local candidate now fails fast in Production if `MONGODB_DB` is absent instead of defaulting to `adm-website`; set it explicitly in both intended Vercel scopes. This code change is uncommitted and does not change Production settings.
+- **Redis:** confirm distinct Preview and Production Redis resources/databases, tokens, and HMAC secrets. Confirm required settings exist in the correct Vercel scopes: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `AUTH_RATE_LIMIT_KEY_SECRET` (at least 32 UTF-8 bytes). Verify client-IP header behavior and the 1,500 ms timeout's cold/warm latency headroom.
+- **Mail:** confirm Preview delivery is restricted to the controlled sink/test recipients and Production mail credentials/sender are scoped only to Production. Verify sender-domain/DNS and HTTPS reset/verification origins; capture no message URLs or tokens.
+- **JWT/credentials:** confirm distinct strong JWT secrets and scoped credentials in each Vercel environment; attest presence/rotation state without exposing values. Do not change Production settings during this verification.
+- **Media/storage:** confirm request/body limits at edge and app, Blob token scope, public/private policy, retention/lifecycle, and approved content handling. Check existing `publicId` index state on staging/backup and use a separately approved migration if changes are needed.
+- **Vercel/runtime:** confirm the deployed SHA/alias, Node 22 runtime, `NODE_ENV=production`, environment-variable presence/scope without revealing values, secure cookies, TLS, and actual deployed security headers. Source now sets `Strict-Transport-Security: max-age=31536000` without `includeSubDomains` or `preload`; verify delivery at the edge. CSP remains absent because Next.js 16 nonce support requires request-time dynamic rendering and compatibility validation; do not ship an untested restrictive policy.
+- **Operations:** confirm backups and a tested restore drill, monitoring/alert owners, incident contact, and response plan.
+- **Rollback:** record last-known-good Production deployment/SHA, rollback owner, tested rollback procedure, alert/monitor owner, and observation window. This review did not inspect or change Production settings.
+
+## Independent reviewer packet
+
+**Status: BLOCKED / not requested.** The PR has no submitted reviews and no requested reviewer; no independent findings exist to record. Do not mark this gate complete until reviewer evidence is attached to the current SHA.
+
+Suggested scope for the assigned reviewer:
+
+- `src/lib/auth/require-auth.ts`, `src/lib/auth/permission-enforcement.test.ts`, `src/app/api/users/**`, and `src/app/api/roles/**`: server-side authorization ordering, role assignment's separate `ROLE_UPDATE` check, and Super Admin bypass.
+- `src/services/auth/auth.service.ts`, `src/app/api/auth/**`, `src/lib/auth/auth-cookies.ts`: logout/revocation, refresh rotation/replay, reset/verification token single-use and expiry, and generic errors.
+- `src/lib/security/auth-request-limit.ts`, `src/lib/security/same-origin.ts`, their tests, and `src/app/api/auth/reset-password/route.ts`: distributed limits, fail-closed behavior, timeout, Preview origin trust, CSRF, and reset-completion limiter ordering.
+- `src/app/api/admin-route-auth.integration.test.ts`, `src/app/api/auth/csrf-route.integration.test.ts`, `src/services/auth/auth.service.test.ts`: direct route guard ordering, auth lifecycle fixtures, and no-write guarantees.
+- `src/config/env.ts`, `src/config/env-validation.ts`, `.vercelignore`, `scripts/bootstrap-preview-admin.local.ts`, `scripts/security/preview-security-smoke.local.mjs`, `next.config.ts`: environment/database isolation, local-only script exclusion/guards, runtime configuration, and security headers.
+
+Reviewer record to complete: reviewer identity/role; reviewed SHA; date; decision; findings with severity, file/line, exploit conditions and evidence; required fixes; verification SHA. Until filled with actual reviewer evidence, status stays BLOCKED.
+
+## Findings and decision
+
+- **Critical:** none found in this targeted review; this is not a complete security audit.
+- **High:** live Preview auth/RBAC/rate-limit behavior, environment separation, mail routing, safe rollback/restore readiness, and independent review remain release blockers (all unverified or blocked above). Media upload and existing-index verification from the earlier findings register also remain open.
+- **Medium:** the local candidate removes the Production `MONGODB_DB` fallback, but this fix is uncommitted and CI has not run on it; deployed settings still need owner verification. Vercel/edge headers and HSTS are unverified; CSP remains absent from repository Next headers and needs a compatibility plan.
+- **Low:** ESLint reports 76 warnings despite exit 0; these are not all security issues and were not broadly cleaned up.
+
+**Final recommendation: NO-GO for merge and Production release.** Workflow #19 passed for the old committed SHA `da77e82c7f1be92e20839c70248f34e7a0971feb`, not the current uncommitted fixes. Local source checks passed with the documented Windows test-runner limitation, but live Preview gates, environment owner attestations, independent review, and fresh CI remain incomplete. Keep PR #3 unmerged until those gates have evidence and resulting issues are resolved or explicitly accepted by the release owner. No Production setting or data was touched in this review.

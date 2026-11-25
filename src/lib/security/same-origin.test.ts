@@ -115,6 +115,22 @@ test("same-origin guard rejects cross-site metadata even for an allowed origin",
   assert.throws(() => enforceSameOrigin(request, { requireOrigin: true }), isForbidden);
 });
 
+test("Bearer authorization does not bypass cross-site origin or Fetch Metadata checks", () => {
+  const request = new NextRequest("https://app.example.test/api/auth/login", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer explicit-client-token",
+      origin: "https://attacker.example",
+      "sec-fetch-site": "cross-site",
+    },
+  });
+
+  assert.throws(
+    () => enforceSameOrigin(request, { requireOrigin: true }),
+    isForbidden,
+  );
+});
+
 test("same-origin guard rejects a spoofed Host header", () => {
   withVercelEnvironment({
     VERCEL: "1",

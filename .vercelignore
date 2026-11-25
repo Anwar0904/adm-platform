@@ -1,1 +1,2 @@
 scripts/bootstrap-preview-admin.local.ts
+scripts/security/preview-security-smoke.local.*
