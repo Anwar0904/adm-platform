@@ -29,50 +29,42 @@ import {
     Users,
     X,
 } from "lucide-react";
+import {
+    ADMIN_NAVIGATION,
+    canAccessAdminRoute,
+    getVisibleAdminNavigation,
+} from "@/lib/permissions/admin-access";
 
-const navigation = [
-    {
-        label: "Overview",
-        items: [{ label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard }],
-    },
-    {
-        label: "Content",
-        items: [
-            { label: "Media", href: "/admin/media", icon: ImageIcon },
-            { label: "Blogs", href: "/admin/blogs", icon: BookOpen },
-            { label: "Categories", href: "/admin/categories", icon: FolderKanban },
-            { label: "Tags", href: "/admin/tags", icon: Tags },
-            { label: "Services", href: "/admin/services", icon: BriefcaseBusiness },
-            { label: "Portfolio", href: "/admin/portfolio", icon: BarChart3 },
-            { label: "Team", href: "/admin/team", icon: Users },
-            { label: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
-            { label: "FAQs", href: "/admin/faqs", icon: FileText },
-        ],
-    },
-    {
-        label: "Business",
-        items: [{ label: "Consultations", href: "/admin/consultations", icon: BriefcaseBusiness }],
-    },
-    {
-        label: "Administration",
-        items: [
-            { label: "Users", href: "/admin/users", icon: Users },
-            { label: "Roles", href: "/admin/roles", icon: ShieldCheck },
-            { label: "Settings", href: "/admin/settings", icon: Settings },
-        ],
-    },
-];
+const navigationIcons = {
+    "/admin/dashboard": LayoutDashboard,
+    "/admin/media": ImageIcon,
+    "/admin/blogs": BookOpen,
+    "/admin/categories": FolderKanban,
+    "/admin/tags": Tags,
+    "/admin/services": BriefcaseBusiness,
+    "/admin/portfolio": BarChart3,
+    "/admin/team": Users,
+    "/admin/testimonials": MessageSquareQuote,
+    "/admin/faqs": FileText,
+    "/admin/consultations": BriefcaseBusiness,
+    "/admin/users": Users,
+    "/admin/roles": ShieldCheck,
+    "/admin/settings": Settings,
+} as const;
 
-function getUser() {
-    if (typeof window === "undefined") return null;
+type CurrentUser = {
+    name?: string;
+    email?: string;
+    role?: { name: string | null; permissions: string[] };
+};
 
-    try {
-        const raw = sessionStorage.getItem("adm_user");
-        return raw ? JSON.parse(raw) : null;
-    } catch {
-        return null;
-    }
-}
+type AuthorizationState = {
+    path: string;
+    status: "loading" | "ready" | "forbidden" | "error";
+    user?: CurrentUser;
+};
+
+const EMPTY_PERMISSIONS: string[] = [];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -80,14 +72,51 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
-    const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
+    const [authorization, setAuthorization] = useState<AuthorizationState>({
+        path: "",
+        status: "loading",
+    });
     const [logoutError, setLogoutError] = useState(false);
     const [sessionRenewalError, setSessionRenewalError] = useState(false);
 
     useEffect(() => {
-        const timer = window.setTimeout(() => setUser(getUser()), 0);
-        return () => window.clearTimeout(timer);
-    }, []);
+        if (pathname === "/admin/login") return;
+        let active = true;
+
+        void fetch("/api/auth/me", { cache: "no-store" })
+            .then(async (response) => {
+                if (!active) return;
+                if (response.status === 401) {
+                    router.replace("/admin/login");
+                    return;
+                }
+                if (response.status === 403) {
+                    setAuthorization({ path: pathname, status: "forbidden" });
+                    return;
+                }
+                if (!response.ok) {
+                    setAuthorization({ path: pathname, status: "error" });
+                    return;
+                }
+
+                const result = await response.json() as {
+                    data?: CurrentUser;
+                };
+                const user = result.data;
+                if (!user || !Array.isArray(user.role?.permissions)) {
+                    setAuthorization({ path: pathname, status: "error" });
+                    return;
+                }
+                setAuthorization({ path: pathname, status: "ready", user });
+            })
+            .catch(() => {
+                if (active) setAuthorization({ path: pathname, status: "error" });
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [pathname, router]);
 
     useEffect(() => {
         const timer = window.setTimeout(() => setSidebarOpen(false), 0);
@@ -290,12 +319,35 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         }
     }
 
-    const pageTitle =
-        navigation
-            .flatMap((section) => section.items)
-            .find(
-                (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
-            )?.label ?? "Admin";
+    const user = authorization.path === pathname ? authorization.user : undefined;
+    const permissions = user?.role?.permissions ?? EMPTY_PERMISSIONS;
+    const roleName = user?.role?.name;
+    const authorized = authorization.path === pathname && authorization.status === "ready" &&
+        canAccessAdminRoute(pathname, permissions, roleName);
+    const visibleNavigation = (() => {
+        const visible = getVisibleAdminNavigation(permissions, roleName);
+        return ["Overview", "Content", "Business", "Administration"].map((section) => ({
+            label: section,
+            items: visible.filter((item) => item.section === section),
+        })).filter((section) => section.items.length > 0);
+    })();
+    const pageTitle = ADMIN_NAVIGATION.find(
+        (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
+    )?.label ?? "Admin";
+
+    if (authorization.path !== pathname || authorization.status === "loading") {
+        return <div className="grid min-h-screen place-items-center bg-slate-950 text-slate-200" role="status">Checking administrator access…</div>;
+    }
+
+    if (authorization.status === "error") {
+        return <div className="grid min-h-screen place-items-center bg-slate-950 p-6 text-slate-200"><p role="alert">Unable to verify administrator access. Refresh the page to try again.</p></div>;
+    }
+
+    if (authorization.status === "forbidden" || !authorized) {
+        const firstAllowedRoute = visibleNavigation[0]?.items[0]?.href ?? "/admin/login";
+        const returnLabel = firstAllowedRoute === "/admin/login" ? "Return to sign in" : "Open an available admin page";
+        return <main className="grid min-h-screen place-items-center bg-slate-950 p-6 text-slate-200"><section className="max-w-lg text-center"><h1 className="text-2xl font-bold">Access denied</h1><p className="mt-3 text-slate-400">Your account does not have permission to open this page.</p><Link className="mt-6 inline-flex rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white" href={firstAllowedRoute}>{returnLabel}</Link></section></main>;
+    }
 
     return (
         <div className="admin-shell min-h-screen bg-slate-950 text-slate-100">
@@ -346,7 +398,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 </div>
 
                 <nav className="flex-1 overflow-y-auto px-3 py-5">
-                    {navigation.map((section) => (
+                    {visibleNavigation.map((section) => (
                         <div key={section.label} className="mb-6">
                             {!collapsed && (
                                 <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
@@ -356,7 +408,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
                             <div className="space-y-1">
                                 {section.items.map((item) => {
-                                    const Icon = item.icon;
+                                    const Icon = navigationIcons[item.href as keyof typeof navigationIcons];
                                     const active =
                                         pathname === item.href || pathname.startsWith(`${item.href}/`);
 

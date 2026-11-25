@@ -28,6 +28,15 @@ export async function GET(
                 email: user.email,
                 avatar,
                 jobTitle: user.jobTitle ?? null,
+                role: {
+                    name: typeof user.role === "object" && user.role !== null && "name" in user.role
+                        ? String(user.role.name)
+                        : null,
+                    permissions: typeof user.role === "object" && user.role !== null &&
+                        "permissions" in user.role && Array.isArray(user.role.permissions)
+                        ? user.role.permissions.filter((permission): permission is string => typeof permission === "string")
+                        : [],
+                },
             },
             "Current user fetched successfully."
         );
