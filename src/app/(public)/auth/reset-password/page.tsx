@@ -1,11 +1,8 @@
-import type { Metadata } from "next";
-import AuthEmailActions from "@/components/auth/AuthEmailActions";
+﻿import type { Metadata } from "next";
+import ResetPasswordPage from "@/components/auth/ResetPasswordPage";
 
-export const metadata: Metadata = {
-  title: "Reset Password | Arazi Digital Media",
-  robots: { index: false, follow: false },
-};
+export const metadata: Metadata = { title: "Reset Password | Arazi Digital Media", robots: { index: false, follow: false } };
 
-export default function ResetPasswordPage() {
-  return <AuthEmailActions flow="reset" />;
+export default function Page() {
+  return <ResetPasswordPage />;
 }

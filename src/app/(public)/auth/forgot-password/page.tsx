@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
-import AuthRequestLinkForm from "@/components/auth/AuthRequestLinkForm";
+﻿import type { Metadata } from "next";
+import ForgotPasswordPage from "@/components/auth/ForgotPasswordPage";
 
 export const metadata: Metadata = { title: "Reset your password | ADM", robots: { index: false, follow: false } };
 
-export default function ForgotPasswordPage() {
-  return <AuthRequestLinkForm kind="password-reset" />;
+export default function Page() {
+  return <ForgotPasswordPage />;
 }

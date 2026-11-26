@@ -347,7 +347,7 @@ export default function AdminLoginForm() {
                                         </label>
 
                                         <Link
-                                            href="/admin/forgot-password"
+                                            href="/auth/forgot-password"
                                             className="text-sm font-semibold text-blue-600 transition hover:text-blue-700"
                                         >
                                             Forgot password?
