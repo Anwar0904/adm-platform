@@ -2,9 +2,9 @@
 
 Complete this form using masked identifiers or yes/no comparisons only. Do not enter secret values, cookies, account addresses, full connection strings, Redis keys, or recovery URLs.
 
-**Security code candidate SHA:** `beb9127e6be3114dbe618c43c122539259c93afb`
+**Security code candidate SHA:** `956c1e832a25ccf859caa8467a482a2ffdc5608c`
 
-**Preview deployment SHA/ID:** ____________________
+**Preview deployment SHA/ID:** `956c1e832a25ccf859caa8467a482a2ffdc5608c` / Vercel status record `EKLy8iVWYizjBBcHv8gsCj66UEH9` (GitHub reports deployment completed; runtime environment is not owner-attested)
 
 **Attesting owner and role:** ____________________
 **Date (UTC):** ____________________
