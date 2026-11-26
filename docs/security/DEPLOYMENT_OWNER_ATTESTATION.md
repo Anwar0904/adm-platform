@@ -2,9 +2,9 @@
 
 Complete this form using masked identifiers or yes/no comparisons only. Do not enter secret values, cookies, account addresses, full connection strings, Redis keys, or recovery URLs.
 
-**Security code candidate SHA:** `956c1e832a25ccf859caa8467a482a2ffdc5608c`
+**Security code candidate SHA:** `92e42a4e131ff5ec47b6201d10c94c7b2e1f1d6d`
 
-**Preview deployment SHA/ID:** `956c1e832a25ccf859caa8467a482a2ffdc5608c` / Vercel status record `EKLy8iVWYizjBBcHv8gsCj66UEH9` (GitHub reports deployment completed; runtime environment is not owner-attested)
+**Preview deployment SHA/ID:** `92e42a4e131ff5ec47b6201d10c94c7b2e1f1d6d` / GitHub Vercel status `success` (deployment target: [Vercel deployment record](https://vercel.com/anwar0904s-projects/adm-platform/FW4QCBm4BvGxNzFi4bAKTHG3Ubyt); runtime environment is not owner-attested)
 
 **Attesting owner and role:** ____________________
 **Date (UTC):** ____________________
