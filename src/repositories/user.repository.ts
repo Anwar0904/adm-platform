@@ -47,12 +47,10 @@ class UserRepository {
     email: string,
     excludeId?: string
   ) {
-    const filter: Record<
-      string,
-      unknown
-    > = {
+    // The email index is unique across all user documents, including soft-deleted
+    // records. Keep this check aligned with that database constraint.
+    const filter: Record<string, unknown> = {
       email: email.toLowerCase(),
-      isDeleted: false,
     };
 
     if (

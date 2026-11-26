@@ -239,57 +239,67 @@ class UserService {
                 data.password
             );
 
-        return UserRepository.create({
-            firstName:
-                data.firstName.trim(),
+        try {
+            return await UserRepository.create({
+                firstName:
+                    data.firstName.trim(),
 
-            lastName:
-                data.lastName?.trim() ?? "",
+                lastName:
+                    data.lastName?.trim() ?? "",
 
-            email,
+                email,
 
-            password:
-                hashedPassword,
+                password:
+                    hashedPassword,
 
-            role:
-                new Types.ObjectId(
-                    data.role
-                ),
+                role:
+                    new Types.ObjectId(
+                        data.role
+                    ),
 
-            status:
-                data.status ??
-                USER_STATUS.ACTIVE,
+                status:
+                    data.status ??
+                    USER_STATUS.ACTIVE,
 
-            phone:
-                data.phone ?? null,
+                phone:
+                    data.phone ?? null,
 
-            jobTitle:
-                data.jobTitle ?? null,
+                jobTitle:
+                    data.jobTitle ?? null,
 
-            avatar:
-                data.avatar ?? null,
+                avatar:
+                    data.avatar ?? null,
 
-            isEmailVerified:
-                data.isEmailVerified ??
-                false,
+                isEmailVerified:
+                    data.isEmailVerified ??
+                    false,
 
-            createdBy:
-                new Types.ObjectId(
-                    currentUserId
-                ),
+                createdBy:
+                    new Types.ObjectId(
+                        currentUserId
+                    ),
 
-            updatedBy:
-                new Types.ObjectId(
-                    currentUserId
-                ),
+                updatedBy:
+                    new Types.ObjectId(
+                        currentUserId
+                    ),
 
-            isDeleted: false,
+                isDeleted: false,
 
-            deletedAt: null,
+                deletedAt: null,
 
-            passwordChangedAt:
-                new Date(),
-        });
+                passwordChangedAt:
+                    new Date(),
+            });
+        } catch (error) {
+            if (
+                typeof error === "object" && error !== null &&
+                "code" in error && error.code === 11000
+            ) {
+                throw new ApiError(409, "Email already exists.");
+            }
+            throw error;
+        }
     }
 
     async updateUser(
