@@ -2,18 +2,18 @@
 
 Complete this form using masked identifiers or yes/no comparisons only. Do not enter secret values, cookies, account addresses, full connection strings, Redis keys, or recovery URLs.
 
-**Security code candidate SHA:** `92e42a4e131ff5ec47b6201d10c94c7b2e1f1d6d`
+**Application code candidate reviewed:** `f390cd9fcd28aed71f33eb2bb92a5555b90d5e80` (current PR head at evidence review; sign-off-only branch update must receive fresh checks)
 
-**Preview deployment SHA/ID:** `92e42a4e131ff5ec47b6201d10c94c7b2e1f1d6d` / GitHub Vercel status `success` (deployment target: [Vercel deployment record](https://vercel.com/anwar0904s-projects/adm-platform/FW4QCBm4BvGxNzFi4bAKTHG3Ubyt); runtime environment is not owner-attested)
+**Preview deployment SHA/ID:** `f390cd9fcd28aed71f33eb2bb92a5555b90d5e80` / Vercel status `success` (status is deployment association only; deployed runtime/configuration is not owner-attested)
 
 **Attesting owner and role:** ____________________
 **Date (UTC):** ____________________
 
-Status values: `PASSED`, `FAILED`, `BLOCKED`, `UNVERIFIED`. Attach a sanitized screenshot/export reference or owner-controlled evidence location for each passed item.
+Status values: `PASSED`, `FAILED`, `BLOCKED`, `UNVERIFIED`, `OPERATOR-REPORTED`. `OPERATOR-REPORTED` records a statement without completed owner attestation or independent verification. Attach a sanitized screenshot/export reference or owner-controlled evidence location for each passed item.
 
 | Gate | Status | Masked evidence / reference |
 | --- | --- | --- |
-| Preview MongoDB cluster/project is dedicated or access-isolated from Production | UNVERIFIED | ____________________ |
+| Preview MongoDB cluster/project is dedicated or access-isolated from Production | OPERATOR-REPORTED (owner statement in 2026-11-27 task instruction; owner identity/evidence reference not supplied) | ____________________ |
 | Preview `MONGODB_DB` is explicitly set and its cluster/database target is confirmed isolated from Production | UNVERIFIED | ____________________ |
 | Preview DB credential cannot read/write Production | UNVERIFIED | ____________________ |
 | Production MongoDB target and least-privilege access are correct | UNVERIFIED | ____________________ |
@@ -42,7 +42,7 @@ Do not test Redis failure against a shared or Production instance. If fault inje
 - The deployment owner explicitly authorizes one bounded failure request and restore.
 - A recovery/restore owner and time window are present.
 
-**Fault-test authorization:** `BLOCKED` until all four items are confirmed.
+**Fault-test authorization:** `BLOCKED` until all four items are confirmed. No live Redis failure injection has been performed.
 
 **Owner/date:** ____________________
 **Evidence reference:** ____________________

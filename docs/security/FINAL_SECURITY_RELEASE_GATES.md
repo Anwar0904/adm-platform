@@ -2,8 +2,8 @@
 
 ## Decision: NO-GO
 
-Reviewed code candidate: `92e42a4e131ff5ec47b6201d10c94c7b2e1f1d6d` on `security/platform-hardening-review`, PR #3. GitHub reports PR #3 open, draft, mergeable, and not merged. The Vercel status and GitHub quality workflow are successful for this SHA; these are deployment/CI signals, not evidence of authenticated Preview behavior or safe environment isolation.
+Application code candidate reviewed: `f390cd9fcd28aed71f33eb2bb92a5555b90d5e80` on `security/platform-hardening-review`, PR #3. At review time, GitHub reported PR #3 open, draft, mergeable, and not merged. GitHub Actions run `45871257001` and Vercel status were successful for this application SHA. The sign-off/procedure update is a new branch commit and requires fresh checks; CI and deployment status do not prove authenticated Preview behavior or environment isolation.
 
-Current gate evidence and minimum remaining actions are recorded in [SECURITY_RELEASE_SIGNOFF.md](SECURITY_RELEASE_SIGNOFF.md). The owner evidence form is [DEPLOYMENT_OWNER_ATTESTATION.md](DEPLOYMENT_OWNER_ATTESTATION.md). No Production data, configuration, deployment, or session was modified.
+Current evidence and minimum remaining actions are recorded in [SECURITY_RELEASE_SIGNOFF.md](SECURITY_RELEASE_SIGNOFF.md). Owner-controlled evidence fields are in [DEPLOYMENT_OWNER_ATTESTATION.md](DEPLOYMENT_OWNER_ATTESTATION.md). Preview MongoDB isolation is recorded as operator-reported, while exact target and other environment evidence remain unverified. No Production data/configuration, session, deployment, or Redis fixture was modified. PR #3 was not merged.
 
-Keep PR #3 unmerged until the exposed ADM and applicable Vercel Protection sessions are invalidated, live Preview tests are completed with approved isolated fixtures, owner evidence is recorded, the maintainer disposes of the mixed PR scope, and an independent reviewer approves the exact final SHA. Do not self-approve or merge while any required gate remains open.
+Keep PR #3 unmerged until the authorized staging session revocation is completed and verified, remaining approved Preview tests are evidenced, owner gates/findings are resolved, the maintainer decides mixed PR scope, and an independent reviewer approves the final PR head. Do not self-approve.
