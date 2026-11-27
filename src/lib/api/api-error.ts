@@ -24,15 +24,19 @@ export class ApiError extends Error {
 
 export class ApiErrorHandler {
   static handle(error: unknown) {
-    console.error(error);
+    const errorName = error instanceof Error ? error.name : "UnknownError";
 
     // Custom Errors
     if (error instanceof ApiError) {
+      if (error.statusCode >= 500) {
+        console.error("api-request-failed", { errorName, statusCode: error.statusCode });
+      }
       return NextResponse.json(
         {
           success: false,
           message: error.message,
-          errors: error.errors ?? null,
+          // Custom error details may contain submitted credentials or personal data.
+          errors: null,
         },
         {
           status: error.statusCode,
@@ -84,6 +88,7 @@ export class ApiErrorHandler {
     }
 
     // Unknown
+    console.error("api-request-failed", { errorName, statusCode: 500 });
     return NextResponse.json(
       {
         success: false,

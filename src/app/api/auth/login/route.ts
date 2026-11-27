@@ -10,18 +10,26 @@ import AuthService from "@/services/auth/auth.service";
 import { LoginSchema } from "@/validators/auth/login.validator";
 
 import { setAuthCookies } from "@/lib/auth/auth-cookies";
+import { toAuthUserResponse } from "@/dto/auth/auth-user-response.dto";
+import { AUTH_REQUEST_LIMITS, isAuthRequestRateLimited } from "@/lib/security/auth-request-limit";
+import { authFlowRateLimitedResponse } from "@/lib/api/auth-flow-response";
+import { enforceSameOrigin } from "@/lib/security/same-origin";
 
 export async function POST(
   request: NextRequest
 ) {
   try {
-    await connectDB();
-
+    enforceSameOrigin(request, { requireOrigin: true });
     const body =
       await request.json();
 
     const data =
       LoginSchema.parse(body);
+
+    if (await isAuthRequestRateLimited(request, "login", data.email, AUTH_REQUEST_LIMITS.login)) {
+      return authFlowRateLimitedResponse();
+    }
+    await connectDB();
 
     const result =
       await AuthService.login(
@@ -49,12 +57,15 @@ export async function POST(
       result.sessionExpiresAt
     );
 
-    return ApiResponse.success(
+    const response = ApiResponse.success(
       {
-        user: result.user,
+        user: toAuthUserResponse(result.user),
       },
       "Login successful."
     );
+    response.headers.set("Cache-Control", "no-store, private");
+    response.headers.set("Pragma", "no-cache");
+    return response;
   } catch (error) {
     return ApiErrorHandler.handle(
       error

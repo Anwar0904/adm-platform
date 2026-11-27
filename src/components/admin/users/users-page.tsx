@@ -27,6 +27,8 @@ import {
     X,
 } from "lucide-react";
 
+import { CreateUserSchema } from "@/validators/user.validator";
+
 type UserStatus =
     | "active"
     | "inactive"
@@ -79,6 +81,19 @@ interface UserForm {
     jobTitle: string;
     avatar: string;
     isEmailVerified: boolean;
+}
+
+type UserFormField = keyof UserForm;
+type UserFormErrors = Partial<Record<UserFormField, string>>;
+
+class ApiRequestError extends Error {
+    fieldErrors: UserFormErrors;
+
+    constructor(message: string, fieldErrors: UserFormErrors = {}) {
+        super(message);
+        this.name = "ApiRequestError";
+        this.fieldErrors = fieldErrors;
+    }
 }
 
 const EMPTY_FORM: UserForm = {
@@ -157,12 +172,28 @@ async function apiFetch(
         const errorData = data !== null && typeof data === "object"
             ? data as Record<string, unknown>
             : {};
-        throw new Error(
+        const rawErrors = errorData.errors !== null && typeof errorData.errors === "object"
+            ? errorData.errors as Record<string, unknown>
+            : {};
+        const rawFieldErrors = rawErrors.fieldErrors !== null && typeof rawErrors.fieldErrors === "object"
+            ? rawErrors.fieldErrors as Record<string, unknown>
+            : {};
+        const fieldErrors: UserFormErrors = {};
+
+        for (const [field, messages] of Object.entries(rawFieldErrors)) {
+            if (field in EMPTY_FORM && Array.isArray(messages)) {
+                const message = messages.find((item): item is string => typeof item === "string");
+                if (message) fieldErrors[field as UserFormField] = message;
+            }
+        }
+
+        throw new ApiRequestError(
             typeof errorData.message === "string"
                 ? errorData.message
                 : typeof errorData.error === "string"
                     ? errorData.error
-                    : "Request failed."
+                    : "Request failed.",
+            fieldErrors,
         );
     }
 
@@ -299,6 +330,9 @@ export default function UsersPage() {
 
     const [form, setForm] =
         useState<UserForm>(EMPTY_FORM);
+
+    const [formErrors, setFormErrors] =
+        useState<UserFormErrors>({});
 
     const [openMenu, setOpenMenu] =
         useState<string | null>(null);
@@ -493,6 +527,7 @@ export default function UsersPage() {
 
     function openCreate() {
         setEditingUser(null);
+        setFormErrors({});
         setForm({
             ...EMPTY_FORM,
             role:
@@ -507,6 +542,7 @@ export default function UsersPage() {
 
     function openEdit(user: User) {
         setEditingUser(user);
+        setFormErrors({});
 
         setForm({
             firstName:
@@ -549,12 +585,18 @@ export default function UsersPage() {
         setShowModal(false);
         setEditingUser(null);
         setForm(EMPTY_FORM);
+        setFormErrors({});
     }
 
     function updateForm(
         field: keyof UserForm,
         value: string | boolean
     ) {
+        setFormErrors((current) => {
+            const next = { ...current };
+            delete next[field];
+            return next;
+        });
         setForm((current) => ({
             ...current,
             [field]: value,
@@ -565,37 +607,61 @@ export default function UsersPage() {
         event: React.FormEvent
     ) {
         event.preventDefault();
+        setError("");
+        setFormErrors({});
 
-        if (!form.firstName.trim()) {
-            setError(
-                "First name is required."
-            );
-            return;
-        }
+        let validatedCreatePayload: ReturnType<typeof CreateUserSchema.parse> | undefined;
+        if (!editingUser) {
+            const candidate = {
+                firstName: form.firstName,
+                lastName: form.lastName,
+                email: form.email,
+                password: form.password,
+                role: form.role,
+                status: form.status,
+                phone: form.phone || undefined,
+                jobTitle: form.jobTitle || undefined,
+                avatar: form.avatar || undefined,
+                isEmailVerified: form.isEmailVerified,
+            };
+            const validation = CreateUserSchema.safeParse(candidate);
+            const nextErrors: UserFormErrors = {};
 
-        if (!form.email.trim()) {
-            setError(
-                "Email is required."
-            );
-            return;
-        }
+            if (!validation.success) {
+                for (const issue of validation.error.issues) {
+                    const field = issue.path[0];
+                    if (typeof field === "string" && field in EMPTY_FORM && !nextErrors[field as UserFormField]) {
+                        nextErrors[field as UserFormField] = issue.message;
+                    }
+                }
+            } else {
+                validatedCreatePayload = validation.data;
+            }
 
-        if (!editingUser && !form.password) {
-            setError(
-                "Password is required."
-            );
-            return;
-        }
+            if (!roles.some((role) => role._id === form.role)) {
+                nextErrors.role = "Select a role from the available roles.";
+            }
 
-        if (!form.role) {
-            setError(
-                "Please select a role."
-            );
-            return;
+            if (Object.keys(nextErrors).length > 0) {
+                setFormErrors(nextErrors);
+                setError("Please correct the highlighted fields.");
+                return;
+            }
+        } else {
+            const nextErrors: UserFormErrors = {};
+            if (form.firstName.trim().length < 2) {
+                nextErrors.firstName = "First name must be at least 2 characters.";
+            }
+            if (!form.email.trim()) nextErrors.email = "Email is required.";
+            if (!form.role) nextErrors.role = "Select a role.";
+            if (Object.keys(nextErrors).length > 0) {
+                setFormErrors(nextErrors);
+                setError("Please correct the highlighted fields.");
+                return;
+            }
         }
 
         setActionLoading(true);
-        setError("");
 
         try {
             if (editingUser) {
@@ -652,41 +718,7 @@ export default function UsersPage() {
                     "/api/users",
                     {
                         method: "POST",
-                        body: JSON.stringify({
-                            firstName:
-                                form.firstName.trim(),
-
-                            lastName:
-                                form.lastName.trim(),
-
-                            email:
-                                form.email
-                                    .trim()
-                                    .toLowerCase(),
-
-                            password:
-                                form.password,
-
-                            role: form.role,
-
-                            status:
-                                form.status,
-
-                            phone:
-                                form.phone.trim() ||
-                                undefined,
-
-                            jobTitle:
-                                form.jobTitle.trim() ||
-                                undefined,
-
-                            avatar:
-                                form.avatar.trim() ||
-                                undefined,
-
-                            isEmailVerified:
-                                form.isEmailVerified,
-                        }),
+                        body: JSON.stringify(validatedCreatePayload),
                     }
                 );
 
@@ -699,11 +731,21 @@ export default function UsersPage() {
 
             await fetchUsers();
         } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Unable to save user."
-            );
+            if (err instanceof ApiRequestError && (Object.keys(err.fieldErrors).length > 0 || err.message === "Role not found.")) {
+                setFormErrors({
+                    ...err.fieldErrors,
+                    ...(err.message === "Role not found."
+                        ? { role: "This role is no longer available. Select another role." }
+                        : {}),
+                });
+                setError("Please correct the highlighted fields.");
+            } else {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Unable to save user."
+                );
+            }
         } finally {
             setActionLoading(false);
         }
@@ -1400,9 +1442,12 @@ export default function UsersPage() {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <Field
                                     label="First Name"
+                                    htmlFor="user-first-name"
                                     required
+                                    error={formErrors.firstName}
                                 >
                                     <input
+                                        id="user-first-name"
                                         value={
                                             form.firstName
                                         }
@@ -1416,13 +1461,16 @@ export default function UsersPage() {
                                                     .value
                                             )
                                         }
-                                        className="input"
+                                        className={`input ${formErrors.firstName ? "border-red-500" : ""}`}
+                                        aria-invalid={Boolean(formErrors.firstName)}
+                                        aria-describedby={formErrors.firstName ? "user-first-name-error" : undefined}
                                         placeholder="Anwar"
                                     />
                                 </Field>
 
-                                <Field label="Last Name">
+                                <Field label="Last Name" htmlFor="user-last-name" error={formErrors.lastName}>
                                     <input
+                                        id="user-last-name"
                                         value={
                                             form.lastName
                                         }
@@ -1436,16 +1484,21 @@ export default function UsersPage() {
                                                     .value
                                             )
                                         }
-                                        className="input"
+                                        className={`input ${formErrors.lastName ? "border-red-500" : ""}`}
+                                        aria-invalid={Boolean(formErrors.lastName)}
+                                        aria-describedby={formErrors.lastName ? "user-last-name-error" : undefined}
                                         placeholder="Ulhaq"
                                     />
                                 </Field>
 
                                 <Field
                                     label="Email"
+                                    htmlFor="user-email"
                                     required
+                                    error={formErrors.email}
                                 >
                                     <input
+                                        id="user-email"
                                         type="email"
                                         value={
                                             form.email
@@ -1460,7 +1513,9 @@ export default function UsersPage() {
                                                     .value
                                             )
                                         }
-                                        className="input"
+                                        className={`input ${formErrors.email ? "border-red-500" : ""}`}
+                                        aria-invalid={Boolean(formErrors.email)}
+                                        aria-describedby={formErrors.email ? "user-email-error" : undefined}
                                         placeholder="user@adm.com"
                                     />
                                 </Field>
@@ -1468,9 +1523,13 @@ export default function UsersPage() {
                                 {!editingUser && (
                                     <Field
                                         label="Password"
+                                        htmlFor="user-password"
                                         required
+                                        hint="At least 8 characters, including uppercase and lowercase letters, a number, and a special character."
+                                        error={formErrors.password}
                                     >
                                         <input
+                                            id="user-password"
                                             type="password"
                                             value={
                                                 form.password
@@ -1485,7 +1544,9 @@ export default function UsersPage() {
                                                         .value
                                                 )
                                             }
-                                            className="input"
+                                            className={`input ${formErrors.password ? "border-red-500" : ""}`}
+                                            aria-invalid={Boolean(formErrors.password)}
+                                            aria-describedby={formErrors.password ? "user-password-error" : "user-password-hint"}
                                             placeholder="••••••••"
                                         />
                                     </Field>
@@ -1493,9 +1554,12 @@ export default function UsersPage() {
 
                                 <Field
                                     label="Role"
+                                    htmlFor="user-role"
                                     required
+                                    error={formErrors.role}
                                 >
                                     <select
+                                        id="user-role"
                                         value={
                                             form.role
                                         }
@@ -1509,7 +1573,9 @@ export default function UsersPage() {
                                                     .value
                                             )
                                         }
-                                        className="input"
+                                        className={`input ${formErrors.role ? "border-red-500" : ""}`}
+                                        aria-invalid={Boolean(formErrors.role)}
+                                        aria-describedby={formErrors.role ? "user-role-error" : undefined}
                                     >
                                         <option value="">
                                             Select role
@@ -1536,8 +1602,9 @@ export default function UsersPage() {
                                     </select>
                                 </Field>
 
-                                <Field label="Status">
+                                <Field label="Status" htmlFor="user-status">
                                     <select
+                                        id="user-status"
                                         value={
                                             form.status
                                         }
@@ -1574,8 +1641,9 @@ export default function UsersPage() {
                                     </select>
                                 </Field>
 
-                                <Field label="Phone">
+                                <Field label="Phone" htmlFor="user-phone" error={formErrors.phone}>
                                     <input
+                                        id="user-phone"
                                         value={
                                             form.phone
                                         }
@@ -1589,13 +1657,16 @@ export default function UsersPage() {
                                                     .value
                                             )
                                         }
-                                        className="input"
+                                        className={`input ${formErrors.phone ? "border-red-500" : ""}`}
+                                        aria-invalid={Boolean(formErrors.phone)}
+                                        aria-describedby={formErrors.phone ? "user-phone-error" : undefined}
                                         placeholder="+92..."
                                     />
                                 </Field>
 
-                                <Field label="Job Title">
+                                <Field label="Job Title" htmlFor="user-job-title" error={formErrors.jobTitle}>
                                     <input
+                                        id="user-job-title"
                                         value={
                                             form.jobTitle
                                         }
@@ -1609,14 +1680,17 @@ export default function UsersPage() {
                                                     .value
                                             )
                                         }
-                                        className="input"
+                                        className={`input ${formErrors.jobTitle ? "border-red-500" : ""}`}
+                                        aria-invalid={Boolean(formErrors.jobTitle)}
+                                        aria-describedby={formErrors.jobTitle ? "user-job-title-error" : undefined}
                                         placeholder="Senior Developer"
                                     />
                                 </Field>
 
                                 <div className="sm:col-span-2">
-                                    <Field label="Avatar URL">
+                                    <Field label="Avatar URL" htmlFor="user-avatar" error={formErrors.avatar}>
                                         <input
+                                            id="user-avatar"
                                             value={
                                                 form.avatar
                                             }
@@ -1630,7 +1704,9 @@ export default function UsersPage() {
                                                         .value
                                                 )
                                             }
-                                            className="input"
+                                            className={`input ${formErrors.avatar ? "border-red-500" : ""}`}
+                                            aria-invalid={Boolean(formErrors.avatar)}
+                                            aria-describedby={formErrors.avatar ? "user-avatar-error" : undefined}
                                             placeholder="https://..."
                                         />
                                     </Field>
@@ -1765,36 +1841,6 @@ export default function UsersPage() {
                 </div>
             )}
 
-            <style jsx global>{`
-                .input {
-                    height: 2.75rem;
-                    width: 100%;
-                    border-radius: 0.75rem;
-                    border: 1px solid rgb(226 232 240);
-                    background: white;
-                    padding: 0 0.875rem;
-                    font-size: 0.875rem;
-                    color: rgb(15 23 42);
-                    outline: none;
-                    transition: all 150ms;
-                }
-
-                .input:focus {
-                    border-color: rgb(139 92 246);
-                    box-shadow: 0 0 0 4px
-                        rgb(139 92 246 / 0.1);
-                }
-
-                .dark .input {
-                    border-color: rgb(51 65 85);
-                    background: rgb(15 23 42);
-                    color: white;
-                }
-
-                .dark .input:focus {
-                    border-color: rgb(139 92 246);
-                }
-            `}</style>
         </main>
     );
 }
@@ -1831,26 +1877,44 @@ function StatCard({
 
 function Field({
     label,
+    htmlFor,
     required,
+    hint,
+    error,
     children,
 }: {
     label: string;
+    htmlFor?: string;
     required?: boolean;
+    hint?: string;
+    error?: string;
     children: React.ReactNode;
 }) {
     return (
-        <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">
+        <div className="block">
+            <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-semibold text-slate-600 dark:text-slate-300">
                 {label}
                 {required && (
                     <span className="ml-1 text-red-500">
                         *
                     </span>
                 )}
-            </span>
+            </label>
 
             {children}
-        </label>
+
+            {hint && (
+                <p id={`${htmlFor}-hint`} className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                    {hint}
+                </p>
+            )}
+
+            {error && (
+                <p id={`${htmlFor}-error`} role="alert" className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+                    {error}
+                </p>
+            )}
+        </div>
     );
 }
 

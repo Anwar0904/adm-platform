@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import TestimonialService from "@/services/testimonial.service";
+import { connectDB } from "@/lib/db";
 
 import { UpdateTestimonialSchema } from "@/validators/testimonial.validator";
 
@@ -25,6 +26,7 @@ export async function GET(
     { params }: Params
 ) {
     try {
+        await connectDB();
         await requirePermission(
             request,
             PERMISSIONS.TESTIMONIAL_READ
@@ -51,6 +53,7 @@ export async function PATCH(
     { params }: Params
 ) {
     try {
+        await connectDB();
         const user =
             await requirePermission(
                 request,
@@ -89,6 +92,7 @@ export async function DELETE(
     { params }: Params
 ) {
     try {
+        await connectDB();
         await requirePermission(
             request,
             PERMISSIONS.TESTIMONIAL_DELETE

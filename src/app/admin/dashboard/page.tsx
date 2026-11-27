@@ -12,6 +12,7 @@ import { ApiError } from "@/lib/api/api-error";
 import AuthService from "@/services/auth/auth.service";
 import { AuthorizationService } from "@/lib/auth/authorization";
 import { PERMISSIONS } from "@/constants/permissions";
+import { getFirstAuthorizedAdminRoute } from "@/lib/permissions/admin-access";
 
 import { Lead } from "@/models/lead.model";
 import { Consultation } from "@/models/consultation.model";
@@ -124,11 +125,11 @@ export default async function DashboardPage() {
      * Other roles must have SETTINGS_MANAGE.
      */
 
-    if (!AuthorizationService.isSuperAdmin(String(role.name))) {
-        AuthorizationService.hasPermission(
-            role.permissions as string[],
-            PERMISSIONS.SETTINGS_MANAGE,
-        );
+    if (
+        !AuthorizationService.isSuperAdmin(String(role.name)) &&
+        !(role.permissions as string[]).includes(PERMISSIONS.SETTINGS_MANAGE)
+    ) {
+        redirect(getFirstAuthorizedAdminRoute(role.permissions as string[], String(role.name)) ?? "/admin/login");
     }
 
     /*

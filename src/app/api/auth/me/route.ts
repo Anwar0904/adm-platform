@@ -21,16 +21,28 @@ export async function GET(
                 ? user.avatar
                 : user.avatar?.url ?? null;
 
-        return ApiResponse.success(
+        const response = ApiResponse.success(
             {
                 _id: user._id.toString(),
                 name: `${user.firstName} ${user.lastName}`.trim(),
                 email: user.email,
                 avatar,
                 jobTitle: user.jobTitle ?? null,
+                role: {
+                    name: typeof user.role === "object" && user.role !== null && "name" in user.role
+                        ? String(user.role.name)
+                        : null,
+                    permissions: typeof user.role === "object" && user.role !== null &&
+                        "permissions" in user.role && Array.isArray(user.role.permissions)
+                        ? user.role.permissions.filter((permission): permission is string => typeof permission === "string")
+                        : [],
+                },
             },
             "Current user fetched successfully."
         );
+        response.headers.set("Cache-Control", "no-store, private");
+        response.headers.set("Pragma", "no-cache");
+        return response;
     } catch (error) {
         return ApiErrorHandler.handle(error);
     }

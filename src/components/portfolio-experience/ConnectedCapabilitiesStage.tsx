@@ -14,7 +14,7 @@ export default function ConnectedCapabilitiesStage() {
   const chosen = capabilities[active];
 
   return (
-    <div className="relative mx-auto max-w-[700px] rounded-[2rem] border border-white/[0.12] bg-[#071522]/80 p-4 shadow-[0_30px_100px_rgba(0,0,0,.35)] backdrop-blur-sm sm:p-6 lg:p-7">
+    <div className="relative mx-auto max-w-[700px] rounded-3xl border border-white/10 bg-slate-900/70 p-4 shadow-2xl shadow-black/30 backdrop-blur-sm sm:p-6 lg:p-7">
       <div className="flex items-start justify-between gap-4 px-1 sm:px-2">
         <div><p className="text-[10px] font-semibold uppercase tracking-[.24em] text-cyan-200">Connected systems</p><p className="mt-1 text-xs text-slate-400">Explore the intersections</p></div>
         <span aria-hidden="true" className="mt-1 flex gap-1"><i className="h-1 w-1 rounded-full bg-cyan-200"/><i className="h-1 w-1 rounded-full bg-blue-300/60"/><i className="h-1 w-1 rounded-full bg-violet-300/60"/></span>
@@ -28,7 +28,7 @@ export default function ConnectedCapabilitiesStage() {
         </svg>
         <div aria-hidden="true" className="absolute left-1/2 top-1/2 grid h-[26%] w-[26%] -translate-x-1/2 -translate-y-1/2 place-content-center rounded-full border border-cyan-200/30 bg-[#0a2030]/90 text-center shadow-[0_0_55px_rgba(34,211,238,.15)] sm:h-[30%] sm:w-[30%]"><span className="text-[9px] uppercase tracking-[.18em] text-slate-400">ADM</span><span className="mt-0.5 text-[11px] font-medium text-white sm:text-sm">Useful systems</span></div>
         {capabilities.map((item, index) => {
-          const positions = ["left-[4%] top-[17%]", "right-[4%] top-[17%]", "left-[4%] bottom-[17%]", "right-[4%] bottom-[17%]"];
+          const positions = ["left-[4%] top-[8%]", "right-[4%] top-[8%]", "left-[4%] bottom-[8%]", "right-[4%] bottom-[8%]"];
           const selected = active === index;
           return <button key={item.name} type="button" onClick={() => setActive(index)} aria-pressed={selected} className={`absolute z-10 flex min-h-11 min-w-[118px] flex-col justify-center rounded-xl border px-3 py-2 text-left transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 sm:min-w-[145px] sm:px-4 ${positions[index]} ${selected ? "border-cyan-200/70 bg-[#103248] shadow-[0_0_28px_rgba(34,211,238,.15)]" : "border-white/10 bg-[#091827]/90 hover:border-white/30"}`}>
             <span className={`text-[9px] font-semibold uppercase tracking-[.16em] sm:text-[10px] ${selected ? "text-cyan-200" : "text-slate-400"}`}>{item.short}</span><span className="mt-0.5 text-xs font-semibold text-white sm:text-sm">{item.name}</span>

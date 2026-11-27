@@ -4,6 +4,12 @@ import {
     CONTENT_STATUS,
 } from "@/enums";
 
+const nullableObjectId = z
+    .string()
+    .regex(/^[a-f\d]{24}$/i, "Must be a valid MongoDB record ID.")
+    .optional()
+    .nullable();
+
 export const CreateTestimonialSchema =
     z.object({
         clientName: z
@@ -23,10 +29,7 @@ export const CreateTestimonialSchema =
             .optional()
             .default(""),
 
-        avatar: z
-            .string()
-            .optional()
-            .nullable(),
+        avatar: nullableObjectId,
 
         message: z
             .string()
@@ -38,20 +41,11 @@ export const CreateTestimonialSchema =
             .min(1)
             .max(5),
 
-        service: z
-            .string()
-            .optional()
-            .nullable(),
+        service: nullableObjectId,
 
-        portfolio: z
-            .string()
-            .optional()
-            .nullable(),
+        portfolio: nullableObjectId,
 
-        industry: z
-            .string()
-            .optional()
-            .nullable(),
+        industry: nullableObjectId,
 
         featured: z
             .boolean()

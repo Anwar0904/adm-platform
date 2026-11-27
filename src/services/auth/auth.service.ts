@@ -2,10 +2,10 @@ import { PasswordService } from "@/lib/auth/bcrypt";
 import { ApiError } from "@/lib/api/api-error";
 import SessionRepository from "@/repositories/session.repository";
 import { RegisterInput, LoginInput } from "@/types/auth";
-import crypto from "crypto"
 import { User } from "@/models/user.model";
 import { Role } from "@/models/role.model";
 import mongoose from "mongoose";
+import { createHash } from "node:crypto";
 import {
     getSessionExpiresAt,
     normalizeSessionActivityAt,
@@ -14,6 +14,12 @@ import { JwtService } from "@/lib/auth/jwt";
 import { ResetTokenService } from "@/lib/auth/reset-token";
 import { ResetPasswordInput } from "@/validators/auth";
 import { ChangePasswordInput } from "@/validators/auth/change-password.validator";
+import { AuthEmailDeliveryError, AuthEmailService } from "@/services/auth/auth-email.service";
+
+function logAuthEmailFailure(kind: "reset" | "verification" | "registration", error: unknown) {
+    const code = error instanceof AuthEmailDeliveryError ? error.code : "provider-failed";
+    console.error("auth-email-delivery-failed", { kind, code });
+}
 
 export function clearEmailVerificationFields(user: {
     emailVerificationToken?: string | null;
@@ -127,13 +133,15 @@ class AuthService {
         const firstName = nameParts[0] ?? name;
         const lastName = nameParts.slice(1).join(" ");
 
-        // Check if email already exists
+        // Registration remains disabled at the route by default. This service still
+        // avoids returning a duplicate-account signal if an owner enables it.
         const existingUser = await User.findOne({
             email: email.toLowerCase(),
         });
 
         if (existingUser) {
-            throw new ApiError(409, "Email already exists.");
+            await PasswordService.hash(password);
+            return false;
         }
 
         // Find the default role (User)
@@ -147,14 +155,13 @@ class AuthService {
             });
         }
 
-        if (!defaultRole) {
-            defaultRole = await Role.create({
-                name: "user",
-                description: "Default user",
-                permissions: [],
-                isDefault: true,
-                status: "active",
-            });
+        if (!defaultRole) throw new ApiError(503, "Registration is unavailable.");
+        if (
+            !Array.isArray(defaultRole.permissions) ||
+            defaultRole.permissions.length !== 0 ||
+            /admin|super.?admin/i.test(defaultRole.name)
+        ) {
+            throw new ApiError(503, "Registration is unavailable.");
         }
 
         // Hash password
@@ -171,28 +178,41 @@ class AuthService {
             );
 
         // Create user
-        const user = await User.create({
-            firstName,
-            lastName,
-            email: email.toLowerCase(),
-            password: hashedPassword,
-            role: defaultRole._id,
+        let user;
+        try {
+            user = await User.create({
+                firstName,
+                lastName,
+                email: email.toLowerCase(),
+                password: hashedPassword,
+                role: defaultRole._id,
+                emailVerified: false,
+                emailVerificationToken: hashedVerificationToken,
+                emailVerificationExpires: ResetTokenService.expiry(),
+            });
+        } catch (error) {
+            if (typeof error === "object" && error !== null && "code" in error && error.code === 11000) {
+                return false;
+            }
+            throw error;
+        }
 
-            emailVerified: false,
-            emailVerificationToken:
-                hashedVerificationToken,
-            emailVerificationExpires:
-                ResetTokenService.expiry(),
-        });
+        const tokenHash = ResetTokenService.hash(verificationToken);
+        try {
+            await AuthEmailService.sendVerification(user.email, verificationToken);
+        } catch (error) {
+            await User.deleteOne({
+                _id: user._id,
+                emailVerificationToken: tokenHash,
+            });
+            if (error instanceof AuthEmailDeliveryError) {
+                logAuthEmailFailure("registration", error);
+                return false;
+            }
+            throw error;
+        }
 
-        const createdUser = await User.findById(user._id).select(
-            "email emailVerificationToken emailVerificationExpires emailVerified"
-        );
-
-        return {
-            user,
-            verificationToken,
-        };
+        return true;
 
     }
 
@@ -465,10 +485,26 @@ class AuthService {
                 throw new ApiError(401, "Invalid session.");
             }
 
+            const session = await SessionRepository.findActiveSessionById(
+                payload.sid,
+                payload.userId,
+            );
+            if (!session) {
+                throw new ApiError(401, "Session is no longer active.");
+            }
+
+            const isCurrentRefreshToken = await PasswordService.compare(
+                refreshToken,
+                session.refreshToken,
+            );
+            if (!isCurrentRefreshToken) {
+                throw new ApiError(401, "Invalid refresh token.");
+            }
+
             const revoked =
-                await SessionRepository.revokeActiveSessionById(
-                    payload.sid,
-                    payload.userId
+                await SessionRepository.revokeActiveSession(
+                    session._id,
+                    session.refreshToken,
                 );
 
             if (!revoked) {
@@ -516,82 +552,63 @@ class AuthService {
     async forgotPassword(email: string) {
         const user = await User.findOne({
             email: email.toLowerCase(),
+            status: "active",
+            isDeleted: { $ne: true },
         });
 
         if (!user) {
-            throw new ApiError(
-                404,
-                "User not found."
-            );
+            return;
         }
 
-        // Plain token sent to the user
         const resetToken = ResetTokenService.generate();
+        const hashedToken = ResetTokenService.hash(resetToken);
+        const expiresAt = ResetTokenService.expiry();
+        const updated = await User.findOneAndUpdate(
+            { _id: user._id, status: "active", isDeleted: { $ne: true } },
+            { $set: { passwordResetToken: hashedToken, passwordResetExpires: expiresAt } },
+            { new: true },
+        ).select("email");
+        if (!updated) return;
 
-        // Hashed token stored in DB
-        const hashedToken = crypto.createHash("sha256")
-            .update(resetToken)
-            .digest("hex");
-
-        user.passwordResetToken = hashedToken;
-
-        user.passwordResetExpires =
-            ResetTokenService.expiry();
-
-        await user.save();
-
-        return {
-            resetToken,
-            expiresAt: user.passwordResetExpires,
-        };
+        try {
+            await AuthEmailService.sendPasswordReset(updated.email, resetToken);
+        } catch (error) {
+            await User.updateOne(
+                { _id: updated._id, passwordResetToken: hashedToken },
+                { $unset: { passwordResetToken: 1, passwordResetExpires: 1 } },
+            );
+            logAuthEmailFailure("reset", error);
+        }
     }
 
     async resetPassword(data: ResetPasswordInput) {
         const { token, password } = data;
 
         // Hash incoming token
-        const hashedToken = crypto
-            .createHash("sha256")
+        const hashedToken = createHash("sha256")
             .update(token)
             .digest("hex");
 
-        // Find user with matching token
-        const user = await User.findOne({
-            passwordResetToken: hashedToken,
-            passwordResetExpires: {
-                $gt: new Date(),
+        const now = new Date();
+        const passwordHash = await PasswordService.hash(password);
+        const user = await User.findOneAndUpdate(
+            {
+                passwordResetToken: hashedToken,
+                passwordResetExpires: { $gt: now },
+                status: "active",
+                isDeleted: { $ne: true },
             },
-        });
+            {
+                $set: { password: passwordHash, passwordChangedAt: now },
+                $unset: { passwordResetToken: 1, passwordResetExpires: 1 },
+            },
+            { new: true },
+        ).select("_id");
 
-        if (!user) {
-            throw new ApiError(
-                400,
-                "Invalid or expired reset token."
-            );
-        }
-
-        // Hash new password
-        user.password =
-            await PasswordService.hash(password);
-
-        // Remove reset token
-        user.passwordResetToken = undefined;
-        user.passwordResetExpires = undefined;
-
-        // Save user
-        await user.save();
+        if (!user) throw new ApiError(400, "Invalid or expired reset token.");
 
         // Revoke every active session
-        await SessionRepository.updateMany(
-            {
-                user: user._id,
-                isRevoked: false,
-            },
-            {
-                isRevoked: true,
-                lastUsedAt: new Date(),
-            }
-        );
+        await SessionRepository.revokeAllUserSessions(user._id.toString());
 
         return true;
     }
@@ -649,6 +666,7 @@ class AuthService {
             await PasswordService.hash(
                 newPassword
             );
+        user.passwordChangedAt = new Date();
 
         // Clear any outstanding reset tokens
         user.passwordResetToken = undefined;
@@ -672,77 +690,55 @@ class AuthService {
     }
 
     async verifyEmail(token: string) {
+        const hashedToken = ResetTokenService.hash(token);
+        const user = await User.findOneAndUpdate(
+            {
+                emailVerificationToken: hashedToken,
+                emailVerificationExpires: { $gt: new Date() },
+                emailVerified: { $ne: true },
+                isEmailVerified: { $ne: true },
+                isDeleted: { $ne: true },
+            },
+            {
+                $set: { emailVerified: true, isEmailVerified: true },
+                $unset: { emailVerificationToken: 1, emailVerificationExpires: 1 },
+            },
+            { new: true },
+        ).select("_id");
 
-        // Hash incoming token
-        const hashedToken =
-            ResetTokenService.hash(token);
-
-        // Find matching user
-        const user = await User.findOne({
-            emailVerificationToken: hashedToken,
-        });
-
-        if (!user) {
-            throw new ApiError(
-                400,
-                "Invalid or expired verification token."
-            );
-        }
-
-        if (user.emailVerified) {
-            throw new ApiError(
-                400,
-                "Email is already verified."
-            );
-        }
-
-        // Verify email
-        user.emailVerified = true;
-
-        clearEmailVerificationFields(user);
-
-        await user.save();
-
+        if (!user) throw new ApiError(400, "Invalid or expired verification token.");
         return true;
     }
 
     async resendVerificationEmail(email: string) {
         const user = await User.findOne({
             email: email.toLowerCase(),
+            isDeleted: { $ne: true },
         });
 
-        if (!user) {
-            throw new ApiError(
-                404,
-                "User not found."
-            );
-        }
-
-        if (user.emailVerified) {
-            throw new ApiError(
-                400,
-                "Email already verified."
-            );
-        }
+        if (!user || user.emailVerified || user.isEmailVerified) return;
 
         const verificationToken =
             ResetTokenService.generate();
 
-        user.emailVerificationToken =
-            ResetTokenService.hash(
-                verificationToken
+        const tokenHash = ResetTokenService.hash(verificationToken);
+        const expiresAt = ResetTokenService.expiry();
+        const updated = await User.findOneAndUpdate(
+            { _id: user._id, emailVerified: { $ne: true }, isEmailVerified: { $ne: true }, isDeleted: { $ne: true } },
+            { $set: { emailVerificationToken: tokenHash, emailVerificationExpires: expiresAt } },
+            { new: true },
+        ).select("email");
+        if (!updated) return;
+
+        try {
+            await AuthEmailService.sendVerification(updated.email, verificationToken);
+        } catch (error) {
+            await User.updateOne(
+                { _id: updated._id, emailVerificationToken: tokenHash },
+                { $unset: { emailVerificationToken: 1, emailVerificationExpires: 1 } },
             );
-
-        user.emailVerificationExpires =
-            ResetTokenService.expiry();
-
-        await user.save();
-
-        return {
-            verificationToken,
-            expiresAt:
-                user.emailVerificationExpires,
-        };
+            logAuthEmailFailure("verification", error);
+        }
     }
 
 }

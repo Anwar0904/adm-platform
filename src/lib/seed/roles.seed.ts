@@ -1,40 +1,9 @@
 
-import { PERMISSIONS } from "@/constants/permissions";
 import { roleRepository } from "@/repositories/role.repository";
+import { ROLE_DEFINITIONS } from "@/lib/seed/role-definitions";
 
 export async function seedRoles() {
-    const roles = [
-        {
-            name: "super admin",
-            description: "System Administrator",
-            permissions: Object.values(PERMISSIONS),
-            isDefault: false,
-        },
-        {
-            name: "admin",
-            description: "Administrator",
-            permissions: [
-                PERMISSIONS.USER_READ,
-                PERMISSIONS.USER_CREATE,
-                PERMISSIONS.USER_UPDATE,
-                PERMISSIONS.BLOG_READ,
-                PERMISSIONS.BLOG_CREATE,
-                PERMISSIONS.BLOG_UPDATE,
-            ],
-            isDefault: false,
-        },
-        {
-            name: "editor",
-            permissions: [
-                PERMISSIONS.BLOG_READ,
-                PERMISSIONS.BLOG_CREATE,
-                PERMISSIONS.BLOG_UPDATE,
-            ],
-            isDefault: true,
-        },
-    ];
-
-    for (const roleData of roles) {
+    for (const roleData of ROLE_DEFINITIONS) {
         const role =
             await roleRepository.findByName(roleData.name);
 

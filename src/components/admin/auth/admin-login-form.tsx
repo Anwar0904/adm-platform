@@ -347,8 +347,8 @@ export default function AdminLoginForm() {
                                         </label>
 
                                         <Link
-                                            href="/admin/forgot-password"
-                                            className="text-sm font-semibold text-blue-600 transition hover:text-blue-700"
+                                            href="/auth/forgot-password"
+                                            className="rounded-sm text-sm font-semibold text-[#1D4ED8] transition-colors hover:text-blue-900 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
                                         >
                                             Forgot password?
                                         </Link>
@@ -453,6 +453,10 @@ export default function AdminLoginForm() {
                                     )}
                                 </button>
                             </form>
+
+                            <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
+                                <Link href="/auth/resend-verification" className="rounded-sm font-semibold text-[#1D4ED8] transition-colors hover:text-blue-900 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">Resend verification email</Link>
+                            </div>
 
                             {/* Security note */}
 

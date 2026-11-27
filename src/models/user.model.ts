@@ -8,10 +8,19 @@ import {
   IUser,
   UserModel,
 } from "@/types/user.types";
+import type { IImage } from "@/types/image.types";
 
 import { USER_STATUS } from "@/enums";
 
-import { ImageSchema } from "@/schemas/image.schema";
+function isUserAvatar(value: unknown): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value !== "object" || Array.isArray(value)) return false;
+
+  const image = value as Partial<IImage>;
+  return typeof image.url === "string" && image.url.trim().length > 0 &&
+    typeof image.publicId === "string" && image.publicId.trim().length > 0;
+}
 
 const UserSchema = new Schema<IUser, UserModel>(
   {
@@ -47,8 +56,12 @@ const UserSchema = new Schema<IUser, UserModel>(
     },
 
     avatar: {
-      type: ImageSchema,
+      type: Schema.Types.Mixed,
       default: null,
+      validate: {
+        validator: isUserAvatar,
+        message: "Avatar must be a URL string or an image object.",
+      },
     },
 
     role: {

@@ -5,7 +5,7 @@ import { USER_STATUS } from "@/enums";
 const email = z
     .string()
     .trim()
-    .email("Invalid email address.")
+    .email("Enter a valid email address.")
     .transform((value) => value.toLowerCase());
 
 const password = z
@@ -32,13 +32,13 @@ export const CreateUserSchema = z.object({
     firstName: z
         .string()
         .trim()
-        .min(2)
-        .max(80),
+        .min(2, "First name must be at least 2 characters.")
+        .max(80, "First name must be no more than 80 characters."),
 
     lastName: z
         .string()
         .trim()
-        .max(80)
+        .max(80, "Last name must be no more than 80 characters.")
         .optional()
         .default(""),
 
@@ -48,7 +48,7 @@ export const CreateUserSchema = z.object({
 
     role: z
         .string()
-        .min(1, "Role is required."),
+        .regex(/^[a-f\d]{24}$/i, "Select a valid existing role."),
 
     status: z
         .enum(
@@ -62,13 +62,13 @@ export const CreateUserSchema = z.object({
     phone: z
         .string()
         .trim()
-        .max(30)
+        .max(30, "Phone must be no more than 30 characters.")
         .optional(),
 
     jobTitle: z
         .string()
         .trim()
-        .max(120)
+        .max(120, "Job title must be no more than 120 characters.")
         .optional(),
 
     avatar: z

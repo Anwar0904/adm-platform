@@ -7,13 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node scripts/run-tests.mjs",
+    "test": "node scripts/run-tests.mjs && node --test scripts/security/preview-security-smoke.local.test.mjs",
+    "preview:security-smoke": "node scripts/security/preview-security-smoke.local.mjs",
     "typecheck": "tsc --noEmit",
     "seed": "tsx src/database/seed.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
     "@tanstack/react-query": "^5.101.4",
+    "@upstash/redis": "^1.41.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "2.4.0",
     "axios": "^1.19.0",

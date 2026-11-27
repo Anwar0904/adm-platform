@@ -18,7 +18,7 @@
 1. Run the site with an isolated local/staging database or a test-only injected fixture. Do not point preview testing at production and do not create records in a production database.
 2. For an empty state, use an isolated DB with no approved public portfolio records. For an outage state, make the portfolio query fail in the isolated preview.
 3. For the approved branch, pass a clearly synthetic local-only fixture with five representative records through the service boundary; remove fixture injection before any release.
-4. Capture hero viewport and full page at 1440×900, 768×1024 and 390×844 for empty and approved states, plus a selected capability state and operating-system reduced-motion mode.
-5. Review horizontal overflow, line breaks, tap target spacing, actual approved image crop/alt text, facet/no-result behavior, keyboard focus and contrast at each viewport.
+4. Capture the hero and full page at 320px, 375px, 768px, 1024px and 1440px for empty and approved states; also capture the selected capability state and operating-system reduced-motion mode.
+5. Compare content width, typography, buttons, panel radii/shadows and section rhythm with `/`, `/services`, `/services/technology` and `/industries`. Review horizontal overflow, line breaks, tap target spacing, approved image crop/alt text, facet/no-result behavior, keyboard focus and contrast at each viewport.
 
 Visual sign-off remains an open release gate until those captures are reviewed.

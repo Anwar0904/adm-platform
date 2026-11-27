@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 import TestimonialService from "@/services/testimonial.service";
+import { connectDB } from "@/lib/db";
 
 import {
     CreateTestimonialSchema,
@@ -21,6 +22,7 @@ export async function GET(
     request: NextRequest
 ) {
     try {
+        await connectDB();
         await requirePermission(
             request,
             PERMISSIONS.TESTIMONIAL_READ
@@ -50,6 +52,7 @@ export async function POST(
     request: NextRequest
 ) {
     try {
+        await connectDB();
         const user =
             await requirePermission(
                 request,
